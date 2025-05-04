@@ -487,7 +487,7 @@ export default function Consultation({ id }: { id?: string }) {
               </div>
             </motion.div>
             
-            {/* Prontuário / Sumário */}
+            {/* Prontuário */}
             <motion.div variants={itemVariants} className="lg:col-span-3">
               <div className="consultation-card">
                 <div className="consultation-card-header">
@@ -495,7 +495,7 @@ export default function Consultation({ id }: { id?: string }) {
                     <span className="flex items-center justify-center w-6 h-6 mr-2 text-blue-600">
                       <FileText className="h-5 w-5" />
                     </span>
-                    Sumário
+                    Prontuário
                   </h3>
                   <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
                     <span className="sr-only">Expandir</span>
@@ -511,7 +511,7 @@ export default function Consultation({ id }: { id?: string }) {
                     />
                   ) : (
                     <div className="text-center py-8">
-                      <p className="text-gray-500 mb-4">Aqui será exibido o sumário da consulta após a transcrição</p>
+                      <p className="text-gray-500 mb-4">Aqui será exibido o prontuário da consulta após a transcrição</p>
                       <Button 
                         className="bg-blue-600 text-white hover:bg-blue-700"
                         onClick={() => {
@@ -523,7 +523,7 @@ export default function Consultation({ id }: { id?: string }) {
                           }
                         }}
                       >
-                        Sumarizar
+                        Gerar Prontuário
                       </Button>
                     </div>
                   )}
