@@ -10,14 +10,14 @@ export default function Footer() {
   const currentYear = new Date().getFullYear();
 
   return (
-    <footer className="bg-background/80 pt-16 pb-8 border-t border-gray-800">
+    <footer className="bg-background/80 pt-16 pb-8 border-t border-white">
       <div className="container mx-auto px-4">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8 mb-12">
           <div className="col-span-1 md:col-span-1">
             <Link href="/">
               <a className="inline-block mb-6">
                 <img 
-                  src="/attached_assets/logo-large.svg" 
+                  src="/logo.png" 
                   alt="Prontu.live Logo" 
                   className="h-10"
                 />
@@ -161,7 +161,7 @@ export default function Footer() {
           </div>
         </div>
         
-        <div className="border-t border-gray-800 pt-8 flex flex-col md:flex-row justify-between items-center">
+        <div className="border-t border-white/30 pt-8 flex flex-col md:flex-row justify-between items-center">
           <p className="text-muted-foreground text-sm mb-4 md:mb-0">
             &copy; {currentYear} Prontu.live. Todos os direitos reservados.
           </p>
