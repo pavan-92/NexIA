@@ -70,25 +70,28 @@ export default function Footer() {
                 </span>
               </li>
               <li>
-                <Link href="/#pricing">
-                  <a className="text-muted-foreground hover:text-foreground transition-colors duration-300">
-                    Planos e Preços
-                  </a>
-                </Link>
+                <span 
+                  className="text-muted-foreground hover:text-foreground transition-colors duration-300 cursor-pointer"
+                  onClick={() => window.location.href = "/#pricing"}
+                >
+                  Planos e Preços
+                </span>
               </li>
               <li>
-                <Link href="/#how-it-works">
-                  <a className="text-muted-foreground hover:text-foreground transition-colors duration-300">
-                    Como Funciona
-                  </a>
-                </Link>
+                <span 
+                  className="text-muted-foreground hover:text-foreground transition-colors duration-300 cursor-pointer"
+                  onClick={() => window.location.href = "/#how-it-works"}
+                >
+                  Como Funciona
+                </span>
               </li>
               <li>
-                <Link href="/#testimonials">
-                  <a className="text-muted-foreground hover:text-foreground transition-colors duration-300">
-                    Casos de Uso
-                  </a>
-                </Link>
+                <span 
+                  className="text-muted-foreground hover:text-foreground transition-colors duration-300 cursor-pointer"
+                  onClick={() => window.location.href = "/#testimonials"}
+                >
+                  Casos de Uso
+                </span>
               </li>
             </ul>
           </div>
@@ -97,32 +100,36 @@ export default function Footer() {
             <h3 className="text-xl font-bold mb-6">Empresa</h3>
             <ul className="space-y-3">
               <li>
-                <Link href="/about">
-                  <a className="text-muted-foreground hover:text-foreground transition-colors duration-300">
-                    Sobre Nós
-                  </a>
-                </Link>
+                <span 
+                  className="text-muted-foreground hover:text-foreground transition-colors duration-300 cursor-pointer"
+                  onClick={() => window.location.href = "/about"}
+                >
+                  Sobre Nós
+                </span>
               </li>
               <li>
-                <Link href="/blog">
-                  <a className="text-muted-foreground hover:text-foreground transition-colors duration-300">
-                    Blog
-                  </a>
-                </Link>
+                <span 
+                  className="text-muted-foreground hover:text-foreground transition-colors duration-300 cursor-pointer"
+                  onClick={() => window.location.href = "/blog"}
+                >
+                  Blog
+                </span>
               </li>
               <li>
-                <Link href="/careers">
-                  <a className="text-muted-foreground hover:text-foreground transition-colors duration-300">
-                    Carreiras
-                  </a>
-                </Link>
+                <span 
+                  className="text-muted-foreground hover:text-foreground transition-colors duration-300 cursor-pointer"
+                  onClick={() => window.location.href = "/careers"}
+                >
+                  Carreiras
+                </span>
               </li>
               <li>
-                <Link href="/contact">
-                  <a className="text-muted-foreground hover:text-foreground transition-colors duration-300">
-                    Contato
-                  </a>
-                </Link>
+                <span 
+                  className="text-muted-foreground hover:text-foreground transition-colors duration-300 cursor-pointer"
+                  onClick={() => window.location.href = "/contact"}
+                >
+                  Contato
+                </span>
               </li>
             </ul>
           </div>
@@ -131,25 +138,28 @@ export default function Footer() {
             <h3 className="text-xl font-bold mb-6">Suporte</h3>
             <ul className="space-y-3">
               <li>
-                <Link href="/support">
-                  <a className="text-muted-foreground hover:text-foreground transition-colors duration-300">
-                    Central de Ajuda
-                  </a>
-                </Link>
+                <span 
+                  className="text-muted-foreground hover:text-foreground transition-colors duration-300 cursor-pointer"
+                  onClick={() => window.location.href = "/support"}
+                >
+                  Central de Ajuda
+                </span>
               </li>
               <li>
-                <Link href="/docs">
-                  <a className="text-muted-foreground hover:text-foreground transition-colors duration-300">
-                    Documentação
-                  </a>
-                </Link>
+                <span 
+                  className="text-muted-foreground hover:text-foreground transition-colors duration-300 cursor-pointer"
+                  onClick={() => window.location.href = "/docs"}
+                >
+                  Documentação
+                </span>
               </li>
               <li>
-                <Link href="/status">
-                  <a className="text-muted-foreground hover:text-foreground transition-colors duration-300">
-                    Status
-                  </a>
-                </Link>
+                <span 
+                  className="text-muted-foreground hover:text-foreground transition-colors duration-300 cursor-pointer"
+                  onClick={() => window.location.href = "/status"}
+                >
+                  Status
+                </span>
               </li>
               <li>
                 <a 
@@ -168,21 +178,24 @@ export default function Footer() {
             &copy; {currentYear} Prontu.live. Todos os direitos reservados.
           </p>
           <div className="flex flex-wrap gap-4 justify-center">
-            <Link href="/terms">
-              <a className="text-muted-foreground hover:text-foreground text-sm transition-colors duration-300">
-                Termos de Uso
-              </a>
-            </Link>
-            <Link href="/privacy">
-              <a className="text-muted-foreground hover:text-foreground text-sm transition-colors duration-300">
-                Política de Privacidade
-              </a>
-            </Link>
-            <Link href="/cookies">
-              <a className="text-muted-foreground hover:text-foreground text-sm transition-colors duration-300">
-                Cookies
-              </a>
-            </Link>
+            <span 
+              className="text-muted-foreground hover:text-foreground text-sm transition-colors duration-300 cursor-pointer"
+              onClick={() => window.location.href = "/terms"}
+            >
+              Termos de Uso
+            </span>
+            <span 
+              className="text-muted-foreground hover:text-foreground text-sm transition-colors duration-300 cursor-pointer"
+              onClick={() => window.location.href = "/privacy"}
+            >
+              Política de Privacidade
+            </span>
+            <span 
+              className="text-muted-foreground hover:text-foreground text-sm transition-colors duration-300 cursor-pointer"
+              onClick={() => window.location.href = "/cookies"}
+            >
+              Cookies
+            </span>
           </div>
         </div>
         
