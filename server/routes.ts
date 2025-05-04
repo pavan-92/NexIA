@@ -1,7 +1,7 @@
 import express, { type Express, Request, Response } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
-import { transcribeAudio, generateMedicalNotes } from "./openai";
+import { transcribeAudio, generateMedicalNotes, translateText } from "./openai";
 import { validateAuth } from "./middleware/auth";
 import { uploadAudio } from "./middleware/upload";
 import { WebSocketServer } from "ws";
@@ -211,6 +211,29 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error generating notes:", error);
       res.status(500).json({ error: "Failed to generate medical notes" });
+    }
+  });
+
+  // Translation route
+  app.post("/api/translate", async (req: Request, res: Response) => {
+    try {
+      const schema = z.object({
+        title: z.string().optional(),
+        abstract: z.string().optional(),
+      });
+      
+      const content = schema.parse(req.body);
+      
+      if (!content.title && !content.abstract) {
+        return res.status(400).json({ error: "At least one of title or abstract must be provided" });
+      }
+      
+      const translatedContent = await translateText(content);
+      
+      res.json(translatedContent);
+    } catch (error) {
+      console.error("Translation error:", error);
+      res.status(500).json({ error: "Failed to translate content" });
     }
   });
 

@@ -3,9 +3,10 @@ import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { AlertCircle, Search, ExternalLink, Loader2, Download } from "lucide-react";
+import { AlertCircle, Search, ExternalLink, Loader2, Download, Globe } from "lucide-react";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { searchPubMed, fetchArticleAbstract, type PubMedArticle } from "@/lib/pubmed";
+import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 
 export default function PubMedSearch() {
@@ -16,6 +17,7 @@ export default function PubMedSearch() {
   const [expandedArticleId, setExpandedArticleId] = useState<string | null>(null);
   const [abstract, setAbstract] = useState<string | null>(null);
   const [isLoadingAbstract, setIsLoadingAbstract] = useState<boolean>(false);
+  const [isTranslating, setIsTranslating] = useState<boolean>(false);
   
   const { toast } = useToast();
 
@@ -34,17 +36,44 @@ export default function PubMedSearch() {
     setAbstract(null);
     
     try {
+      // Busca os artigos no PubMed
       const results = await searchPubMed(searchTerm);
-      setArticles(results);
       
       if (results.length === 0) {
         setError("Nenhum resultado encontrado para este termo");
+        setIsSearching(false);
+        return;
       }
+      
+      // Traduz os artigos (um por um para não sobrecarregar a API)
+      setIsTranslating(true);
+      const translatedResults = [...results]; // copia para não modificar o original
+      
+      for (let i = 0; i < translatedResults.length; i++) {
+        try {
+          const article = translatedResults[i];
+          const response = await apiRequest("POST", "/api/translate", {
+            title: article.title
+          });
+          
+          const data = await response.json();
+          if (data.title) {
+            translatedResults[i] = { ...article, title: data.title };
+          }
+        } catch (err) {
+          console.error(`Erro ao traduzir artigo ${i}:`, err);
+          // Manter o título original em caso de erro
+        }
+      }
+      
+      setArticles(translatedResults);
+      
     } catch (err) {
       console.error("Erro na busca:", err);
       setError("Não foi possível realizar a busca. Tente novamente.");
     } finally {
       setIsSearching(false);
+      setIsTranslating(false);
     }
   };
 
@@ -60,8 +89,17 @@ export default function PubMedSearch() {
     setAbstract(null);
     
     try {
+      // Busca o resumo no PubMed
       const abstractText = await fetchArticleAbstract(pmid);
-      setAbstract(abstractText);
+      
+      // Traduz o resumo usando a API do servidor
+      const response = await apiRequest("POST", "/api/translate", {
+        abstract: abstractText
+      });
+      
+      const data = await response.json();
+      
+      setAbstract(data.abstract || "Resumo não disponível");
     } catch (err) {
       console.error("Erro ao buscar resumo:", err);
       setAbstract("Não foi possível carregar o resumo deste artigo.");
@@ -96,7 +134,7 @@ export default function PubMedSearch() {
       <form onSubmit={handleSearch} className="flex gap-2">
         <Input
           type="text"
-          placeholder="Digite o termo de busca"
+          placeholder="Digite o termo de busca (em inglês ou português)"
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
           className="flex-1"
@@ -104,9 +142,9 @@ export default function PubMedSearch() {
         <Button 
           type="submit" 
           className="bg-blue-600 hover:bg-blue-700 text-white"
-          disabled={isSearching}
+          disabled={isSearching || isTranslating}
         >
-          {isSearching ? (
+          {isSearching || isTranslating ? (
             <Loader2 className="mr-2 h-4 w-4 animate-spin" />
           ) : (
             <Search className="mr-2 h-4 w-4" />
@@ -185,7 +223,13 @@ export default function PubMedSearch() {
                           <Loader2 className="animate-spin h-5 w-5 text-blue-600" />
                         </div>
                       ) : (
-                        <p className="text-gray-700">{abstract}</p>
+                        <>
+                          <div className="flex items-center mb-2 text-xs text-gray-500">
+                            <Globe className="h-3 w-3 mr-1" /> 
+                            <span>Traduzido automaticamente</span>
+                          </div>
+                          <p className="text-gray-700">{abstract}</p>
+                        </>
                       )}
                     </div>
                   )}
@@ -201,6 +245,15 @@ export default function PubMedSearch() {
           <div className="text-center">
             <Loader2 className="h-8 w-8 animate-spin text-blue-600 mx-auto mb-2" />
             <p className="text-sm text-gray-500">Buscando artigos...</p>
+          </div>
+        </div>
+      )}
+      
+      {!isSearching && isTranslating && (
+        <div className="flex justify-center py-8">
+          <div className="text-center">
+            <Loader2 className="h-8 w-8 animate-spin text-blue-600 mx-auto mb-2" />
+            <p className="text-sm text-gray-500">Traduzindo resultados para português...</p>
           </div>
         </div>
       )}

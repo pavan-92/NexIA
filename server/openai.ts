@@ -160,4 +160,72 @@ export async function analyzeSentiment(text: string): Promise<{
   }
 }
 
+// Translate text from English to Portuguese
+export async function translateText(content: {
+  title?: string;
+  abstract?: string;
+}): Promise<{
+  title?: string;
+  abstract?: string;
+}> {
+  try {
+    // Skip if content is empty
+    if (!content.title && !content.abstract) {
+      return content;
+    }
+
+    // Create prompt for translation
+    const titleText = content.title || "";
+    const abstractText = content.abstract || "";
+    
+    const prompt = `
+Traduza do inglês para o português o conteúdo a seguir. Mantenha termos médicos técnicos intactos quando necessário.
+
+TÍTULO: ${titleText}
+RESUMO: ${abstractText.substring(0, 1000)}
+`;
+
+    // Call OpenAI API
+    const response = await openai.chat.completions.create({
+      model: "gpt-4o",
+      messages: [
+        { 
+          role: "system", 
+          content: "Você é um tradutor médico especializado em traduzir artigos científicos do inglês para o português. Mantenha a tradução precisa mas adaptada para a compreensão em português. Use exatamente este formato em sua resposta:\n\nTÍTULO TRADUZIDO: [título traduzido]\n\nRESUMO TRADUZIDO: [resumo traduzido]" 
+        },
+        { role: "user", content: prompt }
+      ],
+      temperature: 0.3
+    });
+
+    // Extract response
+    const translationText = response.choices[0]?.message.content || "";
+    
+    // Parse translated content
+    let translatedTitle = content.title;
+    let translatedAbstract = content.abstract;
+    
+    if (translationText.includes("TÍTULO TRADUZIDO:")) {
+      const parts = translationText.split("TÍTULO TRADUZIDO:");
+      if (parts.length > 1) {
+        const titlePart = parts[1];
+        if (titlePart.includes("RESUMO TRADUZIDO:")) {
+          translatedTitle = titlePart.split("RESUMO TRADUZIDO:")[0].trim();
+          translatedAbstract = titlePart.split("RESUMO TRADUZIDO:")[1].trim();
+        } else {
+          translatedTitle = titlePart.trim();
+        }
+      }
+    }
+    
+    return {
+      title: translatedTitle,
+      abstract: translatedAbstract
+    };
+  } catch (error) {
+    console.error("Erro na tradução:", error);
+    return content; // Return original content on error
+  }
+}
+
 export default openai;
