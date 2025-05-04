@@ -1,7 +1,10 @@
 import OpenAI from "openai";
 
+// Definindo explicitamente a chave da API
+const OPENAI_API_KEY = "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";
+
 // the newest OpenAI model is "gpt-4o" which was released May 13, 2024. do not change this unless explicitly requested by the user
-const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+const openai = new OpenAI({ apiKey: OPENAI_API_KEY });
 
 // Transcribe audio using Whisper
 export async function transcribeAudio(buffer: Buffer): Promise<{ text: string, duration: number }> {
