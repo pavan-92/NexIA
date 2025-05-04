@@ -25,13 +25,13 @@ export default function Dashboard() {
   const { user } = useAuthState();
 
   // Fetch patients
-  const { data: patients, isLoading: isLoadingPatients } = useQuery({
+  const { data: patients = [], isLoading: isLoadingPatients } = useQuery<any[]>({
     queryKey: ["/api/patients"],
     enabled: !!user,
   });
 
   // Fetch consultations
-  const { data: consultations, isLoading: isLoadingConsultations } = useQuery({
+  const { data: consultations = [], isLoading: isLoadingConsultations } = useQuery<any[]>({
     queryKey: ["/api/consultations"],
     enabled: !!user,
   });
@@ -158,9 +158,8 @@ export default function Dashboard() {
                         <Activity className="h-5 w-5" />
                       </div>
                     </div>
-                    <Progress value={70} className="h-2 bg-gray-100" 
+                    <Progress value={70} className="h-2 bg-gray-100 [&>*]:bg-blue-600" 
                       style={{background: "rgba(90, 146, 246, 0.2)"}}
-                      indicatorClassName="bg-blue-600"
                     />
                     <p className="text-xs text-gray-500">
                       7/10 consultas usadas
@@ -196,12 +195,19 @@ export default function Dashboard() {
               animate="visible"
               className="lg:col-span-2"
             >
-              <Card>
+              <Card className="dashboard-card hover-scale overflow-hidden">
                 <CardHeader>
-                  <CardTitle>Histórico de Consultas</CardTitle>
-                  <CardDescription>
-                    Consultas realizadas nos últimos 7 meses
-                  </CardDescription>
+                  <div className="flex justify-between items-center">
+                    <div>
+                      <CardTitle className="text-lg text-gray-800 font-semibold">Histórico de Consultas</CardTitle>
+                      <CardDescription className="text-gray-500">
+                        Consultas realizadas nos últimos 7 meses
+                      </CardDescription>
+                    </div>
+                    <div className="dashboard-icon dashboard-icon-blue">
+                      <Activity className="h-5 w-5" />
+                    </div>
+                  </div>
                 </CardHeader>
                 <CardContent>
                   <div className="h-[300px]">
@@ -215,23 +221,26 @@ export default function Dashboard() {
                           bottom: 0,
                         }}
                       >
-                        <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="rgba(255,255,255,0.1)" />
-                        <XAxis dataKey="name" stroke="hsl(var(--muted-foreground))" />
-                        <YAxis stroke="hsl(var(--muted-foreground))" />
+                        <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="rgba(230, 230, 230, 0.6)" />
+                        <XAxis dataKey="name" stroke="#9CA3AF" />
+                        <YAxis stroke="#9CA3AF" />
                         <Tooltip
                           contentStyle={{
-                            backgroundColor: "hsl(var(--card))",
-                            borderColor: "hsl(var(--border))",
+                            backgroundColor: "white",
+                            borderColor: "#E5E7EB",
+                            borderRadius: "0.5rem",
+                            boxShadow: "0 2px 10px rgba(0, 0, 0, 0.08)",
                           }}
-                          itemStyle={{ color: "hsl(var(--foreground))" }}
+                          itemStyle={{ color: "#374151" }}
                         />
                         <Line
                           type="monotone"
                           dataKey="count"
-                          stroke="hsl(var(--primary))"
-                          strokeWidth={2}
-                          dot={{ fill: "hsl(var(--primary))" }}
-                          activeDot={{ r: 6, fill: "hsl(var(--primary))" }}
+                          stroke="#5A92F6"
+                          strokeWidth={3}
+                          dot={{ fill: "#5A92F6", r: 4 }}
+                          activeDot={{ r: 7, fill: "#5A92F6", stroke: "white", strokeWidth: 2 }}
+                          animationDuration={1500}
                         />
                       </LineChart>
                     </ResponsiveContainer>
@@ -245,50 +254,67 @@ export default function Dashboard() {
               initial="hidden"
               animate="visible"
             >
-              <Card>
+              <Card className="dashboard-card hover-scale overflow-hidden">
                 <CardHeader>
-                  <CardTitle>Próximas Consultas</CardTitle>
-                  <CardDescription>
-                    Consultas agendadas para hoje
-                  </CardDescription>
+                  <div className="flex justify-between items-center">
+                    <div>
+                      <CardTitle className="text-lg text-gray-800 font-semibold">Próximas Consultas</CardTitle>
+                      <CardDescription className="text-gray-500">
+                        Consultas agendadas para hoje
+                      </CardDescription>
+                    </div>
+                    <div className="dashboard-icon dashboard-icon-purple">
+                      <Clock className="h-5 w-5" />
+                    </div>
+                  </div>
                 </CardHeader>
                 <CardContent>
                   {isLoadingConsultations ? (
                     <div className="flex justify-center py-6">
-                      <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-primary"></div>
+                      <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-blue-600"></div>
                     </div>
                   ) : consultations?.length ? (
                     <div className="space-y-4">
                       {/* List upcoming consultations here */}
-                      <div className="flex items-center space-x-3 bg-muted/50 p-3 rounded-lg">
-                        <Clock className="h-9 w-9 text-primary p-2 bg-primary/20 rounded-full" />
+                      <div className="flex items-center space-x-3 p-3 rounded-lg border border-gray-100 hover:border-blue-100 hover:bg-blue-50/30 transition-all duration-200 cursor-pointer">
+                        <div className="h-10 w-10 bg-blue-100 rounded-full flex items-center justify-center text-blue-600">
+                          <Clock className="h-5 w-5" />
+                        </div>
                         <div>
-                          <p className="font-medium">Maria Silva</p>
-                          <p className="text-sm text-muted-foreground">14:30 - Check-up anual</p>
+                          <p className="font-medium text-gray-800">Maria Silva</p>
+                          <p className="text-sm text-gray-500">14:30 - Check-up anual</p>
                         </div>
                       </div>
-                      <div className="flex items-center space-x-3 bg-muted/50 p-3 rounded-lg">
-                        <Clock className="h-9 w-9 text-primary p-2 bg-primary/20 rounded-full" />
+                      <div className="flex items-center space-x-3 p-3 rounded-lg border border-gray-100 hover:border-blue-100 hover:bg-blue-50/30 transition-all duration-200 cursor-pointer">
+                        <div className="h-10 w-10 bg-blue-100 rounded-full flex items-center justify-center text-blue-600">
+                          <Clock className="h-5 w-5" />
+                        </div>
                         <div>
-                          <p className="font-medium">João Ferreira</p>
-                          <p className="text-sm text-muted-foreground">16:00 - Consulta de retorno</p>
+                          <p className="font-medium text-gray-800">João Ferreira</p>
+                          <p className="text-sm text-gray-500">16:00 - Consulta de retorno</p>
                         </div>
                       </div>
                       <Link href="/history">
-                        <a className="text-primary hover:text-primary/80 transition-colors duration-300 text-sm">
-                          Ver todas as consultas
-                        </a>
+                        <span className="text-blue-600 hover:text-blue-700 transition-colors duration-300 text-sm font-medium cursor-pointer block mt-2">
+                          Ver todas as consultas →
+                        </span>
                       </Link>
                     </div>
                   ) : (
                     <div className="text-center py-6">
-                      <Clock className="h-12 w-12 text-muted-foreground mx-auto mb-3" />
-                      <h3 className="text-lg font-medium mb-2">Nenhuma consulta hoje</h3>
-                      <p className="text-muted-foreground mb-4">
+                      <div className="h-16 w-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-3">
+                        <Clock className="h-8 w-8 text-gray-400" />
+                      </div>
+                      <h3 className="text-lg font-medium mb-2 text-gray-800">Nenhuma consulta hoje</h3>
+                      <p className="text-gray-500 mb-4">
                         Você não tem consultas agendadas para hoje.
                       </p>
                       <Link href="/consultation/new">
-                        <Button size="sm">Agendar Consulta</Button>
+                        <span className="cursor-pointer">
+                          <Button className="bg-blue-600 hover:bg-blue-700 text-white">
+                            Agendar Consulta
+                          </Button>
+                        </span>
                       </Link>
                     </div>
                   )}
