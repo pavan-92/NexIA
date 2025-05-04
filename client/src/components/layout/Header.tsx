@@ -44,8 +44,8 @@ export default function Header() {
 
   return (
     <header className={cn(
-      "fixed top-0 left-0 right-0 z-50 py-4 backdrop-blur-md border-b transition-colors duration-300",
-      isHomePage ? "bg-background/95 border-gray-800" : "bg-background border-border"
+      "fixed top-0 left-0 right-0 z-50 py-4 backdrop-blur-md transition-colors duration-300 shadow-sm",
+      isHomePage ? "bg-background/95" : "bg-background"
     )}>
       <div className="container mx-auto px-4 flex justify-between items-center">
         <div className="flex items-center">
@@ -146,7 +146,7 @@ export default function Header() {
             animate={{ opacity: 1, height: "auto" }}
             exit={{ opacity: 0, height: 0 }}
             transition={{ duration: 0.3 }}
-            className="md:hidden bg-background border-b border-gray-800"
+            className="md:hidden bg-background shadow-sm"
           >
             <div className="container mx-auto px-4 py-4 flex flex-col space-y-4">
               {navLinks.map((link) => (
