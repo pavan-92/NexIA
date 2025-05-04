@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { useAuthState } from "@/hooks/use-auth";
 import { signOut } from "@/lib/firebase";
 import { cn } from "@/lib/utils";
+import logo from "../../assets/logo.png";
 import {
   LayoutDashboard,
   Users,
@@ -81,15 +82,16 @@ export default function Sidebar() {
     <>
       {/* Mobile Header */}
       <div className="lg:hidden fixed top-0 left-0 right-0 z-40 py-3 px-4 bg-background border-b border-border flex items-center justify-between">
-        <Link href="/">
-          <a className="flex items-center">
-            <img 
-              src="/attached_assets/logo-large.svg" 
-              alt="Prontu.live" 
-              className="h-8" 
-            />
-          </a>
-        </Link>
+        <span 
+          onClick={() => window.location.href = "/"}
+          className="flex items-center cursor-pointer"
+        >
+          <img 
+            src={logo} 
+            alt="Prontu.live" 
+            className="h-8" 
+          />
+        </span>
         <Button 
           variant="ghost" 
           size="icon" 
@@ -126,20 +128,21 @@ export default function Sidebar() {
                 <ul className="space-y-1 px-2">
                   {links.map((link) => (
                     <li key={link.href}>
-                      <Link href={link.href}>
-                        <a
-                          className={cn(
-                            "flex items-center space-x-3 rounded-md px-3 py-2 text-sm font-medium",
-                            location === link.href
-                              ? "bg-primary text-primary-foreground"
-                              : "text-foreground hover:bg-muted"
-                          )}
-                          onClick={() => setIsMobileOpen(false)}
-                        >
-                          {link.icon}
-                          <span>{link.label}</span>
-                        </a>
-                      </Link>
+                      <span
+                        className={cn(
+                          "flex items-center space-x-3 rounded-md px-3 py-2 text-sm font-medium cursor-pointer",
+                          location === link.href
+                            ? "bg-primary text-primary-foreground"
+                            : "text-foreground hover:bg-muted"
+                        )}
+                        onClick={() => {
+                          window.location.href = link.href;
+                          setIsMobileOpen(false);
+                        }}
+                      >
+                        {link.icon}
+                        <span>{link.label}</span>
+                      </span>
                     </li>
                   ))}
                 </ul>
@@ -169,15 +172,16 @@ export default function Sidebar() {
       >
         <div className="p-4 flex items-center justify-between border-b border-border h-16">
           {!isCollapsed && (
-            <Link href="/">
-              <a>
-                <img 
-                  src="/attached_assets/logo-large.svg" 
-                  alt="Prontu.live" 
-                  className="h-8" 
-                />
-              </a>
-            </Link>
+            <span
+              onClick={() => window.location.href = "/"}
+              className="cursor-pointer"
+            >
+              <img 
+                src={logo} 
+                alt="Prontu.live" 
+                className="h-8" 
+              />
+            </span>
           )}
           <Button 
             variant="ghost" 
@@ -206,20 +210,19 @@ export default function Sidebar() {
           <ul className="space-y-1 px-2">
             {links.map((link) => (
               <li key={link.href}>
-                <Link href={link.href}>
-                  <a
-                    className={cn(
-                      "flex items-center rounded-md px-3 py-2 text-sm font-medium",
-                      location === link.href
-                        ? "bg-primary text-primary-foreground"
-                        : "text-foreground hover:bg-muted",
-                      isCollapsed && "justify-center"
-                    )}
-                  >
-                    {link.icon}
-                    {!isCollapsed && <span className="ml-3">{link.label}</span>}
-                  </a>
-                </Link>
+                <span
+                  className={cn(
+                    "flex items-center rounded-md px-3 py-2 text-sm font-medium cursor-pointer",
+                    location === link.href
+                      ? "bg-primary text-primary-foreground"
+                      : "text-foreground hover:bg-muted",
+                    isCollapsed && "justify-center"
+                  )}
+                  onClick={() => window.location.href = link.href}
+                >
+                  {link.icon}
+                  {!isCollapsed && <span className="ml-3">{link.label}</span>}
+                </span>
               </li>
             ))}
           </ul>
