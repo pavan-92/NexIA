@@ -7,6 +7,7 @@ import { useIsAuthenticated } from "@/hooks/use-auth";
 import { motion, AnimatePresence } from "framer-motion";
 import { signOut } from "@/lib/firebase";
 import { cn } from "@/lib/utils";
+import logo from "../../assets/logo.png";
 
 export default function Header() {
   const [mounted, setMounted] = useState(false);
@@ -53,7 +54,7 @@ export default function Header() {
             onClick={() => window.location.href = "/"}
             className="cursor-pointer flex items-center">
             <img 
-              src="/logo.png" 
+              src={logo} 
               alt="Prontu.live" 
               className="h-10 cursor-pointer"
             />
