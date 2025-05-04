@@ -8,6 +8,7 @@ import { generatePDF } from "@/lib/pdf";
 import Sidebar from "@/components/dashboard/Sidebar";
 import ConsultationView from "@/components/dashboard/ConsultationView";
 import RecordingInterface from "@/components/dashboard/RecordingInterface";
+import PubMedSearch from "@/components/dashboard/PubMedSearch";
 import TranscriptView from "@/components/dashboard/TranscriptView";
 import ProntuarioView from "@/components/dashboard/ProntuarioView";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -473,16 +474,7 @@ export default function Consultation({ id }: { id?: string }) {
                   </Button>
                 </div>
                 <div className="consultation-card-content">
-                  <div className="flex gap-2 mb-4">
-                    <input
-                      type="text"
-                      placeholder="Buscar artigo"
-                      className="flex-1 px-3 py-2 rounded-md border border-gray-300 focus:outline-none focus:ring-1 focus:ring-blue-500"
-                    />
-                    <Button className="bg-blue-600 text-white hover:bg-blue-700">
-                      Buscar
-                    </Button>
-                  </div>
+                  <PubMedSearch />
                 </div>
               </div>
             </motion.div>
