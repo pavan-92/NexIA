@@ -13,14 +13,14 @@
   --card-foreground: 0 0% 98%;
   --border: 240 3.7% 15.9%;
   --input: 240 3.7% 15.9%;
-  --primary: 174 84% 36%;
+  --primary: 174 84% 39%; /* #10B8AB turquesa da logo */
   --primary-foreground: 211 100% 99%;
-  --secondary: 355 100% 70%; 
+  --secondary: 0 100% 69%; /* #FF6161 coral/vermelho da logo */
   --secondary-foreground: 0 0% 98%;
   --accent: 270 50% 50%;
   --accent-foreground: 0 0% 98%;
-  --accent-cyan: 180 100% 50%;
-  --accent-magenta: 300 100% 50%;
+  --accent-cyan: 174 84% 39%; /* Mesma cor do turquesa */
+  --accent-magenta: 0 100% 69%; /* Mesma cor do coral */
   --destructive: 0 62.8% 30.6%;
   --destructive-foreground: 0 0% 98%;
   --ring: 240 4.9% 83.9%;
@@ -42,8 +42,8 @@
 }
 
 .hero-gradient {
-  background: radial-gradient(circle at top right, rgba(138, 43, 226, 0.4), transparent 70%),
-               radial-gradient(circle at bottom left, rgba(0, 255, 255, 0.4), transparent 70%);
+  background: radial-gradient(circle at top right, rgba(255, 97, 97, 0.4), transparent 70%),
+               radial-gradient(circle at bottom left, rgba(16, 184, 171, 0.4), transparent 70%);
 }
 
 .gradient-text {

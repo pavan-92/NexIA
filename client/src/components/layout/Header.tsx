@@ -51,9 +51,9 @@ export default function Header() {
         <div className="flex items-center">
           <Link href="/">
             <img 
-              src="/attached_assets/logo-large.svg" 
+              src="/attached_assets/logo.png" 
               alt="Prontu.live Logo" 
-              className="h-10 cursor-pointer"
+              className="h-12 cursor-pointer"
             />
           </Link>
         </div>
