@@ -9,6 +9,92 @@ import { searchPubMed, fetchArticleAbstract, type PubMedArticle } from "@/lib/pu
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 
+// Lista de termos médicos comuns para correção
+const medicalTerms: Record<string, string> = {
+  // Correções de erros comuns em português
+  "diabete": "diabetes",
+  "diabéte": "diabetes",
+  "diabétes": "diabetes",
+  "diabetis": "diabetes",
+  "dor de cabeca": "dor de cabeça",
+  "dor de cabeça": "cefaleia",
+  "cancer": "câncer",
+  "hipertensao": "hipertensão",
+  "pressao alta": "hipertensão",
+  "pressão alta": "hipertensão",
+  "artrite reumatoide": "artrite reumatóide",
+  "cardiaco": "cardíaco",
+  "cardiopatia": "cardiopatia",
+  "asma": "asma",
+  "bronquite": "bronquite",
+  "garganta": "faringe",
+  "pneumonia": "pneumonia",
+  "gastrite": "gastrite",
+  "ulcera": "úlcera",
+  "úlcera": "úlcera",
+  "avc": "acidente vascular cerebral",
+  "derrame": "acidente vascular cerebral",
+  "infarto": "infarto do miocárdio",
+  "ataque cardiaco": "infarto do miocárdio",
+  "ataque cardíaco": "infarto do miocárdio",
+  
+  // Termos em inglês para português
+  "diabetes": "diabetes",
+  "headache": "cefaleia",
+  "migraine": "enxaqueca",
+  "cancer": "câncer",
+  "hypertension": "hipertensão",
+  "depression": "depressão",
+  "anxiety": "ansiedade",
+  "asthma": "asma",
+  "heart disease": "doença cardíaca",
+  "stroke": "acidente vascular cerebral",
+  "arthritis": "artrite",
+  "obesity": "obesidade",
+  "osteoporosis": "osteoporose"
+};
+
+// Função para corrigir termos de busca
+function correctSearchTerm(term: string): string {
+  if (!term) return term;
+  
+  let correctedTerm = term.toLowerCase().trim();
+  
+  // Checa se algum termo da lista está presente na busca
+  for (const [incorrect, correct] of Object.entries(medicalTerms)) {
+    // Substitui o termo incorreto pelo correto
+    if (correctedTerm === incorrect) {
+      return correct;
+    }
+    
+    // Substitui o termo incorreto em uma frase
+    const regex = new RegExp(`\\b${incorrect}\\b`, 'gi');
+    correctedTerm = correctedTerm.replace(regex, correct);
+  }
+  
+  // Regras gerais de correção para português
+  
+  // Remove espaços duplos
+  correctedTerm = correctedTerm.replace(/\s{2,}/g, ' ');
+  
+  // Adiciona acento em palavras comuns sem acento
+  const accentRules: Record<string, string> = {
+    "sindrome\\b": "síndrome",
+    "\\bde\\b": "de",
+    "\\bem\\b": "em",
+    "\\beh\\b": "é",
+    "\\bsao\\b": "são",
+    "nao": "não"
+  };
+  
+  for (const [unaccented, accented] of Object.entries(accentRules)) {
+    const accentRegex = new RegExp(unaccented, 'gi');
+    correctedTerm = correctedTerm.replace(accentRegex, accented);
+  }
+  
+  return correctedTerm;
+}
+
 export default function PubMedSearch() {
   const [searchTerm, setSearchTerm] = useState<string>("");
   const [isSearching, setIsSearching] = useState<boolean>(false);
@@ -137,9 +223,21 @@ export default function PubMedSearch() {
       <form onSubmit={handleSearch} className="flex gap-2">
         <Input
           type="text"
-          placeholder="Digite o termo de busca (em inglês ou português)"
+          placeholder="Digite o termo"
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
+          onBlur={(e) => {
+            // Corretor básico de texto
+            const correctedText = correctSearchTerm(e.target.value);
+            if (correctedText !== e.target.value) {
+              setSearchTerm(correctedText);
+              toast({
+                title: "Termo corrigido",
+                description: `"${e.target.value}" foi corrigido para "${correctedText}"`,
+                duration: 3000,
+              });
+            }
+          }}
           className="flex-1"
         />
         <Button 
