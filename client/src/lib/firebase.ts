@@ -11,14 +11,21 @@ import {
   UserCredential
 } from "firebase/auth";
 
+// Configuração mínima necessária para autenticação do Firebase
 const firebaseConfig = {
   apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
   authDomain: `${import.meta.env.VITE_FIREBASE_PROJECT_ID}.firebaseapp.com`,
   projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID,
-  storageBucket: `${import.meta.env.VITE_FIREBASE_PROJECT_ID}.appspot.com`,
-  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID,
   appId: import.meta.env.VITE_FIREBASE_APP_ID,
 };
+
+// Log das configurações para debug (sem exibir a API key completa)
+console.log("Firebase config:", {
+  apiKeyExists: !!import.meta.env.VITE_FIREBASE_API_KEY,
+  authDomain: `${import.meta.env.VITE_FIREBASE_PROJECT_ID}.firebaseapp.com`,
+  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID,
+  appIdExists: !!import.meta.env.VITE_FIREBASE_APP_ID,
+});
 
 // Initialize Firebase
 const app = initializeApp(firebaseConfig);
