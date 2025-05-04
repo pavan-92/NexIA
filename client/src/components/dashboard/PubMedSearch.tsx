@@ -49,7 +49,10 @@ export default function PubMedSearch() {
       setIsTranslating(true);
       const translatedResults = [...results]; // copia para não modificar o original
       
-      for (let i = 0; i < translatedResults.length; i++) {
+      // Traduzimos apenas os primeiros 5 artigos para economizar chamadas à API
+      const maxArticlesToTranslate = Math.min(translatedResults.length, 5);
+      
+      for (let i = 0; i < maxArticlesToTranslate; i++) {
         try {
           const article = translatedResults[i];
           const response = await apiRequest("POST", "/api/translate", {
