@@ -1,22 +1,48 @@
 import OpenAI from "openai";
+import * as fs from 'fs';
+import * as path from 'path';
+import * as os from 'os';
 
 // Definindo explicitamente a chave da API
-const OPENAI_API_KEY = "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";
+const OPENAI_API_KEY = "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";
 
 // the newest OpenAI model is "gpt-4o" which was released May 13, 2024. do not change this unless explicitly requested by the user
 const openai = new OpenAI({ apiKey: OPENAI_API_KEY });
 
 // Transcribe audio using Whisper
 export async function transcribeAudio(buffer: Buffer): Promise<{ text: string, duration: number }> {
-  const transcript = await openai.audio.transcriptions.create({
-    file: buffer,
-    model: "whisper-1",
-  });
-
-  return {
-    text: transcript.text,
-    duration: transcript.duration || 0,
-  };
+  try {
+    // Cria um arquivo temporário
+    const tempDir = os.tmpdir();
+    const tempFilePath = path.join(tempDir, `audio-${Date.now()}.webm`);
+    
+    // Escreve o buffer no arquivo
+    fs.writeFileSync(tempFilePath, buffer);
+    
+    // Abre o arquivo para leitura
+    const fileStream = fs.createReadStream(tempFilePath);
+    
+    // Chama a API OpenAI com o stream de arquivo
+    const transcript = await openai.audio.transcriptions.create({
+      file: fileStream,
+      model: "whisper-1",
+    });
+    
+    // Limpa o arquivo temporário
+    fs.unlinkSync(tempFilePath);
+    
+    // Estima duração com base no número de palavras
+    const wordCount = transcript.text.split(' ').length;
+    const estimatedDuration = wordCount * 3; // ~3s por palavra (aproximação)
+    
+    return {
+      text: transcript.text,
+      duration: estimatedDuration,
+    };
+  } catch (error) {
+    console.error("Erro ao transcrever áudio:", error);
+    throw new Error("Falha ao transcrever áudio");
+  }
 }
 
 // Generate medical notes from transcription
