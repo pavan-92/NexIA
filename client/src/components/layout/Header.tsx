@@ -48,26 +48,26 @@ export default function Header() {
       isHomePage ? "bg-background/95 border-gray-800" : "bg-background border-border"
     )}>
       <div className="container mx-auto px-4 flex justify-between items-center">
-        <Link href="/">
-          <a className="flex items-center">
+        <div className="flex items-center">
+          <Link href="/">
             <img 
               src="/attached_assets/logo-large.svg" 
               alt="Prontu.live Logo" 
-              className="h-10"
+              className="h-10 cursor-pointer"
             />
-          </a>
-        </Link>
+          </Link>
+        </div>
 
         {/* Desktop Navigation */}
         <div className="hidden md:flex items-center space-x-6">
           {navLinks.map((link) => (
             <Link key={link.href} href={link.href}>
-              <a className={cn(
-                "text-foreground/80 hover:text-primary transition-colors duration-300",
+              <span className={cn(
+                "text-foreground/80 hover:text-primary transition-colors duration-300 cursor-pointer",
                 location === link.href && "text-primary"
               )}>
                 {link.title}
-              </a>
+              </span>
             </Link>
           ))}
 
@@ -93,14 +93,14 @@ export default function Header() {
           ) : (
             <>
               <Link href="/login">
-                <a className="text-foreground/80 hover:text-primary transition-colors duration-300">
+                <span className="text-foreground/80 hover:text-primary transition-colors duration-300 cursor-pointer">
                   Entrar
-                </a>
+                </span>
               </Link>
               <Link href="/register">
-                <a className="btn-shine bg-gradient-to-r from-primary to-secondary text-white px-4 py-2 rounded-lg font-medium hover:shadow-lg transition-all duration-300">
+                <span className="btn-shine bg-gradient-to-r from-primary to-secondary text-white px-4 py-2 rounded-lg font-medium hover:shadow-lg transition-all duration-300 cursor-pointer inline-block">
                   Criar Conta
-                </a>
+                </span>
               </Link>
               <Button 
                 variant="ghost" 
@@ -151,15 +151,15 @@ export default function Header() {
             <div className="container mx-auto px-4 py-4 flex flex-col space-y-4">
               {navLinks.map((link) => (
                 <Link key={link.href} href={link.href}>
-                  <a 
+                  <span 
                     className={cn(
-                      "text-foreground/80 hover:text-primary transition-colors duration-300 py-2",
+                      "text-foreground/80 hover:text-primary transition-colors duration-300 py-2 cursor-pointer inline-block",
                       location === link.href && "text-primary"
                     )}
                     onClick={() => setMobileMenuOpen(false)}
                   >
                     {link.title}
-                  </a>
+                  </span>
                 </Link>
               ))}
               
@@ -177,20 +177,20 @@ export default function Header() {
               ) : (
                 <>
                   <Link href="/login">
-                    <a 
-                      className="text-foreground/80 hover:text-primary transition-colors duration-300 py-2"
+                    <span 
+                      className="text-foreground/80 hover:text-primary transition-colors duration-300 py-2 cursor-pointer inline-block"
                       onClick={() => setMobileMenuOpen(false)}
                     >
                       Entrar
-                    </a>
+                    </span>
                   </Link>
                   <Link href="/register">
-                    <a 
-                      className="btn-shine bg-gradient-to-r from-primary to-secondary text-white px-4 py-2 rounded-lg font-medium hover:shadow-lg transition-all duration-300 text-center"
+                    <span 
+                      className="btn-shine bg-gradient-to-r from-primary to-secondary text-white px-4 py-2 rounded-lg font-medium hover:shadow-lg transition-all duration-300 text-center cursor-pointer inline-block"
                       onClick={() => setMobileMenuOpen(false)}
                     >
                       Criar Conta
-                    </a>
+                    </span>
                   </Link>
                 </>
               )}
