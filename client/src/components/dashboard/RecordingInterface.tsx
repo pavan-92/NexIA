@@ -151,14 +151,7 @@ export default function RecordingInterface({
   };
 
   return (
-    <div className="space-y-6">
-      <div className="text-center space-y-4">
-        <h3 className="text-2xl font-bold">Gravação da Consulta</h3>
-        <p className="text-muted-foreground">
-          Grave a consulta para gerar a transcrição e o prontuário automaticamente
-        </p>
-      </div>
-      
+    <div>
       {error && (
         <Alert variant="destructive">
           <AlertCircle className="h-4 w-4" />
@@ -168,67 +161,76 @@ export default function RecordingInterface({
       )}
       
       <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
         transition={{ duration: 0.5 }}
-        className="flex flex-col items-center justify-center py-8"
       >
         {isRecording ? (
-          <div className="space-y-8 w-full max-w-md">
-            <div className="relative">
-              <Progress value={visualizationLevel} className="h-3" />
-              <div className="text-center mt-4">
-                <div className="text-2xl font-bold">{formatTime(recordingTime)}</div>
-                <div className="text-sm text-red-500 animate-pulse">Gravando...</div>
-              </div>
-            </div>
-            
-            <Button 
-              onClick={handleStopRecording} 
-              variant="outline" 
-              size="lg" 
-              className="w-full flex items-center justify-center gap-2 border-red-500 text-red-500 hover:bg-red-500/10"
-            >
-              <StopCircle className="h-5 w-5" />
-              Parar Gravação
-            </Button>
-          </div>
-        ) : audioBlob ? (
-          <div className="space-y-6 w-full max-w-md">
-            <Card className="p-4 flex items-center justify-between bg-muted/50">
-              <div className="flex items-center">
-                <Volume2 className="h-5 w-5 mr-2 text-primary" />
-                <div>
-                  <div className="font-medium">Gravação concluída</div>
-                  <div className="text-sm text-muted-foreground">
-                    Duração: {formatTime(recordingTime)}
-                  </div>
+          <div className="space-y-4">
+            <div className="recording-interface">
+              <div className="flex-1">
+                <div className="recording-waveform">
+                  <Progress value={visualizationLevel} className="h-2 bg-gray-100 [&>*]:bg-blue-600" />
+                </div>
+                <div className="mt-2 flex items-center">
+                  <div className="animate-pulse text-red-500 text-sm font-medium mr-2">●</div>
+                  <div className="text-sm font-medium">{formatTime(recordingTime)}</div>
                 </div>
               </div>
               
-              {audioUrl && (
-                <audio controls className="w-32 h-10">
-                  <source src={audioUrl} type="audio/webm" />
-                  Seu navegador não suporta a reprodução de áudio.
-                </audio>
-              )}
-            </Card>
+              <Button 
+                onClick={handleStopRecording} 
+                className="recording-button recording-button-stop"
+                size="icon"
+              >
+                <StopCircle className="h-5 w-5" />
+              </Button>
+            </div>
             
-            <div className="flex flex-col sm:flex-row gap-3">
+            <p className="text-xs text-gray-500 mt-2">
+              Fale pausadamente e com clareza para melhores resultados
+            </p>
+          </div>
+        ) : audioBlob ? (
+          <div className="space-y-4">
+            <div className="bg-gray-50 rounded-lg p-3">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center">
+                  <div className="h-8 w-8 bg-blue-100 rounded-full flex items-center justify-center text-blue-600 mr-3">
+                    <Volume2 className="h-4 w-4" />
+                  </div>
+                  <div>
+                    <div className="font-medium text-sm">Áudio gravado</div>
+                    <div className="text-xs text-gray-500">
+                      Duração: {formatTime(recordingTime)}
+                    </div>
+                  </div>
+                </div>
+                
+                {audioUrl && (
+                  <audio controls className="h-8 w-32">
+                    <source src={audioUrl} type="audio/webm" />
+                    Seu navegador não suporta a reprodução de áudio.
+                  </audio>
+                )}
+              </div>
+            </div>
+            
+            <div className="flex gap-2">
               <Button 
                 onClick={handleTranscribe} 
-                className="bg-primary text-primary-foreground hover:bg-primary/90 flex-1"
+                className="bg-blue-600 text-white hover:bg-blue-700 text-sm flex-1"
                 disabled={isTranscribing}
               >
                 {isTranscribing ? (
                   <>
-                    <RefreshCw className="mr-2 h-4 w-4 animate-spin" />
+                    <RefreshCw className="mr-2 h-3 w-3 animate-spin" />
                     Transcrevendo...
                   </>
                 ) : (
                   <>
-                    <CheckCircle2 className="mr-2 h-4 w-4" />
-                    Transcrever Áudio
+                    <CheckCircle2 className="mr-2 h-3 w-3" />
+                    Transcrever
                   </>
                 )}
               </Button>
@@ -237,45 +239,38 @@ export default function RecordingInterface({
                 onClick={handleReset} 
                 variant="outline" 
                 disabled={isTranscribing}
-                className="flex-1"
+                className="text-sm border-gray-200"
               >
                 Nova Gravação
               </Button>
             </div>
           </div>
         ) : (
-          <div className="text-center space-y-6 w-full max-w-md">
-            <motion.div
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-              onClick={handleStartRecording}
-              className="bg-primary/10 rounded-full w-32 h-32 mx-auto flex items-center justify-center cursor-pointer"
-            >
-              <Mic className="h-12 w-12 text-primary" />
-            </motion.div>
+          <div>
+            <div className="flex items-center justify-between mb-3">
+              <p className="text-sm text-gray-500">
+                Grave a consulta para gerar a transcrição
+              </p>
+              
+              <Button 
+                onClick={handleStartRecording} 
+                className="recording-button recording-button-primary"
+                size="icon"
+              >
+                <Mic className="h-5 w-5" />
+              </Button>
+            </div>
             
-            <h3 className="text-xl font-medium">Clique para começar a gravar</h3>
+            <div className="h-12 bg-gray-50 rounded-lg border border-gray-100 flex items-center justify-center">
+              <span className="text-gray-400 text-sm">Clique no botão para iniciar gravação</span>
+            </div>
             
-            <Button 
-              onClick={handleStartRecording} 
-              size="lg" 
-              className="bg-primary text-primary-foreground hover:bg-primary/90"
-            >
-              Iniciar Gravação
-            </Button>
+            <p className="text-xs text-gray-500 mt-2">
+              Fale pausadamente e com clareza para melhores resultados
+            </p>
           </div>
         )}
       </motion.div>
-      
-      <div className="bg-muted/30 rounded-lg p-4 text-sm text-muted-foreground">
-        <h4 className="font-medium mb-2">Dicas para uma boa gravação:</h4>
-        <ul className="list-disc list-inside space-y-1">
-          <li>Certifique-se de que o microfone está funcionando corretamente</li>
-          <li>Fale pausadamente e com clareza</li>
-          <li>Reduza os ruídos de fundo durante a consulta</li>
-          <li>Para melhores resultados, use um microfone externo</li>
-        </ul>
-      </div>
     </div>
   );
 }

@@ -13,7 +13,7 @@ import ProntuarioView from "@/components/dashboard/ProntuarioView";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { Loader2, FileText, Download } from "lucide-react";
+import { Loader2, FileText, Download, Mic } from "lucide-react";
 import { type Patient, type Consultation as ConsultationType } from "@/types";
 
 export default function Consultation({ id }: { id?: string }) {
@@ -145,150 +145,391 @@ export default function Consultation({ id }: { id?: string }) {
     );
   }
 
+  // Get patient info if available
+  const patient = patients?.find(p => consultation?.patientId === p.id);
+
   return (
-    <div className="flex min-h-screen bg-background">
+    <div className="flex min-h-screen medical-bg">
       <Sidebar />
       
       <div className="flex-1 lg:ml-64">
-        <div className="p-6 pt-20 lg:pt-6">
-          <motion.div
-            initial={{ opacity: 0, y: -20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5 }}
-            className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-8 gap-4"
-          >
-            <div>
-              <h1 className="text-3xl font-bold">
-                {isNew ? "Nova Consulta" : "Detalhes da Consulta"}
-              </h1>
-              <p className="text-muted-foreground">
-                {isNew 
-                  ? "Crie uma nova consulta e comece a gravar" 
-                  : `Consulta ${consultation?.doctorName ? `com ${consultation.doctorName}` : ""}`
-                }
-              </p>
-            </div>
-            
-            {!isNew && consultation?.notes && (
-              <Button 
-                onClick={handleExportPDF} 
-                className="w-full sm:w-auto"
-              >
-                <Download className="mr-2 h-4 w-4" />
-                Exportar PDF
-              </Button>
-            )}
-          </motion.div>
+        <div className="consultation-layout">
+          {!isNew && patient && (
+            <motion.div
+              initial={{ opacity: 0, y: -10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.4 }}
+            >
+              <div className="patient-header">
+                <div className="flex justify-between items-start">
+                  <div>
+                    <h1 className="patient-name">{patient.name}</h1>
+                    
+                    <div className="patient-info">
+                      <div className="patient-info-item">
+                        <div className="patient-info-label">Idade</div>
+                        <div className="patient-info-value">
+                          {new Date().getFullYear() - new Date(patient.birthDate).getFullYear()} anos
+                        </div>
+                      </div>
+                      
+                      <div className="patient-info-item">
+                        <div className="patient-info-label">Data de nascimento</div>
+                        <div className="patient-info-value">
+                          {new Date(patient.birthDate).toLocaleDateString('pt-BR')}
+                        </div>
+                      </div>
+                      
+                      <div className="patient-info-item">
+                        <div className="patient-info-label">Sexo</div>
+                        <div className="patient-info-value">{patient.gender}</div>
+                      </div>
+                      
+                      <div className="patient-info-item">
+                        <div className="patient-info-label">Altura</div>
+                        <div className="patient-info-value">1,72</div>
+                      </div>
+                      
+                      <div className="patient-info-item">
+                        <div className="patient-info-label">Peso</div>
+                        <div className="patient-info-value">78kg</div>
+                      </div>
+                    </div>
+                    
+                    <div className="patient-tags">
+                      <div className="patient-tag">diabetes</div>
+                      <div className="patient-tag">hipertensão</div>
+                      <div className="patient-tag">alergia</div>
+                    </div>
+                  </div>
+                  
+                  <Button 
+                    onClick={handleExportPDF} 
+                    className="bg-blue-600 hover:bg-blue-700 text-white ml-4"
+                  >
+                    <Download className="mr-2 h-4 w-4" />
+                    Encerrar consulta
+                  </Button>
+                </div>
+              </div>
+            </motion.div>
+          )}
           
           <motion.div
             variants={containerVariants}
             initial="hidden"
             animate="visible"
+            className="consultation-grid"
           >
-            <Tabs 
-              defaultValue="details" 
-              value={activeTab} 
-              onValueChange={setActiveTab}
-              className="space-y-6"
-            >
-              <div className="flex justify-between items-center">
-                <TabsList>
-                  <TabsTrigger value="details">Detalhes</TabsTrigger>
-                  <TabsTrigger value="recording">Gravação</TabsTrigger>
-                  <TabsTrigger value="transcript">Transcrição</TabsTrigger>
-                  <TabsTrigger value="prontuario">Prontuário</TabsTrigger>
-                </TabsList>
-                
-                {(transcript || (consultation?.transcription && activeTab === "transcript")) && (
-                  <Button 
-                    variant="outline" 
-                    size="sm" 
-                    className="gap-1"
-                    onClick={() => setActiveTab("prontuario")}
-                  >
-                    <FileText className="h-4 w-4" />
-                    <span className="hidden sm:inline">Gerar Prontuário</span>
+            {/* Consulta em andamento */}
+            <motion.div variants={itemVariants}>
+              <div className="consultation-card">
+                <div className="consultation-card-header">
+                  <h3 className="consultation-card-title">
+                    <span className="flex items-center justify-center w-6 h-6 mr-2 text-blue-600">
+                      <Mic className="h-5 w-5" />
+                    </span>
+                    Consulta em andamento
+                  </h3>
+                  <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+                    <span className="sr-only">Expandir</span>
                   </Button>
-                )}
+                </div>
+                <div className="consultation-card-content">
+                  <RecordingInterface 
+                    consultationId={consultationId}
+                    isNew={isNew}
+                    onTranscriptionComplete={(text) => {
+                      setTranscript(text);
+                      // Não muda mais de tab automaticamente
+                    }}
+                  />
+                </div>
               </div>
-              
-              <TabsContent value="details" className="m-0">
-                <motion.div
-                  variants={itemVariants}
-                  transition={{ duration: 0.2 }}
-                >
-                  <Card>
-                    <CardContent className="pt-6">
-                      <ConsultationView 
-                        isNew={isNew}
-                        consultation={consultation}
-                        patients={patients || []}
-                        onSave={saveConsultation}
-                        isSaving={isSaving}
-                      />
-                    </CardContent>
-                  </Card>
-                </motion.div>
-              </TabsContent>
-              
-              <TabsContent value="recording" className="m-0">
-                <motion.div
-                  variants={itemVariants}
-                  transition={{ duration: 0.2 }}
-                >
-                  <Card>
-                    <CardContent className="pt-6">
-                      <RecordingInterface 
-                        consultationId={consultationId}
-                        isNew={isNew}
-                        onTranscriptionComplete={(text) => {
-                          setTranscript(text);
-                          setActiveTab("transcript");
+            </motion.div>
+            
+            {/* Sugestões de perguntas */}
+            <motion.div variants={itemVariants}>
+              <div className="consultation-card">
+                <div className="consultation-card-header">
+                  <h3 className="consultation-card-title">
+                    <span className="flex items-center justify-center w-6 h-6 mr-2 text-blue-600">
+                      <FileText className="h-5 w-5" />
+                    </span>
+                    Sugestões de perguntas
+                  </h3>
+                  <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+                    <span className="sr-only">Expandir</span>
+                  </Button>
+                </div>
+                <div className="consultation-card-content space-y-3">
+                  <ul className="space-y-3">
+                    <li className="flex items-start">
+                      <span className="text-gray-600 mr-2">•</span>
+                      <span>Sentiu algum tipo de desconforto relacionado ao estômago?</span>
+                    </li>
+                    <li className="flex items-start">
+                      <span className="text-gray-600 mr-2">•</span>
+                      <span>Você está com diarreia faz quantos dias?</span>
+                    </li>
+                  </ul>
+                  
+                  <div className="mt-6">
+                    <h4 className="font-medium text-gray-800 mb-2">Possíveis hipóteses diagnósticas</h4>
+                    <div className="space-y-2">
+                      <div className="tag-pill tag-blue">Retocolite Ulcerativa (K51.0)</div>
+                      <div className="tag-pill tag-blue">Colite ulcerativa (K51)</div>
+                    </div>
+                  </div>
+                  
+                  <div className="mt-6">
+                    <h4 className="font-medium text-gray-800 mb-2">Queixa principal</h4>
+                    <div className="space-y-2">
+                      <div className="tag-pill tag-blue">diarreia</div>
+                      <div className="tag-pill tag-blue">queimação</div>
+                      <div className="tag-pill tag-blue">dor abdominal</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </motion.div>
+            
+            {/* Análise de sentimentos */}
+            <motion.div variants={itemVariants}>
+              <div className="consultation-card">
+                <div className="consultation-card-header">
+                  <h3 className="consultation-card-title">
+                    <span className="flex items-center justify-center w-6 h-6 mr-2 text-blue-600">
+                      <FileText className="h-5 w-5" />
+                    </span>
+                    Análise multidimensional de sentimentos
+                  </h3>
+                  <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+                    <span className="sr-only">Expandir</span>
+                  </Button>
+                </div>
+                <div className="consultation-card-content">
+                  <div className="space-y-4">
+                    <div className="flex justify-between items-center">
+                      <div className="text-sm font-medium">Tipo</div>
+                      <div className="text-sm font-medium">Porcentagem</div>
+                    </div>
+                    
+                    <div className="space-y-3">
+                      <div className="flex justify-between items-center">
+                        <div>Ansiedade</div>
+                        <div className="flex items-center">
+                          <span className="text-sm font-medium mr-2">99%</span>
+                          <div className="w-32 h-2 bg-gray-200 rounded-full overflow-hidden">
+                            <div className="bg-red-500 h-full rounded-full" style={{width: '99%'}}></div>
+                          </div>
+                        </div>
+                      </div>
+                      
+                      <div className="flex justify-between items-center">
+                        <div>Depressão</div>
+                        <div className="flex items-center">
+                          <span className="text-sm font-medium mr-2">20%</span>
+                          <div className="w-32 h-2 bg-gray-200 rounded-full overflow-hidden">
+                            <div className="bg-blue-500 h-full rounded-full" style={{width: '20%'}}></div>
+                          </div>
+                        </div>
+                      </div>
+                      
+                      <div className="flex justify-between items-center">
+                        <div>Estresse</div>
+                        <div className="flex items-center">
+                          <span className="text-sm font-medium mr-2">60%</span>
+                          <div className="w-32 h-2 bg-gray-200 rounded-full overflow-hidden">
+                            <div className="bg-yellow-500 h-full rounded-full" style={{width: '60%'}}></div>
+                          </div>
+                        </div>
+                      </div>
+                      
+                      <div className="flex justify-between items-center">
+                        <div>Dor</div>
+                        <div className="flex items-center">
+                          <span className="text-sm font-medium mr-2">6%</span>
+                          <div className="w-32 h-2 bg-gray-200 rounded-full overflow-hidden">
+                            <div className="bg-blue-500 h-full rounded-full" style={{width: '6%'}}></div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                    
+                    <div className="text-right">
+                      <Button variant="link" className="text-blue-600 p-0 h-auto text-sm">
+                        + informações
+                      </Button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </motion.div>
+            
+            {/* Alergias */}
+            <motion.div variants={itemVariants}>
+              <div className="consultation-card">
+                <div className="consultation-card-header">
+                  <h3 className="consultation-card-title">
+                    <span className="flex items-center justify-center w-6 h-6 mr-2 text-blue-600">
+                      <FileText className="h-5 w-5" />
+                    </span>
+                    Alergias
+                  </h3>
+                  <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+                    <span className="sr-only">Expandir</span>
+                  </Button>
+                </div>
+                <div className="consultation-card-content">
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-sm">
+                      <thead>
+                        <tr className="text-left">
+                          <th className="pb-2 font-medium text-gray-500">Tipo</th>
+                          <th className="pb-2 font-medium text-gray-500">Data</th>
+                          <th className="pb-2 font-medium text-gray-500">Estado</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        <tr>
+                          <td className="py-2">Metoclopramida</td>
+                          <td className="py-2">24.05.2011</td>
+                          <td className="py-2">
+                            <span className="tag-pill tag-yellow">Ativo</span>
+                          </td>
+                        </tr>
+                        <tr>
+                          <td className="py-2">Intolerância a glúten</td>
+                          <td className="py-2">23.05.2011</td>
+                          <td className="py-2">
+                            <span className="tag-pill tag-yellow">Ativo</span>
+                          </td>
+                        </tr>
+                        <tr>
+                          <td className="py-2">Intolerância a levedura</td>
+                          <td className="py-2">23.05.2013</td>
+                          <td className="py-2">
+                            <span className="tag-pill tag-yellow">Ativo</span>
+                          </td>
+                        </tr>
+                        <tr>
+                          <td className="py-2">Urticária</td>
+                          <td className="py-2">22.05.2022</td>
+                          <td className="py-2">
+                            <span className="tag-pill tag-red">Inativo</span>
+                          </td>
+                        </tr>
+                      </tbody>
+                    </table>
+                  </div>
+                  
+                  <div className="text-right mt-3">
+                    <Button variant="link" className="text-blue-600 p-0 h-auto text-sm">
+                      + informações
+                    </Button>
+                  </div>
+                </div>
+              </div>
+            </motion.div>
+            
+            {/* Estruturação de exames */}
+            <motion.div variants={itemVariants}>
+              <div className="consultation-card">
+                <div className="consultation-card-header">
+                  <h3 className="consultation-card-title">
+                    <span className="flex items-center justify-center w-6 h-6 mr-2 text-blue-600">
+                      <FileText className="h-5 w-5" />
+                    </span>
+                    Estruturação de exames
+                  </h3>
+                  <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+                    <span className="sr-only">Expandir</span>
+                  </Button>
+                </div>
+                <div className="consultation-card-content">
+                  <div className="text-center py-6">
+                    <p className="text-sm text-gray-600 mb-3">Faça aqui o upload dos seus exames clínicos</p>
+                    <Button className="bg-blue-50 text-blue-600 hover:bg-blue-100 border border-blue-100">
+                      Upload
+                    </Button>
+                  </div>
+                </div>
+              </div>
+            </motion.div>
+            
+            {/* Pesquisa na PubMed */}
+            <motion.div variants={itemVariants}>
+              <div className="consultation-card">
+                <div className="consultation-card-header">
+                  <h3 className="consultation-card-title">
+                    <span className="flex items-center justify-center w-6 h-6 mr-2 text-blue-600">
+                      <FileText className="h-5 w-5" />
+                    </span>
+                    Pesquisa na PubMed
+                  </h3>
+                  <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+                    <span className="sr-only">Expandir</span>
+                  </Button>
+                </div>
+                <div className="consultation-card-content">
+                  <div className="flex gap-2 mb-4">
+                    <input
+                      type="text"
+                      placeholder="Buscar artigo"
+                      className="flex-1 px-3 py-2 rounded-md border border-gray-300 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                    />
+                    <Button className="bg-blue-600 text-white hover:bg-blue-700">
+                      Buscar
+                    </Button>
+                  </div>
+                </div>
+              </div>
+            </motion.div>
+            
+            {/* Prontuário / Sumário */}
+            <motion.div variants={itemVariants} className="lg:col-span-3">
+              <div className="consultation-card">
+                <div className="consultation-card-header">
+                  <h3 className="consultation-card-title">
+                    <span className="flex items-center justify-center w-6 h-6 mr-2 text-blue-600">
+                      <FileText className="h-5 w-5" />
+                    </span>
+                    Sumário
+                  </h3>
+                  <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+                    <span className="sr-only">Expandir</span>
+                  </Button>
+                </div>
+                <div className="consultation-card-content">
+                  {generatedNotes || consultation?.notes ? (
+                    <ProntuarioView 
+                      notes={generatedNotes || consultation?.notes}
+                      consultationId={consultationId}
+                      onSave={saveConsultation}
+                      onExportPDF={handleExportPDF}
+                    />
+                  ) : (
+                    <div className="text-center py-8">
+                      <p className="text-gray-500 mb-4">Aqui será exibido o sumário da consulta após a transcrição</p>
+                      <Button 
+                        className="bg-blue-600 text-white hover:bg-blue-700"
+                        onClick={() => {
+                          // Se já tiver transcrição, tenta gerar notas
+                          if (transcript || consultation?.transcription) {
+                            setActiveTab("transcript");
+                          } else {
+                            setActiveTab("recording");
+                          }
                         }}
-                      />
-                    </CardContent>
-                  </Card>
-                </motion.div>
-              </TabsContent>
-              
-              <TabsContent value="transcript" className="m-0">
-                <motion.div
-                  variants={itemVariants}
-                  transition={{ duration: 0.2 }}
-                >
-                  <Card>
-                    <CardContent className="pt-6">
-                      <TranscriptView 
-                        transcript={transcript || consultation?.transcription || ""}
-                        consultationId={consultationId}
-                        onGenerateNotes={(notes) => {
-                          setGeneratedNotes(notes);
-                          setActiveTab("prontuario");
-                        }}
-                      />
-                    </CardContent>
-                  </Card>
-                </motion.div>
-              </TabsContent>
-              
-              <TabsContent value="prontuario" className="m-0">
-                <motion.div
-                  variants={itemVariants}
-                  transition={{ duration: 0.2 }}
-                >
-                  <Card>
-                    <CardContent className="pt-6">
-                      <ProntuarioView 
-                        notes={generatedNotes || consultation?.notes}
-                        consultationId={consultationId}
-                        onSave={saveConsultation}
-                        onExportPDF={handleExportPDF}
-                      />
-                    </CardContent>
-                  </Card>
-                </motion.div>
-              </TabsContent>
-            </Tabs>
+                      >
+                        Sumarizar
+                      </Button>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </motion.div>
           </motion.div>
         </div>
       </div>

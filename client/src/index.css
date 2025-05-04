@@ -155,6 +155,103 @@
   @apply bg-amber-100 text-amber-600;
 }
 
+/* Estilos para consulta médica */
+.medical-bg {
+  @apply bg-gray-50;
+}
+
+.consultation-layout {
+  @apply w-full max-w-7xl mx-auto p-4 pt-16 md:pt-24;
+}
+
+.patient-header {
+  @apply bg-white rounded-xl shadow-sm mb-6 p-6;
+}
+
+.patient-name {
+  @apply text-2xl font-bold text-gray-900;
+}
+
+.patient-info {
+  @apply grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-4 mt-4;
+}
+
+.patient-info-item {
+  @apply px-4 py-2 border-r border-gray-100 last:border-r-0;
+}
+
+.patient-info-label {
+  @apply text-sm text-gray-500;
+}
+
+.patient-info-value {
+  @apply font-medium text-gray-900;
+}
+
+.patient-tags {
+  @apply flex flex-wrap gap-2 mt-4;
+}
+
+.patient-tag {
+  @apply px-3 py-1 rounded-full text-sm bg-blue-100 text-blue-700;
+}
+
+.consultation-grid {
+  @apply grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6;
+}
+
+.consultation-card {
+  @apply bg-white rounded-xl shadow-sm hover:shadow-md transition-all duration-300 overflow-hidden;
+}
+
+.consultation-card-header {
+  @apply flex items-center justify-between p-4 border-b border-gray-100;
+}
+
+.consultation-card-title {
+  @apply text-base font-semibold text-gray-800 flex items-center;
+}
+
+.consultation-card-content {
+  @apply p-4;
+}
+
+.recording-interface {
+  @apply flex items-center justify-between bg-gray-50 p-3 rounded-lg;
+}
+
+.recording-button {
+  @apply w-10 h-10 rounded-full flex items-center justify-center text-white;
+}
+
+.recording-button-primary {
+  @apply bg-blue-600 hover:bg-blue-700 transition-colors;
+}
+
+.recording-button-stop {
+  @apply bg-red-500 hover:bg-red-600 transition-colors;
+}
+
+.recording-waveform {
+  @apply h-6 mx-4 flex-1;
+}
+
+.tag-pill {
+  @apply inline-flex items-center px-3 py-1 rounded-full text-sm font-medium;
+}
+
+.tag-blue {
+  @apply bg-blue-100 text-blue-800;
+}
+
+.tag-yellow {
+  @apply bg-yellow-100 text-yellow-800;
+}
+
+.tag-red {
+  @apply bg-red-100 text-red-800;
+}
+
 .card-hover-effect:hover {
   transform: translateY(-3px);
   border-color: hsl(var(--highlight) / 0.3);
