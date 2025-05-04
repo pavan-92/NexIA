@@ -50,11 +50,18 @@ export default function RegisterForm() {
   const onSubmit = async (values: RegisterFormValues) => {
     setIsLoading(true);
     try {
+      console.log("Tentando registrar usuário com:", {
+        email: values.email,
+        displayName: values.displayName,
+        passwordLength: values.password.length,
+      });
+      
       await registerWithEmailAndPassword(
         values.email,
         values.password,
         values.displayName
       );
+      
       toast({
         title: "Conta criada com sucesso!",
         description: "Você será redirecionado para o dashboard.",
@@ -72,6 +79,13 @@ export default function RegisterForm() {
         errorMessage = "Email inválido. Verifique e tente novamente.";
       } else if (error.code === "auth/weak-password") {
         errorMessage = "Senha muito fraca. Use uma senha mais segura.";
+      } else if (error.code === "auth/configuration-not-found") {
+        errorMessage = "Erro na configuração do Firebase. O método de autenticação por email/senha pode não estar habilitado no console do Firebase.";
+        console.error("Instruções para corrigir o erro de configuração do Firebase:");
+        console.error("1. Acesse o console do Firebase: console.firebase.google.com");
+        console.error("2. Selecione seu projeto e vá para Authentication > Sign-in methods");
+        console.error("3. Habilite o método 'Email/Password'");
+        console.error("4. Adicione o domínio *.replit.dev em Authentication > Settings > Authorized domains");
       }
       
       toast({

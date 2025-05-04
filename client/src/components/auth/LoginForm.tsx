@@ -42,6 +42,11 @@ export default function LoginForm() {
   const onSubmit = async (values: LoginFormValues) => {
     setIsLoading(true);
     try {
+      console.log("Tentando fazer login com:", {
+        email: values.email,
+        passwordLength: values.password.length
+      });
+      
       await signInWithEmail(values.email, values.password);
       toast({
         title: "Login realizado com sucesso!",
@@ -58,6 +63,13 @@ export default function LoginForm() {
         errorMessage = "Email ou senha incorretos.";
       } else if (error.code === "auth/too-many-requests") {
         errorMessage = "Muitas tentativas de login. Tente novamente mais tarde.";
+      } else if (error.code === "auth/configuration-not-found") {
+        errorMessage = "Erro na configuração do Firebase. O método de autenticação por email/senha pode não estar habilitado no console do Firebase.";
+        console.error("Instruções para corrigir o erro de configuração do Firebase:");
+        console.error("1. Acesse o console do Firebase: console.firebase.google.com");
+        console.error("2. Selecione seu projeto e vá para Authentication > Sign-in methods");
+        console.error("3. Habilite o método 'Email/Password'");
+        console.error("4. Adicione o domínio *.replit.dev em Authentication > Settings > Authorized domains");
       }
       
       toast({
@@ -144,11 +156,12 @@ export default function LoginForm() {
           />
 
           <div className="flex items-center justify-end">
-            <Link href="/forgot-password">
-              <a className="text-sm text-primary hover:text-primary/80 transition-colors">
-                Esqueceu sua senha?
-              </a>
-            </Link>
+            <span 
+              className="text-sm text-primary hover:text-primary/80 transition-colors cursor-pointer"
+              onClick={() => window.location.href = "/forgot-password"}
+            >
+              Esqueceu sua senha?
+            </span>
           </div>
 
           <Button
@@ -171,11 +184,12 @@ export default function LoginForm() {
       <div className="text-center text-sm">
         <p className="text-muted-foreground">
           Não tem uma conta?{" "}
-          <Link href="/register">
-            <a className="text-primary font-medium hover:text-primary/80 transition-colors">
-              Registre-se
-            </a>
-          </Link>
+          <span 
+            className="text-primary font-medium hover:text-primary/80 transition-colors cursor-pointer"
+            onClick={() => window.location.href = "/register"}
+          >
+            Registre-se
+          </span>
         </p>
       </div>
     </motion.div>
