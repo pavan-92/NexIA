@@ -236,27 +236,30 @@ export default function RegisterForm() {
       <div className="text-center text-sm">
         <p className="text-muted-foreground">
           Já tem uma conta?{" "}
-          <Link href="/login">
-            <a className="text-primary font-medium hover:text-primary/80 transition-colors">
-              Faça login
-            </a>
-          </Link>
+          <span 
+            className="text-primary font-medium hover:text-primary/80 transition-colors cursor-pointer"
+            onClick={() => window.location.href = "/login"}
+          >
+            Faça login
+          </span>
         </p>
       </div>
       
       <div className="text-xs text-center text-muted-foreground">
         Ao se registrar, você concorda com nossos{" "}
-        <Link href="/terms">
-          <a className="underline underline-offset-2 hover:text-foreground">
-            Termos de Serviço
-          </a>
-        </Link>{" "}
+        <span 
+          className="underline underline-offset-2 hover:text-foreground cursor-pointer"
+          onClick={() => window.location.href = "/terms"}
+        >
+          Termos de Serviço
+        </span>{" "}
         e{" "}
-        <Link href="/privacy">
-          <a className="underline underline-offset-2 hover:text-foreground">
-            Política de Privacidade
-          </a>
-        </Link>
+        <span
+          className="underline underline-offset-2 hover:text-foreground cursor-pointer"
+          onClick={() => window.location.href = "/privacy"}
+        >
+          Política de Privacidade
+        </span>
         .
       </div>
     </motion.div>

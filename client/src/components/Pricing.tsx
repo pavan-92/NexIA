@@ -125,37 +125,37 @@ export default function Pricing() {
                     </li>
                   ))}
                 </ul>
-                <Link href={plan.cta.href}>
-                  <Button 
-                    className={`w-full block text-center px-6 py-3 rounded-lg font-medium ${
-                      plan.recommended
-                        ? "btn-shine bg-gradient-to-r from-primary to-secondary text-white hover:shadow-lg"
-                        : "bg-muted text-foreground border border-primary hover:bg-primary/10"
-                    }`}
-                  >
-                    {plan.cta.text}
-                  </Button>
-                </Link>
+                <Button 
+                  className={`w-full block text-center px-6 py-3 rounded-lg font-medium ${
+                    plan.recommended
+                      ? "btn-shine bg-gradient-to-r from-primary to-secondary text-white hover:shadow-lg"
+                      : "bg-muted text-foreground border border-primary hover:bg-primary/10"
+                  }`}
+                  onClick={() => window.location.href = plan.cta.href}
+                >
+                  {plan.cta.text}
+                </Button>
               </div>
             </motion.div>
           ))}
         </motion.div>
         
         <div className="text-center mt-12">
-          <Link href="/contact">
-            <a className="text-primary hover:text-primary/80 transition-colors duration-300 inline-flex items-center">
-              <span>Ver todos os planos e recursos</span>
-              <svg 
-                xmlns="http://www.w3.org/2000/svg" 
-                className="h-4 w-4 ml-2" 
-                fill="none" 
-                viewBox="0 0 24 24" 
-                stroke="currentColor"
-              >
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-              </svg>
-            </a>
-          </Link>
+          <span 
+            className="text-primary hover:text-primary/80 transition-colors duration-300 inline-flex items-center cursor-pointer"
+            onClick={() => window.location.href = "/contact"}
+          >
+            <span>Ver todos os planos e recursos</span>
+            <svg 
+              xmlns="http://www.w3.org/2000/svg" 
+              className="h-4 w-4 ml-2" 
+              fill="none" 
+              viewBox="0 0 24 24" 
+              stroke="currentColor"
+            >
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+            </svg>
+          </span>
         </div>
       </div>
     </section>

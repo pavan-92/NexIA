@@ -14,15 +14,16 @@ export default function Footer() {
       <div className="container mx-auto px-4">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8 mb-12">
           <div className="col-span-1 md:col-span-1">
-            <Link href="/">
-              <a className="inline-block mb-6">
-                <img 
-                  src="/logo.png" 
-                  alt="Prontu.live Logo" 
-                  className="h-10"
-                />
-              </a>
-            </Link>
+            <div 
+              className="inline-block mb-6 cursor-pointer"
+              onClick={() => window.location.href = "/"}
+            >
+              <img 
+                src="/logo.png" 
+                alt="Prontu.live Logo" 
+                className="h-10"
+              />
+            </div>
             <p className="text-muted-foreground mb-6">
               Transformando consultas médicas com inteligência artificial em tempo real
             </p>
@@ -61,11 +62,12 @@ export default function Footer() {
             <h3 className="text-xl font-bold mb-6">Produto</h3>
             <ul className="space-y-3">
               <li>
-                <Link href="/#benefits">
-                  <a className="text-muted-foreground hover:text-foreground transition-colors duration-300">
-                    Funcionalidades
-                  </a>
-                </Link>
+                <span 
+                  className="text-muted-foreground hover:text-foreground transition-colors duration-300 cursor-pointer"
+                  onClick={() => window.location.href = "/#benefits"}
+                >
+                  Funcionalidades
+                </span>
               </li>
               <li>
                 <Link href="/#pricing">
