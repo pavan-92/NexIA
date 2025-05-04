@@ -72,23 +72,27 @@ export default function Dashboard() {
             className="flex flex-col md:flex-row md:items-center md:justify-between mb-8"
           >
             <div>
-              <h1 className="text-3xl font-bold">Dashboard</h1>
-              <p className="text-muted-foreground">
+              <h1 className="text-3xl font-bold tracking-tight text-gray-900">Dashboard</h1>
+              <p className="text-gray-500 font-medium mt-1">
                 Bem-vindo, {user?.displayName || "Doutor"}!
               </p>
             </div>
             <div className="mt-4 md:mt-0 flex flex-col sm:flex-row gap-2">
               <Link href="/patients">
-                <Button variant="outline" className="w-full sm:w-auto">
-                  <Users className="mr-2 h-4 w-4" />
-                  Gerenciar Pacientes
-                </Button>
+                <span className="w-full sm:w-auto">
+                  <Button variant="outline" className="w-full sm:w-auto border-gray-300 hover:bg-gray-50 hover:text-blue-600 transition-all duration-200">
+                    <Users className="mr-2 h-4 w-4" />
+                    Gerenciar Pacientes
+                  </Button>
+                </span>
               </Link>
               <Link href="/consultation/new">
-                <Button className="w-full sm:w-auto bg-primary text-primary-foreground hover:bg-primary/90">
-                  <PlusCircle className="mr-2 h-4 w-4" />
-                  Nova Consulta
-                </Button>
+                <span className="w-full sm:w-auto">
+                  <Button className="w-full sm:w-auto bg-blue-600 text-white hover:bg-blue-700 shadow-sm hover:shadow transition-all duration-200">
+                    <PlusCircle className="mr-2 h-4 w-4" />
+                    Nova Consulta
+                  </Button>
+                </span>
               </Link>
             </div>
           </motion.div>
@@ -100,56 +104,65 @@ export default function Dashboard() {
             className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8"
           >
             <motion.div variants={itemVariants}>
-              <Card>
+              <Card className="dashboard-card card-hover-effect overflow-hidden">
                 <CardHeader className="pb-2">
-                  <CardTitle className="text-sm font-medium text-muted-foreground">
+                  <CardTitle className="text-sm font-medium text-gray-500">
                     Total de Pacientes
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
                   <div className="flex items-center justify-between">
-                    <div className="text-2xl font-bold">
+                    <div className="text-2xl font-bold text-gray-900">
                       {isLoadingPatients ? "..." : patients?.length || 0}
                     </div>
-                    <Users className="h-5 w-5 text-muted-foreground" />
+                    <div className="dashboard-icon dashboard-icon-blue">
+                      <Users className="h-5 w-5" />
+                    </div>
                   </div>
                 </CardContent>
               </Card>
             </motion.div>
             
             <motion.div variants={itemVariants}>
-              <Card>
+              <Card className="dashboard-card card-hover-effect overflow-hidden">
                 <CardHeader className="pb-2">
-                  <CardTitle className="text-sm font-medium text-muted-foreground">
+                  <CardTitle className="text-sm font-medium text-gray-500">
                     Consultas este Mês
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
                   <div className="flex items-center justify-between">
-                    <div className="text-2xl font-bold">
+                    <div className="text-2xl font-bold text-gray-900">
                       {isLoadingConsultations ? "..." : consultations?.length || 0}
                     </div>
-                    <FileText className="h-5 w-5 text-muted-foreground" />
+                    <div className="dashboard-icon dashboard-icon-purple">
+                      <FileText className="h-5 w-5" />
+                    </div>
                   </div>
                 </CardContent>
               </Card>
             </motion.div>
             
             <motion.div variants={itemVariants}>
-              <Card>
+              <Card className="dashboard-card card-hover-effect overflow-hidden">
                 <CardHeader className="pb-2">
-                  <CardTitle className="text-sm font-medium text-muted-foreground">
+                  <CardTitle className="text-sm font-medium text-gray-500">
                     Uso do Plano
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-2">
                     <div className="flex items-center justify-between">
-                      <div className="text-2xl font-bold">70%</div>
-                      <Activity className="h-5 w-5 text-muted-foreground" />
+                      <div className="text-2xl font-bold text-gray-900">70%</div>
+                      <div className="dashboard-icon dashboard-icon-green">
+                        <Activity className="h-5 w-5" />
+                      </div>
                     </div>
-                    <Progress value={70} className="h-2" />
-                    <p className="text-xs text-muted-foreground">
+                    <Progress value={70} className="h-2 bg-gray-100" 
+                      style={{background: "rgba(90, 146, 246, 0.2)"}}
+                      indicatorClassName="bg-blue-600"
+                    />
+                    <p className="text-xs text-gray-500">
                       7/10 consultas usadas
                     </p>
                   </div>
@@ -158,16 +171,18 @@ export default function Dashboard() {
             </motion.div>
             
             <motion.div variants={itemVariants}>
-              <Card>
+              <Card className="dashboard-card card-hover-effect overflow-hidden">
                 <CardHeader className="pb-2">
-                  <CardTitle className="text-sm font-medium text-muted-foreground">
+                  <CardTitle className="text-sm font-medium text-gray-500">
                     Prontuários Exportados
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
                   <div className="flex items-center justify-between">
-                    <div className="text-2xl font-bold">18</div>
-                    <FileUp className="h-5 w-5 text-muted-foreground" />
+                    <div className="text-2xl font-bold text-gray-900">18</div>
+                    <div className="dashboard-icon dashboard-icon-amber">
+                      <FileUp className="h-5 w-5" />
+                    </div>
                   </div>
                 </CardContent>
               </Card>

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link, useLocation } from "wouter";
 import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "@/components/ui/button";
@@ -30,6 +30,12 @@ export default function Sidebar() {
   const { user } = useAuthState();
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [isMobileOpen, setIsMobileOpen] = useState(false);
+  const [activeItem, setActiveItem] = useState("");
+
+  useEffect(() => {
+    // Define o item ativo com base na localização atual
+    setActiveItem(location);
+  }, [location]);
 
   const handleSignOut = async () => {
     try {
@@ -130,17 +136,22 @@ export default function Sidebar() {
                     <li key={link.href}>
                       <span
                         className={cn(
-                          "flex items-center space-x-3 rounded-md px-3 py-2 text-sm font-medium cursor-pointer",
+                          "flex items-center space-x-3 rounded-md px-3 py-2 text-sm font-medium cursor-pointer transition-all duration-200",
                           location === link.href
-                            ? "bg-primary text-primary-foreground"
-                            : "text-foreground hover:bg-muted"
+                            ? "bg-blue-100 text-blue-600 font-medium"
+                            : "text-gray-600 hover:bg-blue-50 hover:text-blue-600"
                         )}
                         onClick={() => {
                           window.location.href = link.href;
                           setIsMobileOpen(false);
                         }}
                       >
-                        {link.icon}
+                        <span className={cn(
+                          "flex items-center justify-center w-6 h-6",
+                          location === link.href ? "text-blue-600" : "text-gray-500"
+                        )}>
+                          {link.icon}
+                        </span>
                         <span>{link.label}</span>
                       </span>
                     </li>
@@ -212,15 +223,20 @@ export default function Sidebar() {
               <li key={link.href}>
                 <span
                   className={cn(
-                    "flex items-center rounded-md px-3 py-2 text-sm font-medium cursor-pointer",
+                    "flex items-center rounded-md px-3 py-2 text-sm font-medium cursor-pointer transition-all duration-200",
                     location === link.href
-                      ? "bg-primary text-primary-foreground"
-                      : "text-foreground hover:bg-muted",
+                      ? "bg-blue-100 text-blue-600 font-medium"
+                      : "text-gray-600 hover:bg-blue-50 hover:text-blue-600",
                     isCollapsed && "justify-center"
                   )}
                   onClick={() => window.location.href = link.href}
                 >
-                  {link.icon}
+                  <span className={cn(
+                    "flex items-center justify-center w-6 h-6",
+                    location === link.href ? "text-blue-600" : "text-gray-500"
+                  )}>
+                    {link.icon}
+                  </span>
                   {!isCollapsed && <span className="ml-3">{link.label}</span>}
                 </span>
               </li>
