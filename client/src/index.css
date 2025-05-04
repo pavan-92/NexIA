@@ -3,27 +3,27 @@
 @tailwind utilities;
 
 :root {
-  --background: 240 10% 3.9%;
-  --foreground: 0 0% 98%;
-  --muted: 240 3.7% 15.9%;
-  --muted-foreground: 240 5% 64.9%;
-  --popover: 240 10% 3.9%;
-  --popover-foreground: 0 0% 98%;
-  --card: 240 10% 3.9%;
-  --card-foreground: 0 0% 98%;
-  --border: 240 3.7% 15.9%;
-  --input: 240 3.7% 15.9%;
-  --primary: 174 84% 39%; /* #10B8AB turquesa da logo */
-  --primary-foreground: 211 100% 99%;
-  --secondary: 0 100% 69%; /* #FF6161 coral/vermelho da logo */
-  --secondary-foreground: 0 0% 98%;
-  --accent: 270 50% 50%;
-  --accent-foreground: 0 0% 98%;
-  --accent-cyan: 174 84% 39%; /* Mesma cor do turquesa */
-  --accent-magenta: 0 100% 69%; /* Mesma cor do coral */
-  --destructive: 0 62.8% 30.6%;
-  --destructive-foreground: 0 0% 98%;
-  --ring: 240 4.9% 83.9%;
+  --background: 0 0% 100%;
+  --foreground: 222.2 84% 4.9%;
+  --muted: 210 40% 96.1%;
+  --muted-foreground: 215.4 16.3% 46.9%;
+  --popover: 0 0% 100%;
+  --popover-foreground: 222.2 84% 4.9%;
+  --card: 0 0% 100%;
+  --card-foreground: 222.2 84% 4.9%;
+  --border: 214.3 31.8% 91.4%;
+  --input: 214.3 31.8% 91.4%;
+  --primary: 180 100% 35%; /* #00b4b4 turquesa exato da logo */
+  --primary-foreground: 210 40% 98%;
+  --secondary: 0 75% 65%; /* #ff4b4b vermelho exato da logo */
+  --secondary-foreground: 222.2 84% 4.9%;
+  --accent: 210 40% 96.1%;
+  --accent-foreground: 222.2 84% 4.9%;
+  --accent-cyan: 180 100% 35%; /* Mesma cor do turquesa */
+  --accent-magenta: 0 75% 65%; /* Mesma cor do vermelho */
+  --destructive: 0 84.2% 60.2%;
+  --destructive-foreground: 210 40% 98%;
+  --ring: 180 100% 35%;
   --radius: 0.5rem;
 }
 
@@ -42,8 +42,8 @@
 }
 
 .hero-gradient {
-  background: radial-gradient(circle at top right, rgba(255, 97, 97, 0.4), transparent 70%),
-               radial-gradient(circle at bottom left, rgba(16, 184, 171, 0.4), transparent 70%);
+  background: radial-gradient(circle at top right, rgba(255, 75, 75, 0.4), transparent 70%),
+               radial-gradient(circle at bottom left, rgba(0, 180, 180, 0.4), transparent 70%);
 }
 
 .gradient-text {
