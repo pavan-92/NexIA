@@ -49,26 +49,30 @@ export default function Header() {
     )}>
       <div className="container mx-auto px-4 flex justify-between items-center">
         <div className="flex items-center">
-          <Link href="/">
+          <span 
+            onClick={() => window.location.href = "/"}
+            className="cursor-pointer flex items-center">
             <img 
               src="/logo.png" 
-              alt="Prontu.live Logo" 
-              className="h-12 cursor-pointer"
+              alt="Prontu.live" 
+              className="h-10 cursor-pointer"
             />
-          </Link>
+          </span>
         </div>
 
         {/* Desktop Navigation */}
         <div className="hidden md:flex items-center space-x-6">
           {navLinks.map((link) => (
-            <Link key={link.href} href={link.href}>
-              <span className={cn(
+            <span 
+              key={link.href}
+              onClick={() => window.location.href = link.href}
+              className={cn(
                 "text-foreground/80 hover:text-primary transition-colors duration-300 cursor-pointer",
                 location === link.href && "text-primary"
-              )}>
-                {link.title}
-              </span>
-            </Link>
+              )}
+            >
+              {link.title}
+            </span>
           ))}
 
           {isAuthenticated ? (
@@ -92,16 +96,18 @@ export default function Header() {
             </>
           ) : (
             <>
-              <Link href="/login">
-                <span className="text-foreground/80 hover:text-primary transition-colors duration-300 cursor-pointer">
-                  Entrar
-                </span>
-              </Link>
-              <Link href="/register">
-                <span className="btn-shine bg-gradient-to-r from-primary to-secondary text-white px-4 py-2 rounded-lg font-medium hover:shadow-lg transition-all duration-300 cursor-pointer inline-block">
-                  Criar Conta
-                </span>
-              </Link>
+              <span 
+                className="text-foreground/80 hover:text-primary transition-colors duration-300 cursor-pointer"
+                onClick={() => window.location.href = "/login"}
+              >
+                Entrar
+              </span>
+              <span 
+                className="btn-shine bg-gradient-to-r from-primary to-secondary text-white px-4 py-2 rounded-lg font-medium hover:shadow-lg transition-all duration-300 cursor-pointer inline-block"
+                onClick={() => window.location.href = "/register"}
+              >
+                Criar Conta
+              </span>
               <Button 
                 variant="ghost" 
                 size="icon" 
@@ -150,17 +156,19 @@ export default function Header() {
           >
             <div className="container mx-auto px-4 py-4 flex flex-col space-y-4">
               {navLinks.map((link) => (
-                <Link key={link.href} href={link.href}>
-                  <span 
-                    className={cn(
-                      "text-foreground/80 hover:text-primary transition-colors duration-300 py-2 cursor-pointer inline-block",
-                      location === link.href && "text-primary"
-                    )}
-                    onClick={() => setMobileMenuOpen(false)}
-                  >
-                    {link.title}
-                  </span>
-                </Link>
+                <span 
+                  key={link.href}
+                  className={cn(
+                    "text-foreground/80 hover:text-primary transition-colors duration-300 py-2 cursor-pointer inline-block",
+                    location === link.href && "text-primary"
+                  )}
+                  onClick={() => {
+                    window.location.href = link.href;
+                    setMobileMenuOpen(false);
+                  }}
+                >
+                  {link.title}
+                </span>
               ))}
               
               {isAuthenticated ? (
@@ -176,22 +184,24 @@ export default function Header() {
                 </Button>
               ) : (
                 <>
-                  <Link href="/login">
-                    <span 
-                      className="text-foreground/80 hover:text-primary transition-colors duration-300 py-2 cursor-pointer inline-block"
-                      onClick={() => setMobileMenuOpen(false)}
-                    >
-                      Entrar
-                    </span>
-                  </Link>
-                  <Link href="/register">
-                    <span 
-                      className="btn-shine bg-gradient-to-r from-primary to-secondary text-white px-4 py-2 rounded-lg font-medium hover:shadow-lg transition-all duration-300 text-center cursor-pointer inline-block"
-                      onClick={() => setMobileMenuOpen(false)}
-                    >
-                      Criar Conta
-                    </span>
-                  </Link>
+                  <span 
+                    className="text-foreground/80 hover:text-primary transition-colors duration-300 py-2 cursor-pointer inline-block"
+                    onClick={() => {
+                      window.location.href = "/login";
+                      setMobileMenuOpen(false);
+                    }}
+                  >
+                    Entrar
+                  </span>
+                  <span 
+                    className="btn-shine bg-gradient-to-r from-primary to-secondary text-white px-4 py-2 rounded-lg font-medium hover:shadow-lg transition-all duration-300 text-center cursor-pointer inline-block"
+                    onClick={() => {
+                      window.location.href = "/register";
+                      setMobileMenuOpen(false);
+                    }}
+                  >
+                    Criar Conta
+                  </span>
                 </>
               )}
             </div>
