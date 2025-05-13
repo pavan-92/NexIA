@@ -4,7 +4,6 @@ import { useQuery } from "@tanstack/react-query";
 import { useAuthState } from "@/hooks/use-auth";
 import Sidebar from "@/components/dashboard/Sidebar";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Progress } from "@/components/ui/progress";
 import { Button } from "@/components/ui/button";
 import { Link } from "wouter";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
@@ -101,7 +100,7 @@ export default function Dashboard() {
             variants={containerVariants}
             initial="hidden"
             animate="visible"
-            className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8"
+            className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8"
           >
             <motion.div variants={itemVariants}>
               <Card className="dashboard-card card-hover-effect overflow-hidden">
@@ -138,32 +137,6 @@ export default function Dashboard() {
                     <div className="dashboard-icon dashboard-icon-purple">
                       <FileText className="h-5 w-5" />
                     </div>
-                  </div>
-                </CardContent>
-              </Card>
-            </motion.div>
-            
-            <motion.div variants={itemVariants}>
-              <Card className="dashboard-card card-hover-effect overflow-hidden">
-                <CardHeader className="pb-2">
-                  <CardTitle className="text-sm font-medium text-gray-500">
-                    Uso do Plano
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-2">
-                    <div className="flex items-center justify-between">
-                      <div className="text-2xl font-bold text-gray-900">70%</div>
-                      <div className="dashboard-icon dashboard-icon-green">
-                        <Activity className="h-5 w-5" />
-                      </div>
-                    </div>
-                    <Progress value={70} className="h-2 bg-gray-100 [&>*]:bg-blue-600" 
-                      style={{background: "rgba(90, 146, 246, 0.2)"}}
-                    />
-                    <p className="text-xs text-gray-500">
-                      7/10 consultas usadas
-                    </p>
                   </div>
                 </CardContent>
               </Card>
