@@ -97,38 +97,7 @@ export async function generateMedicalNotes(transcription: string): Promise<{
   }
 }
 
-// Analyze sentiment of text
-export async function analyzeSentiment(text: string): Promise<{
-  sentiment: 'positive' | 'negative' | 'neutral';
-  confidenceScore: number;
-}> {
-  try {
-    const response = await openai.chat.completions.create({
-      model: "gpt-4o",
-      messages: [
-        {
-          role: "system",
-          content: "You are a sentiment analysis expert. Analyze the sentiment of the text and provide a sentiment rating (positive, negative, or neutral) and a confidence score between 0 and 1. Respond with JSON in this format: { 'sentiment': 'positive|negative|neutral', 'confidenceScore': number }"
-        },
-        {
-          role: "user",
-          content: text
-        }
-      ],
-      response_format: { type: "json_object" }
-    });
 
-    const result = JSON.parse(response.choices[0].message.content || "{}");
-
-    return {
-      sentiment: result.sentiment || "neutral",
-      confidenceScore: Math.max(0, Math.min(1, result.confidenceScore || 0.5))
-    };
-  } catch (error) {
-    console.error("Error analyzing sentiment:", error);
-    throw new Error("Failed to analyze sentiment");
-  }
-}
 
 // Translate text from English to Portuguese
 export async function translateText(content: {
