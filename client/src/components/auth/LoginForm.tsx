@@ -92,7 +92,7 @@ export default function LoginForm() {
       <div className="text-center">
         <h2 className="text-3xl font-bold">Bem-vindo de volta</h2>
         <p className="mt-2 text-muted-foreground">
-          Entre para continuar usando a Prontu.live
+          Entre para continuar usando a NexIA
         </p>
       </div>
 

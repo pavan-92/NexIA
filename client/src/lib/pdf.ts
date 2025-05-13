@@ -10,7 +10,7 @@ export const generatePDF = (consultation: Consultation, patient: Patient): void 
   // Add header with logo
   doc.setFontSize(22);
   doc.setTextColor(10, 179, 184); // Primary color
-  doc.text('Prontu.live', 15, 20);
+  doc.text('NexIA', 15, 20);
   
   doc.setFontSize(12);
   doc.setTextColor(100, 100, 100);
@@ -82,10 +82,10 @@ export const generatePDF = (consultation: Consultation, patient: Patient): void 
     doc.setPage(i);
     doc.setFontSize(10);
     doc.setTextColor(100, 100, 100);
-    doc.text(`Gerado por Prontu.live em ${formatDateTime(new Date())}`, 15, doc.internal.pageSize.getHeight() - 10);
+    doc.text(`Gerado por NexIA em ${formatDateTime(new Date())}`, 15, doc.internal.pageSize.getHeight() - 10);
     doc.text(`Página ${i} de ${totalPages}`, pageWidth - 40, doc.internal.pageSize.getHeight() - 10);
   }
   
   // Save the document
-  doc.save(`prontuario_${patient.name.replace(/\s+/g, '_')}_${formatDate(consultation.date).replace(/\//g, '-')}.pdf`);
+  doc.save(`nexia_${patient.name.replace(/\s+/g, '_')}_${formatDate(consultation.date).replace(/\//g, '-')}.pdf`);
 };

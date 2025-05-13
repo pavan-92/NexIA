@@ -108,7 +108,7 @@ export default function RegisterForm() {
       <div className="text-center">
         <h2 className="text-3xl font-bold">Crie sua conta</h2>
         <p className="mt-2 text-muted-foreground">
-          Registre-se para começar a usar a Prontu.live
+          Registre-se para começar a usar a NexIA
         </p>
       </div>
 
