@@ -20,8 +20,8 @@ export default function Hero() {
               transition={{ delay: 0.2, duration: 0.8 }}
               className="text-4xl md:text-5xl lg:text-6xl font-bold leading-tight"
             >
-              Transforme sua consulta médica com{" "}
-              <span className="gradient-text">IA em tempo real</span>
+              Médico no comando do cuidado,{" "}
+              <span className="gradient-text">IA no controle da burocracia</span>
             </motion.h1>
             
             <motion.p 
