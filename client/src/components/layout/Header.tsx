@@ -104,7 +104,7 @@ export default function Header() {
                 Entrar
               </span>
               <span 
-                className="btn-shine bg-gradient-to-r from-primary to-secondary text-white px-4 py-2 rounded-lg font-medium hover:shadow-lg transition-all duration-300 cursor-pointer inline-block"
+                className="btn-shine bg-gradient-to-r from-[#006494] to-[#1B98E0] text-white px-4 py-2 rounded-lg font-medium hover:shadow-lg transition-all duration-300 cursor-pointer inline-block"
                 onClick={() => window.location.href = "/register"}
               >
                 Criar Conta
@@ -195,7 +195,7 @@ export default function Header() {
                     Entrar
                   </span>
                   <span 
-                    className="btn-shine bg-gradient-to-r from-primary to-secondary text-white px-4 py-2 rounded-lg font-medium hover:shadow-lg transition-all duration-300 text-center cursor-pointer inline-block"
+                    className="btn-shine bg-gradient-to-r from-[#006494] to-[#1B98E0] text-white px-4 py-2 rounded-lg font-medium hover:shadow-lg transition-all duration-300 text-center cursor-pointer inline-block"
                     onClick={() => {
                       window.location.href = "/register";
                       setMobileMenuOpen(false);

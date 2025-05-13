@@ -170,7 +170,7 @@ export default function RecordingInterface({
             <div className="recording-interface">
               <div className="flex-1">
                 <div className="recording-waveform">
-                  <Progress value={visualizationLevel} className="h-2 bg-gray-100 [&>*]:bg-blue-600" />
+                  <Progress value={visualizationLevel} className="h-2 bg-gray-100 [&>*]:bg-[#1B98E0]" />
                 </div>
                 <div className="mt-2 flex items-center">
                   <div className="animate-pulse text-red-500 text-sm font-medium mr-2">●</div>
@@ -196,7 +196,7 @@ export default function RecordingInterface({
             <div className="bg-gray-50 rounded-lg p-3">
               <div className="flex items-center justify-between">
                 <div className="flex items-center">
-                  <div className="h-8 w-8 bg-blue-100 rounded-full flex items-center justify-center text-blue-600 mr-3">
+                  <div className="h-8 w-8 bg-[#1B98E0]/10 rounded-full flex items-center justify-center text-[#006494] mr-3">
                     <Volume2 className="h-4 w-4" />
                   </div>
                   <div>
@@ -219,7 +219,7 @@ export default function RecordingInterface({
             <div className="flex gap-2">
               <Button 
                 onClick={handleTranscribe} 
-                className="bg-blue-600 text-white hover:bg-blue-700 text-sm flex-1"
+                className="bg-[#006494] text-white hover:bg-[#13293D] text-sm flex-1"
                 disabled={isTranscribing}
               >
                 {isTranscribing ? (

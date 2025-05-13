@@ -40,7 +40,7 @@ export default function Hero() {
             >
               <Link href="/register">
                 <Button 
-                  className="btn-shine bg-gradient-to-r from-[hsl(var(--accent-cyan))] to-[hsl(var(--accent-magenta))] hover:shadow-lg hover:shadow-primary/20 text-white px-8 py-6 rounded-lg font-bold text-lg"
+                  className="btn-shine bg-gradient-to-r from-[#006494] to-[#1B98E0] hover:shadow-lg hover:shadow-[#006494]/20 text-white px-8 py-6 rounded-lg font-bold text-lg"
                 >
                   Experimente Grátis
                 </Button>

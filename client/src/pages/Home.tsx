@@ -13,7 +13,7 @@ import Footer from "@/components/layout/Footer";
 export default function Home() {
   useEffect(() => {
     // Set page title
-    document.title = "Prontu.live - Transforme sua consulta médica com IA em tempo real";
+    document.title = "NexIA - Transforme sua consulta médica com IA em tempo real";
   }, []);
 
   return (
