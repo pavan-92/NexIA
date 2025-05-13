@@ -19,7 +19,7 @@ export default function Demo() {
           <div className="flex flex-col md:flex-row items-center gap-8">
             <div className="flex-1">
               <h2 className="text-3xl md:text-4xl font-bold mb-4">
-                Veja a Prontu.live em ação
+                Veja a NexIA em ação
               </h2>
               <p className="text-lg text-foreground/80 mb-6">
                 Agende uma demonstração ao vivo com nossa equipe para ver como nossa tecnologia pode transformar sua prática médica.

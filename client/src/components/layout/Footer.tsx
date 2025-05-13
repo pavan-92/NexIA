@@ -157,10 +157,10 @@ export default function Footer() {
               </li>
               <li>
                 <a 
-                  href="mailto:contato@nexia.ai"
+                  href="mailto:contato@nexia.com"
                   className="text-muted-foreground hover:text-foreground transition-colors duration-300"
                 >
-                  contato@nexia.ai
+                  contato@nexia.com
                 </a>
               </li>
             </ul>
