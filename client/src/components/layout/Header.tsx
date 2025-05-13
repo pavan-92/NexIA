@@ -1,8 +1,7 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Link, useLocation } from "wouter";
-import { useTheme } from "next-themes";
 import { Button } from "@/components/ui/button";
-import { Sun, Moon, Menu, X } from "lucide-react";
+import { Menu, X } from "lucide-react";
 import { useIsAuthenticated } from "@/hooks/use-auth";
 import { motion, AnimatePresence } from "framer-motion";
 import { signOut } from "@/lib/firebase";
@@ -10,20 +9,10 @@ import { cn } from "@/lib/utils";
 import logo from "../../assets/logo.png";
 
 export default function Header() {
-  const [mounted, setMounted] = useState(false);
-  const { theme, setTheme } = useTheme();
   const [location] = useLocation();
   const { isAuthenticated } = useIsAuthenticated();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const isHomePage = location === "/";
-
-  useEffect(() => {
-    setMounted(true);
-  }, []);
-
-  const toggleTheme = () => {
-    setTheme(theme === "light" ? "dark" : "light");
-  };
 
   const handleSignOut = async () => {
     try {
@@ -85,15 +74,6 @@ export default function Header() {
               >
                 Sair
               </Button>
-              <Button 
-                variant="ghost" 
-                size="icon" 
-                aria-label="Toggle theme" 
-                onClick={toggleTheme} 
-                className="rounded-full"
-              >
-                {mounted && theme === "dark" ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
-              </Button>
             </>
           ) : (
             <>
@@ -109,30 +89,12 @@ export default function Header() {
               >
                 Criar Conta
               </span>
-              <Button 
-                variant="ghost" 
-                size="icon" 
-                aria-label="Toggle theme" 
-                onClick={toggleTheme} 
-                className="rounded-full"
-              >
-                {mounted && theme === "dark" ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
-              </Button>
             </>
           )}
         </div>
 
         {/* Mobile Menu Button */}
-        <div className="flex md:hidden items-center space-x-2">
-          <Button 
-            variant="ghost" 
-            size="icon" 
-            aria-label="Toggle theme" 
-            onClick={toggleTheme} 
-            className="rounded-full"
-          >
-            {mounted && theme === "dark" ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
-          </Button>
+        <div className="flex md:hidden items-center">
           <Button 
             variant="ghost" 
             size="icon" 
