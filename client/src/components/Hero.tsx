@@ -1,6 +1,7 @@
 import { Link } from "wouter";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
+import aiMedicalImage from "@assets/image_1746372475833.png";
 
 export default function Hero() {
   return (
@@ -57,7 +58,7 @@ export default function Hero() {
             <div className="relative w-full max-w-md aspect-square">
               <div className="absolute inset-0 bg-gradient-to-r from-[#006494]/20 to-[#1B98E0]/20 rounded-xl blur-xl"></div>
               <img 
-                src="https://images.unsplash.com/photo-1551076805-e1869033e561?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&h=600&q=80" 
+                src={aiMedicalImage} 
                 alt="Interface médica futurista com IA" 
                 className="rounded-xl object-cover w-full h-full shadow-2xl shadow-[#006494]/20 border border-[#1B98E0]/30 relative z-10"
               />

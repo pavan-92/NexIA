@@ -3,19 +3,19 @@ import { Mic, Bot, FileText } from "lucide-react";
 
 const steps = [
   {
-    icon: <Mic className="text-primary text-3xl" />,
+    icon: <Mic className="text-[#006494] text-3xl" />,
     title: "Passo 1",
     subtitle: "Inicie a Gravação",
     description: "Comece sua consulta normalmente e deixe a IA trabalhar em segundo plano."
   },
   {
-    icon: <Bot className="text-primary text-3xl" />,
+    icon: <Bot className="text-[#006494] text-3xl" />,
     title: "Passo 2",
     subtitle: "A IA Transcreve e Resume",
     description: "Nossa IA registra cada palavra e organiza as informações em um formato clínico padrão."
   },
   {
-    icon: <FileText className="text-primary text-3xl" />,
+    icon: <FileText className="text-[#006494] text-3xl" />,
     title: "Passo 3",
     subtitle: "Exporte o Prontuário",
     description: "Revise, edite se necessário e exporte o prontuário pronto para seu sistema."

@@ -78,7 +78,7 @@ export default function Benefits() {
               variants={itemVariants}
               className="feature-card bg-card rounded-xl p-6 border border-border h-full"
             >
-              <div className="text-primary text-4xl mb-4">
+              <div className="text-[#1B98E0] text-4xl mb-4">
                 {benefit.icon}
               </div>
               <h3 className="text-xl font-bold mb-3">{benefit.title}</h3>

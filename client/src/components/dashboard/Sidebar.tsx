@@ -233,7 +233,7 @@ export default function Sidebar() {
                 >
                   <span className={cn(
                     "flex items-center justify-center w-6 h-6",
-                    location === link.href ? "text-blue-600" : "text-gray-500"
+                    location === link.href ? "text-[#006494]" : "text-gray-500"
                   )}>
                     {link.icon}
                   </span>
