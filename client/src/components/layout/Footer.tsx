@@ -20,7 +20,7 @@ export default function Footer() {
             >
               <img 
                 src="/logo.png" 
-                alt="Prontu.live Logo" 
+                alt="NexIA Logo" 
                 className="h-10"
               />
             </div>
@@ -163,10 +163,10 @@ export default function Footer() {
               </li>
               <li>
                 <a 
-                  href="mailto:contato@prontu.live"
+                  href="mailto:contato@nexia.com.br"
                   className="text-muted-foreground hover:text-foreground transition-colors duration-300"
                 >
-                  contato@prontu.live
+                  contato@nexia.com.br
                 </a>
               </li>
             </ul>
@@ -175,7 +175,7 @@ export default function Footer() {
         
         <div className="border-t border-white/30 pt-8 flex flex-col md:flex-row justify-between items-center">
           <p className="text-muted-foreground text-sm mb-4 md:mb-0">
-            &copy; {currentYear} Prontu.live. Todos os direitos reservados.
+            &copy; {currentYear} NexIA. Todos os direitos reservados.
           </p>
           <div className="flex flex-wrap gap-4 justify-center">
             <span 
@@ -201,7 +201,7 @@ export default function Footer() {
         
         <div className="mt-8 text-center text-xs text-muted-foreground/60">
           <p className="flex items-center justify-center gap-1">
-            Desenvolvido com <Heart className="h-3 w-3 text-secondary animate-pulse" /> pela equipe Prontu.live
+            Desenvolvido com <Heart className="h-3 w-3 text-secondary animate-pulse" /> pela equipe NexIA
           </p>
         </div>
       </div>

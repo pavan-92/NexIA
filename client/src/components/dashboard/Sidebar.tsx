@@ -94,7 +94,7 @@ export default function Sidebar() {
         >
           <img 
             src={logo} 
-            alt="Prontu.live" 
+            alt="NexIA" 
             className="h-8" 
           />
         </span>
