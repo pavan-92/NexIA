@@ -5,6 +5,7 @@ import {
   MessageSquare, 
   Heart
 } from "lucide-react";
+import logo from "../../assets/logo.png";
 
 export default function Footer() {
   const currentYear = new Date().getFullYear();
@@ -19,7 +20,7 @@ export default function Footer() {
               onClick={() => window.location.href = "/"}
             >
               <img 
-                src="/logo.png" 
+                src={logo} 
                 alt="NexIA Logo" 
                 className="h-10"
               />
@@ -69,14 +70,7 @@ export default function Footer() {
                   Funcionalidades
                 </span>
               </li>
-              <li>
-                <span 
-                  className="text-muted-foreground hover:text-foreground transition-colors duration-300 cursor-pointer"
-                  onClick={() => window.location.href = "/#pricing"}
-                >
-                  Planos e Preços
-                </span>
-              </li>
+
               <li>
                 <span 
                   className="text-muted-foreground hover:text-foreground transition-colors duration-300 cursor-pointer"
@@ -163,10 +157,10 @@ export default function Footer() {
               </li>
               <li>
                 <a 
-                  href="mailto:contato@nexia.com.br"
+                  href="mailto:contato@nexia.ai"
                   className="text-muted-foreground hover:text-foreground transition-colors duration-300"
                 >
-                  contato@nexia.com.br
+                  contato@nexia.ai
                 </a>
               </li>
             </ul>
@@ -201,7 +195,7 @@ export default function Footer() {
         
         <div className="mt-8 text-center text-xs text-muted-foreground/60">
           <p className="flex items-center justify-center gap-1">
-            Desenvolvido com <Heart className="h-3 w-3 text-secondary animate-pulse" /> pela equipe NexIA
+            Desenvolvido com <Heart className="h-3 w-3 text-[#1B98E0] animate-pulse" /> pela equipe NexIA
           </p>
         </div>
       </div>
