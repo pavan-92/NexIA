@@ -26,19 +26,7 @@ export default function ProntuarioView({
     chiefComplaint: "",
     history: "",
     diagnosis: "",
-    plan: "",
-    emotionalAnalysis: {
-      sentiment: "neutral",
-      emotions: {
-        joy: 0,
-        sadness: 0,
-        fear: 0,
-        anger: 0,
-        surprise: 0,
-        disgust: 0,
-      },
-      confidenceScore: 0,
-    },
+    plan: ""
   });
   
   const { toast } = useToast();
@@ -84,48 +72,7 @@ export default function ProntuarioView({
     }));
   };
 
-  const getSentimentIcon = (sentiment: string) => {
-    switch (sentiment) {
-      case "positive":
-        return <ThumbsUp className="h-5 w-5 text-green-500" />;
-      case "negative":
-        return <ThumbsDown className="h-5 w-5 text-red-500" />;
-      default:
-        return <AlertCircle className="h-5 w-5 text-yellow-500" />;
-    }
-  };
 
-  const getSentimentText = (sentiment: string) => {
-    switch (sentiment) {
-      case "positive":
-        return "Positivo";
-      case "negative":
-        return "Negativo";
-      default:
-        return "Neutro";
-    }
-  };
-
-  const getSentimentColor = (sentiment: string) => {
-    switch (sentiment) {
-      case "positive":
-        return "bg-green-600 hover:bg-green-700";
-      case "negative":
-        return "bg-red-600 hover:bg-red-700";
-      default:
-        return "bg-yellow-600 hover:bg-yellow-700";
-    }
-  };
-
-  // Get the top emotions sorted by value
-  const getTopEmotions = () => {
-    if (!editedNotes?.emotionalAnalysis?.emotions) return [];
-    
-    return Object.entries(editedNotes.emotionalAnalysis.emotions)
-      .filter(([_, value]) => (value as number) > 0.1)
-      .sort(([_, a], [__, b]) => (b as number) - (a as number))
-      .slice(0, 3);
-  };
 
   return (
     <div className="space-y-6">
@@ -246,62 +193,10 @@ export default function ProntuarioView({
         </motion.div>
       </div>
       
-      {editedNotes?.emotionalAnalysis && (
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: 0.5 }}
-        >
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between">
-              <CardTitle>Análise Emocional</CardTitle>
-              {editedNotes.emotionalAnalysis.sentiment && (
-                <Badge className={getSentimentColor(editedNotes.emotionalAnalysis.sentiment)}>
-                  {getSentimentIcon(editedNotes.emotionalAnalysis.sentiment)}
-                  <span className="ml-1">{getSentimentText(editedNotes.emotionalAnalysis.sentiment)}</span>
-                </Badge>
-              )}
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                <div>
-                  <h4 className="text-sm font-medium text-muted-foreground mb-2">Emoções Predominantes</h4>
-                  <div className="flex flex-wrap gap-2">
-                    {getTopEmotions().map(([emotion, value]) => (
-                      <Badge key={emotion} variant="outline" className="flex items-center gap-1">
-                        <Heart className="h-3 w-3 text-primary" />
-                        {emotion.charAt(0).toUpperCase() + emotion.slice(1)}: {Math.round((value as number) * 100)}%
-                      </Badge>
-                    ))}
-                    
-                    {getTopEmotions().length === 0 && (
-                      <span className="text-sm text-muted-foreground">Nenhuma emoção significativa detectada</span>
-                    )}
-                  </div>
-                </div>
-                
-                <div>
-                  <h4 className="text-sm font-medium text-muted-foreground mb-2">Confiança na Análise</h4>
-                  <div className="flex items-center gap-2">
-                    <div className="w-full bg-muted h-2 rounded-full">
-                      <div 
-                        className="h-2 bg-primary rounded-full"
-                        style={{ width: `${(editedNotes.emotionalAnalysis.confidenceScore || 0) * 100}%` }}
-                      ></div>
-                    </div>
-                    <span className="text-sm whitespace-nowrap">
-                      {Math.round((editedNotes.emotionalAnalysis.confidenceScore || 0) * 100)}%
-                    </span>
-                  </div>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        </motion.div>
-      )}
+
       
       <div className="flex items-center justify-between text-sm text-muted-foreground">
-        <div className="text-xs">* Esta é uma análise automatizada gerada pela IA</div>
+        <div className="text-xs">* Este é um prontuário automatizado gerado pela IA</div>
         
         <div className="flex items-center">
           <Brain className="h-4 w-4 mr-1" />

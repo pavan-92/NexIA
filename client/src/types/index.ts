@@ -39,25 +39,12 @@ export interface Consultation {
     history?: string;
     diagnosis?: string;
     plan?: string;
-    emotionalAnalysis?: EmotionalAnalysis;
   };
   createdAt: string;
   updatedAt: string;
 }
 
-// Emotional analysis
-export interface EmotionalAnalysis {
-  sentiment: 'positive' | 'negative' | 'neutral';
-  emotions: {
-    joy?: number;
-    sadness?: number;
-    fear?: number;
-    anger?: number;
-    surprise?: number;
-    disgust?: number;
-  };
-  confidenceScore: number;
-}
+
 
 // Form types
 export interface LoginFormData {
@@ -105,7 +92,6 @@ export interface NotesResponse {
   history: string;
   diagnosis: string;
   plan: string;
-  emotionalAnalysis?: EmotionalAnalysis;
 }
 
 // Plans
