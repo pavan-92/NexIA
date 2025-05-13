@@ -30,7 +30,7 @@ export default function Hero() {
               transition={{ delay: 0.4, duration: 0.8 }}
               className="text-lg md:text-xl text-foreground/80"
             >
-              A NexIA acaba com a burocracia do consultório. Uma IA que transforma sua fala em um prontuário pronto, organizado e preciso — sem você digitar nada. Atenda com mais atenção, menos papelada e mais tempo para o que importa.
+              A NexIA transforma sua fala em prontuários completos sem digitação, eliminando a burocracia e devolvendo seu tempo para o que realmente importa: o paciente.
             </motion.p>
             
             <motion.div 

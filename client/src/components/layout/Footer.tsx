@@ -26,7 +26,7 @@ export default function Footer() {
               />
             </div>
             <p className="text-muted-foreground mb-6">
-              A IA que transforma sua fala em um prontuário pronto, organizado e preciso — sem você digitar nada
+              A NexIA transforma sua fala em prontuários completos sem digitação, eliminando a burocracia e devolvendo seu tempo para o paciente
             </p>
             <div className="flex space-x-4">
               <a 
