@@ -295,78 +295,7 @@ export default function Consultation({ id }: { id?: string }) {
               </div>
             </motion.div>
             
-            {/* Análise de sentimentos */}
-            <motion.div variants={itemVariants}>
-              <div className="consultation-card">
-                <div className="consultation-card-header">
-                  <h3 className="consultation-card-title">
-                    <span className="flex items-center justify-center w-6 h-6 mr-2 text-blue-600">
-                      <FileText className="h-5 w-5" />
-                    </span>
-                    Análise multidimensional de sentimentos
-                  </h3>
-                  <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
-                    <span className="sr-only">Expandir</span>
-                  </Button>
-                </div>
-                <div className="consultation-card-content">
-                  <div className="space-y-4">
-                    <div className="flex justify-between items-center">
-                      <div className="text-sm font-medium">Tipo</div>
-                      <div className="text-sm font-medium">Porcentagem</div>
-                    </div>
-                    
-                    <div className="space-y-3">
-                      <div className="flex justify-between items-center">
-                        <div>Ansiedade</div>
-                        <div className="flex items-center">
-                          <span className="text-sm font-medium mr-2">99%</span>
-                          <div className="w-32 h-2 bg-gray-200 rounded-full overflow-hidden">
-                            <div className="bg-red-500 h-full rounded-full" style={{width: '99%'}}></div>
-                          </div>
-                        </div>
-                      </div>
-                      
-                      <div className="flex justify-between items-center">
-                        <div>Depressão</div>
-                        <div className="flex items-center">
-                          <span className="text-sm font-medium mr-2">20%</span>
-                          <div className="w-32 h-2 bg-gray-200 rounded-full overflow-hidden">
-                            <div className="bg-blue-500 h-full rounded-full" style={{width: '20%'}}></div>
-                          </div>
-                        </div>
-                      </div>
-                      
-                      <div className="flex justify-between items-center">
-                        <div>Estresse</div>
-                        <div className="flex items-center">
-                          <span className="text-sm font-medium mr-2">60%</span>
-                          <div className="w-32 h-2 bg-gray-200 rounded-full overflow-hidden">
-                            <div className="bg-yellow-500 h-full rounded-full" style={{width: '60%'}}></div>
-                          </div>
-                        </div>
-                      </div>
-                      
-                      <div className="flex justify-between items-center">
-                        <div>Dor</div>
-                        <div className="flex items-center">
-                          <span className="text-sm font-medium mr-2">6%</span>
-                          <div className="w-32 h-2 bg-gray-200 rounded-full overflow-hidden">
-                            <div className="bg-blue-500 h-full rounded-full" style={{width: '6%'}}></div>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                    
-                    <div className="text-right">
-                      <Button variant="link" className="text-blue-600 p-0 h-auto text-sm">
-                        + informações
-                      </Button>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </motion.div>
+
             
             {/* Alergias */}
             <motion.div variants={itemVariants}>

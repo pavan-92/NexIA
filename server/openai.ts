@@ -51,18 +51,6 @@ export async function generateMedicalNotes(transcription: string): Promise<{
   history: string;
   diagnosis: string;
   plan: string;
-  emotionalAnalysis: {
-    sentiment: 'positive' | 'negative' | 'neutral';
-    emotions: {
-      joy?: number;
-      sadness?: number;
-      fear?: number;
-      anger?: number;
-      surprise?: number;
-      disgust?: number;
-    };
-    confidenceScore: number;
-  };
 }> {
   try {
     const response = await openai.chat.completions.create({
@@ -78,26 +66,13 @@ export async function generateMedicalNotes(transcription: string): Promise<{
           2. History of Present Illness: Detailed chronological description of the patient's symptoms
           3. Diagnosis: Potential diagnoses based on the information provided
           4. Treatment Plan: Recommended next steps, medications, and follow-up
-          5. Emotional Analysis: Analyze the patient's emotional state during the consultation
           
           Your response should be in JSON format with the following structure:
           {
             "chiefComplaint": "string",
             "history": "string",
             "diagnosis": "string",
-            "plan": "string",
-            "emotionalAnalysis": {
-              "sentiment": "positive|negative|neutral",
-              "emotions": {
-                "joy": number (0-1),
-                "sadness": number (0-1),
-                "fear": number (0-1),
-                "anger": number (0-1),
-                "surprise": number (0-1),
-                "disgust": number (0-1)
-              },
-              "confidenceScore": number (0-1)
-            }
+            "plan": "string"
           }`
         },
         {
@@ -114,12 +89,7 @@ export async function generateMedicalNotes(transcription: string): Promise<{
       chiefComplaint: result.chiefComplaint || "",
       history: result.history || "",
       diagnosis: result.diagnosis || "",
-      plan: result.plan || "",
-      emotionalAnalysis: {
-        sentiment: result.emotionalAnalysis?.sentiment || "neutral",
-        emotions: result.emotionalAnalysis?.emotions || {},
-        confidenceScore: result.emotionalAnalysis?.confidenceScore || 0
-      }
+      plan: result.plan || ""
     };
   } catch (error) {
     console.error("Error generating medical notes:", error);
