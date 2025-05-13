@@ -5,7 +5,7 @@ import { Link } from "wouter";
 export default function CTA() {
   return (
     <section className="py-20 relative">
-      <div className="absolute inset-0 bg-gradient-to-r from-primary/20 to-secondary/20"></div>
+      <div className="absolute inset-0 bg-gradient-to-r from-[#006494]/20 to-[#1B98E0]/20"></div>
       <div className="container mx-auto px-4 relative z-10">
         <motion.div 
           initial={{ opacity: 0, y: 20 }}
@@ -21,7 +21,7 @@ export default function CTA() {
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Link href="/register">
               <Button 
-                className="btn-shine bg-gradient-to-r from-primary to-secondary text-white px-8 py-6 rounded-lg font-bold text-lg"
+                className="btn-shine bg-gradient-to-r from-[#006494] to-[#1B98E0] text-white px-8 py-6 rounded-lg font-bold text-lg"
               >
                 Experimente Grátis
               </Button>

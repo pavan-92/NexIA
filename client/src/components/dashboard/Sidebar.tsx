@@ -138,8 +138,8 @@ export default function Sidebar() {
                         className={cn(
                           "flex items-center space-x-3 rounded-md px-3 py-2 text-sm font-medium cursor-pointer transition-all duration-200",
                           location === link.href
-                            ? "bg-blue-100 text-blue-600 font-medium"
-                            : "text-gray-600 hover:bg-blue-50 hover:text-blue-600"
+                            ? "bg-[#1B98E0]/10 text-[#006494] font-medium"
+                            : "text-gray-600 hover:bg-[#1B98E0]/5 hover:text-[#006494]"
                         )}
                         onClick={() => {
                           window.location.href = link.href;
@@ -148,7 +148,7 @@ export default function Sidebar() {
                       >
                         <span className={cn(
                           "flex items-center justify-center w-6 h-6",
-                          location === link.href ? "text-blue-600" : "text-gray-500"
+                          location === link.href ? "text-[#006494]" : "text-gray-500"
                         )}>
                           {link.icon}
                         </span>
@@ -225,8 +225,8 @@ export default function Sidebar() {
                   className={cn(
                     "flex items-center rounded-md px-3 py-2 text-sm font-medium cursor-pointer transition-all duration-200",
                     location === link.href
-                      ? "bg-blue-100 text-blue-600 font-medium"
-                      : "text-gray-600 hover:bg-blue-50 hover:text-blue-600",
+                      ? "bg-[#1B98E0]/10 text-[#006494] font-medium"
+                      : "text-gray-600 hover:bg-[#1B98E0]/5 hover:text-[#006494]",
                     isCollapsed && "justify-center"
                   )}
                   onClick={() => window.location.href = link.href}

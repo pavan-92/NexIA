@@ -55,15 +55,15 @@ export default function Hero() {
             className="order-1 lg:order-2 flex justify-center animate-float"
           >
             <div className="relative w-full max-w-md aspect-square">
-              <div className="absolute inset-0 bg-gradient-to-r from-primary/20 to-secondary/20 rounded-xl blur-xl"></div>
+              <div className="absolute inset-0 bg-gradient-to-r from-[#006494]/20 to-[#1B98E0]/20 rounded-xl blur-xl"></div>
               <img 
                 src="https://images.unsplash.com/photo-1551076805-e1869033e561?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&h=600&q=80" 
                 alt="Interface médica futurista com IA" 
-                className="rounded-xl object-cover w-full h-full shadow-2xl shadow-primary/20 border border-primary/30 relative z-10"
+                className="rounded-xl object-cover w-full h-full shadow-2xl shadow-[#006494]/20 border border-[#1B98E0]/30 relative z-10"
               />
-              <div className="absolute -bottom-5 -right-5 bg-background/80 backdrop-blur-md p-4 rounded-lg border border-primary/30 shadow-lg z-20">
+              <div className="absolute -bottom-5 -right-5 bg-background/80 backdrop-blur-md p-4 rounded-lg border border-[#1B98E0]/30 shadow-lg z-20">
                 <div className="flex items-center space-x-2">
-                  <div className="w-3 h-3 bg-primary rounded-full animate-pulse"></div>
+                  <div className="w-3 h-3 bg-[#1B98E0] rounded-full animate-pulse"></div>
                   <span className="text-sm font-medium">Transcrição em tempo real</span>
                 </div>
               </div>
