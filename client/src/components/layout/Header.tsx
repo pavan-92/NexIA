@@ -55,7 +55,7 @@ export default function Header() {
             className="cursor-pointer flex items-center">
             <img 
               src={logo} 
-              alt="Prontu.live" 
+              alt="NexIA" 
               className="h-10 cursor-pointer"
             />
           </span>
