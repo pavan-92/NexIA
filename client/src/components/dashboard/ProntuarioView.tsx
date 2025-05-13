@@ -7,7 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
-import { Brain, Download, Save, AlertCircle, Heart, ThumbsUp, ThumbsDown } from "lucide-react";
+import { Brain, Download, Save } from "lucide-react";
 
 interface ProntuarioViewProps {
   notes: any;

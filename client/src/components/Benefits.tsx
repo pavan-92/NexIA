@@ -2,7 +2,6 @@ import { motion } from "framer-motion";
 import { 
   Mic, 
   Brain, 
-  Heart, 
   ClipboardList 
 } from "lucide-react";
 
@@ -16,11 +15,6 @@ const benefits = [
     icon: <Brain className="h-10 w-10" />,
     title: "Resumo Inteligente",
     description: "Criação de resumos clínicos formais e organizados seguindo padrões médicos reconhecidos."
-  },
-  {
-    icon: <Heart className="h-10 w-10" />,
-    title: "Análise Emocional",
-    description: "Detecção de sentimentos e nuances na fala do paciente para uma compreensão mais profunda."
   },
   {
     icon: <ClipboardList className="h-10 w-10" />,
