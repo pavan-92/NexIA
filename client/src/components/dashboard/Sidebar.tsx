@@ -122,7 +122,7 @@ export default function Sidebar() {
               <div className="px-4 py-6 flex flex-col items-center text-center border-b border-border">
                 <Avatar className="h-16 w-16 mb-4">
                   <AvatarImage src={undefined} alt={user?.displayName || "Avatar"} />
-                  <AvatarFallback className="bg-primary text-primary-foreground text-lg">
+                  <AvatarFallback className="bg-[#006494] text-white text-lg">
                     {user?.displayName?.split(" ").map(n => n[0]).join("") || "U"}
                   </AvatarFallback>
                 </Avatar>
@@ -208,7 +208,7 @@ export default function Sidebar() {
           <div className="px-4 py-6 flex flex-col items-center text-center border-b border-border">
             <Avatar className="h-16 w-16 mb-4">
               <AvatarImage src={undefined} alt={user?.displayName || "Avatar"} />
-              <AvatarFallback className="bg-primary text-primary-foreground text-lg">
+              <AvatarFallback className="bg-[#006494] text-white text-lg">
                 {user?.displayName?.split(" ").map(n => n[0]).join("") || "U"}
               </AvatarFallback>
             </Avatar>

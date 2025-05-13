@@ -72,15 +72,15 @@ export default function HowItWorks() {
               className="relative"
             >
               <div className="bg-card rounded-xl p-8 border border-border h-full flex flex-col items-center text-center">
-                <div className="w-20 h-20 rounded-full bg-primary/20 flex items-center justify-center mb-6">
+                <div className="w-20 h-20 rounded-full bg-[#1B98E0]/20 flex items-center justify-center mb-6">
                   {step.icon}
                 </div>
                 <h3 className="text-xl font-bold mb-3">{step.title}</h3>
-                <h4 className="text-lg font-medium text-primary mb-4">{step.subtitle}</h4>
+                <h4 className="text-lg font-medium text-[#1B98E0] mb-4">{step.subtitle}</h4>
                 <p className="text-muted-foreground">{step.description}</p>
               </div>
               {index < steps.length - 1 && (
-                <div className="hidden md:block absolute top-1/2 -right-10 transform -translate-y-1/2 text-primary text-3xl">
+                <div className="hidden md:block absolute top-1/2 -right-10 transform -translate-y-1/2 text-[#1B98E0] text-3xl">
                   <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                     <path d="M5 12h14m-7-7 7 7-7 7" />
                   </svg>
