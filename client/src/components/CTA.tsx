@@ -16,7 +16,7 @@ export default function CTA() {
         >
           <h2 className="text-3xl md:text-4xl font-bold mb-6">Comece a transformar suas consultas hoje</h2>
           <p className="text-lg text-foreground/80 mb-8 max-w-2xl mx-auto">
-            Junte-se a centenas de médicos que já otimizaram seu tempo e melhoraram a experiência dos seus pacientes com a Prontu.live
+            Junte-se a centenas de médicos que já otimizaram seu tempo e melhoraram a experiência dos seus pacientes com a NexIA
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Link href="/register">

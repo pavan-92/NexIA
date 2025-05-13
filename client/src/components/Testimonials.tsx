@@ -5,7 +5,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 const testimonials = [
   {
     rating: 5,
-    text: "A Prontu.live revolucionou minha rotina clínica. Agora consigo prestar atenção total ao paciente enquanto a IA cuida dos registros.",
+    text: "A NexIA revolucionou minha rotina clínica. Agora consigo prestar atenção total ao paciente enquanto a IA cuida dos registros.",
     author: {
       name: "Dra. Ana Silva",
       role: "Clínica Geral",
@@ -14,7 +14,7 @@ const testimonials = [
   },
   {
     rating: 5,
-    text: "Minha produtividade dobrou desde que comecei a usar o Prontu.live. Os resumos são precisos e a transcrição ao vivo não falha.",
+    text: "Minha produtividade dobrou desde que comecei a usar o NexIA. Os resumos são precisos e a transcrição ao vivo não falha.",
     author: {
       name: "Dr. Carlos Mendes",
       role: "Cardiologista",
@@ -80,7 +80,7 @@ export default function Testimonials() {
         >
           <h2 className="text-3xl md:text-4xl font-bold mb-4">O que nossos usuários dizem</h2>
           <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-            Médicos e profissionais de saúde já estão transformando suas práticas com o Prontu.live
+            Médicos e profissionais de saúde já estão transformando suas práticas com o NexIA
           </p>
         </motion.div>
         

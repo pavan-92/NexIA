@@ -59,7 +59,7 @@ export default function Benefits() {
           transition={{ duration: 0.6 }}
           className="text-center mb-16"
         >
-          <h2 className="text-3xl md:text-4xl font-bold mb-4">O que a Prontu.live faz por você</h2>
+          <h2 className="text-3xl md:text-4xl font-bold mb-4">O que a NexIA faz por você</h2>
           <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
             Nossas ferramentas de IA foram projetadas para otimizar seu fluxo de trabalho clínico e melhorar a experiência do paciente
           </p>

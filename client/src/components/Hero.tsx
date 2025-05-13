@@ -29,7 +29,7 @@ export default function Hero() {
               transition={{ delay: 0.4, duration: 0.8 }}
               className="text-lg md:text-xl text-foreground/80"
             >
-              A Prontu.live transcreve, resume e organiza seus prontuários automaticamente – tudo enquanto você cuida do paciente.
+              A NexIA transcreve, resume e organiza seus prontuários automaticamente – tudo enquanto você cuida do paciente.
             </motion.p>
             
             <motion.div 
