@@ -42,7 +42,7 @@ const medicalTerms: Record<string, string> = {
   "diabetes": "diabetes",
   "headache": "cefaleia",
   "migraine": "enxaqueca",
-  "cancer": "câncer",
+  // "cancer" já está definido acima
   "hypertension": "hipertensão",
   "depression": "depressão",
   "anxiety": "ansiedade",
@@ -242,7 +242,7 @@ export default function PubMedSearch() {
         />
         <Button 
           type="submit" 
-          className="bg-blue-600 hover:bg-blue-700 text-white"
+          className="bg-[#006494] hover:bg-[#13293D] text-white"
           disabled={isSearching || isTranslating}
         >
           {isSearching || isTranslating ? (
@@ -272,7 +272,7 @@ export default function PubMedSearch() {
           {articles.map((article) => (
             <Card 
               key={article.pmid}
-              className="p-4 hover:border-blue-200 transition-all"
+              className="p-4 hover:border-[#1B98E0]/30 transition-all"
             >
               <div className="space-y-2">
                 <div className="flex justify-between">
@@ -281,7 +281,7 @@ export default function PubMedSearch() {
                     <Button 
                       variant="ghost" 
                       size="sm" 
-                      className="h-8 w-8 p-0 text-gray-500 hover:text-blue-600"
+                      className="h-8 w-8 p-0 text-gray-500 hover:text-[#1B98E0]"
                       onClick={() => handleExportArticle(article)}
                     >
                       <Download className="h-4 w-4" />
@@ -290,7 +290,7 @@ export default function PubMedSearch() {
                     <Button 
                       variant="ghost" 
                       size="sm" 
-                      className="h-8 w-8 p-0 text-gray-500 hover:text-blue-600"
+                      className="h-8 w-8 p-0 text-gray-500 hover:text-[#1B98E0]"
                       onClick={() => window.open(article.url, '_blank')}
                     >
                       <ExternalLink className="h-4 w-4" />
@@ -304,7 +304,7 @@ export default function PubMedSearch() {
                 </div>
                 
                 <div className="text-sm">
-                  <span className="text-blue-600">{article.journal}</span> • {article.publicationDate}
+                  <span className="text-[#1B98E0]">{article.journal}</span> • {article.publicationDate}
                 </div>
                 
                 <div className="pt-2">
@@ -312,7 +312,7 @@ export default function PubMedSearch() {
                     variant="outline" 
                     size="sm" 
                     onClick={() => handleExpandArticle(article.pmid)}
-                    className="text-xs h-7 text-blue-600 border-blue-100 hover:bg-blue-50"
+                    className="text-xs h-7 text-[#006494] border-[#1B98E0]/10 hover:bg-[#1B98E0]/10"
                   >
                     {expandedArticleId === article.pmid ? "Ocultar resumo" : "Ver resumo"}
                   </Button>

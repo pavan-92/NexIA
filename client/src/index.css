@@ -13,20 +13,20 @@
   --card-foreground: 222.2 84% 4.9%;
   --border: 214.3 31.8% 91.4%;
   --input: 214.3 31.8% 91.4%;
-  --primary: 180 100% 35%; /* #00b4b4 turquesa exato da logo */
+  --primary: 201 98% 28%; /* #006494 Sapphire Blue */
   --primary-foreground: 210 40% 98%;
-  --secondary: 0 75% 65%; /* #ff4b4b vermelho exato da logo */
+  --secondary: 188 55% 42%; /* #247BA0 Celadon Blue */
   --secondary-foreground: 222.2 84% 4.9%;
-  --accent: 210 40% 96.1%;
+  --accent: 198 100% 50%; /* #1B98E0 Carolina Blue */
   --accent-foreground: 222.2 84% 4.9%;
-  --accent-cyan: 180 100% 35%; /* Mesma cor do turquesa */
-  --accent-magenta: 0 75% 65%; /* Mesma cor do vermelho */
-  --highlight: 216 100% 66%; /* #5A92F6 azul de destaque */
-  --highlight-light: 216 100% 95%; /* Versão clara do azul de destaque */
+  --accent-blue-dark: 203 60% 27%; /* #13293D Prussian Blue */
+  --accent-blue-light: 180 12% 92%; /* #E8F1F2 Azure X 11 Web Color */
+  --highlight: 198 100% 50%; /* #1B98E0 Carolina Blue */
+  --highlight-light: 198 100% 95%; /* Versão clara do Carolina Blue */
   --destructive: 0 84.2% 60.2%;
   --destructive-foreground: 210 40% 98%;
-  --ring: 180 100% 35%;
-  --radius: 0.75rem; /* Aumentado para bordas mais arredondadas */
+  --ring: 201 98% 28%; /* Sapphire Blue */
+  --radius: 0.75rem; /* Bordas arredondadas */
 }
 
 @layer base {
@@ -44,12 +44,12 @@
 }
 
 .hero-gradient {
-  background: radial-gradient(circle at top right, rgba(255, 75, 75, 0.4), transparent 70%),
-               radial-gradient(circle at bottom left, rgba(0, 180, 180, 0.4), transparent 70%);
+  background: radial-gradient(circle at top right, rgba(27, 152, 224, 0.3), transparent 70%),
+               radial-gradient(circle at bottom left, rgba(0, 100, 148, 0.4), transparent 70%);
 }
 
 .gradient-text {
-  @apply bg-clip-text text-transparent bg-gradient-to-r from-primary to-secondary;
+  @apply bg-clip-text text-transparent bg-gradient-to-r from-primary to-accent;
 }
 
 .btn-shine {
@@ -132,7 +132,7 @@
 
 .dashboard-card:hover {
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
-  border-color: rgba(90, 146, 246, 0.3);
+  border-color: rgba(27, 152, 224, 0.3); /* #1B98E0 Carolina Blue */
 }
 
 .dashboard-icon {
@@ -140,19 +140,19 @@
 }
 
 .dashboard-icon-blue {
-  @apply bg-blue-100 text-blue-600;
+  @apply bg-[#1B98E0]/10 text-[#1B98E0];
 }
 
 .dashboard-icon-green {
   @apply bg-green-100 text-green-600;
 }
 
-.dashboard-icon-purple {
-  @apply bg-purple-100 text-purple-600;
+.dashboard-icon-dark-blue {
+  @apply bg-[#13293D]/10 text-[#13293D];
 }
 
-.dashboard-icon-amber {
-  @apply bg-amber-100 text-amber-600;
+.dashboard-icon-celadon {
+  @apply bg-[#247BA0]/10 text-[#247BA0];
 }
 
 /* Estilos para consulta médica */
@@ -193,7 +193,7 @@
 }
 
 .patient-tag {
-  @apply px-3 py-1 rounded-full text-sm bg-blue-100 text-blue-700;
+  @apply px-3 py-1 rounded-full text-sm bg-[#1B98E0]/10 text-[#006494];
 }
 
 .consultation-grid {
@@ -225,7 +225,7 @@
 }
 
 .recording-button-primary {
-  @apply bg-blue-600 hover:bg-blue-700 transition-colors;
+  @apply bg-[#006494] hover:bg-[#13293D] transition-colors;
 }
 
 .recording-button-stop {
@@ -241,15 +241,15 @@
 }
 
 .tag-blue {
-  @apply bg-blue-100 text-blue-800;
+  @apply bg-[#1B98E0]/10 text-[#006494];
 }
 
-.tag-yellow {
-  @apply bg-yellow-100 text-yellow-800;
+.tag-celadon {
+  @apply bg-[#247BA0]/10 text-[#247BA0];
 }
 
-.tag-red {
-  @apply bg-red-100 text-red-800;
+.tag-dark {
+  @apply bg-[#13293D]/10 text-[#13293D];
 }
 
 .card-hover-effect:hover {

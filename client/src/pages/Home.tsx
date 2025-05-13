@@ -5,7 +5,7 @@ import Hero from "@/components/Hero";
 import Benefits from "@/components/Benefits";
 import HowItWorks from "@/components/HowItWorks";
 import Demo from "@/components/Demo";
-import Pricing from "@/components/Pricing";
+// Removed Pricing component
 import Testimonials from "@/components/Testimonials";
 import CTA from "@/components/CTA";
 import Footer from "@/components/layout/Footer";
@@ -29,7 +29,6 @@ export default function Home() {
         <Benefits />
         <HowItWorks />
         <Demo />
-        <Pricing />
         <Testimonials />
         <CTA />
       </main>
