@@ -26,7 +26,7 @@ export default function Footer() {
               />
             </div>
             <p className="text-muted-foreground mb-6">
-              Transformando consultas médicas com inteligência artificial em tempo real
+              A IA que transforma sua fala em um prontuário pronto, organizado e preciso — sem você digitar nada
             </p>
             <div className="flex space-x-4">
               <a 
