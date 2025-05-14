@@ -174,168 +174,136 @@ export default function RecordingInterface({
         transition={{ duration: 0.5 }}
       >
         <div className="space-y-4">
-          {/* Controles de gravação - mudam conforme o estado */}
-          {isRecording ? (
-            <div className="recording-interface">
-              <div className="flex-1">
-                <div className="recording-waveform">
-                  <Progress value={visualizationLevel} className="h-2 bg-gray-100 [&>*]:bg-[#1B98E0]" />
-                </div>
-                <div className="mt-2 flex items-center">
-                  <div className="animate-pulse text-red-500 text-sm font-medium mr-2">●</div>
-                  <div className="text-sm font-medium">{formatTime(recordingTime)}</div>
-                </div>
-              </div>
-              
-              <Button 
-                onClick={handleStopRecording} 
-                className="recording-button recording-button-stop"
-                size="icon"
-              >
-                <StopCircle className="h-5 w-5" />
-              </Button>
-            </div>
-          ) : audioBlob || audioSegments.length > 0 ? (
-            <>
-              <div className="bg-gray-50 rounded-lg p-3 mb-2">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center">
-                    <div className="h-8 w-8 bg-[#1B98E0]/10 rounded-full flex items-center justify-center text-[#006494] mr-3">
-                      <Volume2 className="h-4 w-4" />
-                    </div>
-                    <div>
-                      <div className="font-medium text-sm">Áudios gravados</div>
-                      <div className="text-xs text-gray-500">
-                        {audioSegments.length} segmento(s) • Total: {formatTime(recordingTime)}
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-              
-              {/* Lista de segmentos de áudio */}
-              {audioSegments.length > 0 && (
-                <div className="space-y-2 mb-3">
-                  {audioSegments.map((segment, index) => (
-                    <div key={segment.id} className="flex items-center justify-between bg-white border border-gray-100 rounded-lg p-2">
-                      <div className="flex items-center">
-                        <div className="text-xs font-medium text-gray-700 mr-2">
-                          {index + 1}
-                        </div>
-                        <audio controls className="h-8 w-32 mr-2">
-                          <source src={segment.url} type="audio/webm" />
-                        </audio>
-                        <div className="text-xs text-gray-500">
-                          {formatTime(segment.duration)}
-                        </div>
-                      </div>
-                      <Button 
-                        variant="ghost" 
-                        size="icon" 
-                        className="h-6 w-6 text-gray-400 hover:text-red-500"
-                        onClick={() => deleteSegment(segment.id)}
-                      >
-                        <Trash2 className="h-3.5 w-3.5" />
-                      </Button>
-                    </div>
-                  ))}
-                </div>
-              )}
-              
-              {/* Caso não tenha segmentos, mostra mensagem */}
-              {audioSegments.length === 0 && (
-                <div className="bg-gray-50 rounded-lg p-3 text-center text-gray-500 text-sm italic mb-3">
-                  Não há segmentos de áudio gravados
-                </div>
-              )}
-            </>
-          ) : (
-            <div className="flex items-center justify-between mb-3">
-              <p className="text-sm text-gray-500">
-                Grave a consulta para gerar a transcrição
-              </p>
-              
-              <Button 
-                onClick={handleStartRecording} 
-                className="recording-button recording-button-primary"
-                size="icon"
-              >
-                <Mic className="h-5 w-5" />
-              </Button>
-            </div>
-          )}
-          
-          {/* Área de transcrição - SEMPRE VISÍVEL independentemente do estado */}
-          <div className={`p-4 rounded-lg border min-h-[200px] flex flex-col ${isRecording ? 'bg-blue-50 border-blue-100' : 'bg-white border-gray-200'}`}>
-            <div className="flex items-center mb-2">
+          {/* Header com nome do paciente e status */}
+          <div className="flex justify-between items-center border-b pb-3">
+            <h2 className="text-lg font-medium">Nome do Paciente</h2>
+            <div className="flex items-center">
               {isRecording && (
-                <div className="animate-pulse text-blue-500 text-sm font-medium mr-2">●</div>
+                <>
+                  <div className="animate-pulse text-red-500 text-sm mr-2">●</div>
+                  <span className="text-sm font-medium mr-4">Transcrição ao vivo</span>
+                </>
               )}
-              <h3 className={`text-sm font-medium ${isRecording ? 'text-blue-700' : 'text-gray-700'}`}>
-                {isRecording ? 'Transcrição em tempo real' : 'Transcrição da consulta'}
-              </h3>
+              <span className="text-sm font-medium">{formatTime(recordingTime)}</span>
+              <div className="ml-4 px-2 py-1 bg-green-100 text-green-800 text-xs rounded-full">
+                {isLiveTranscribing ? "On-line" : "Off-line"}
+              </div>
             </div>
-            
+          </div>
+          
+          {/* Área principal de transcrição */}
+          <div className="border border-gray-200 rounded-lg min-h-[300px] bg-white p-4">
+            <h3 className="text-sm font-medium text-gray-700 mb-3">Transcrição</h3>
             {liveTranscript ? (
-              <div className="text-sm text-gray-700 flex-grow">
+              <div className="text-sm text-gray-700">
                 {liveTranscript}
               </div>
             ) : (
-              <div className="text-gray-500 text-sm italic flex-grow flex items-center justify-center">
+              <div className="text-gray-500 text-sm italic flex items-center justify-center h-64">
                 {isRecording 
                   ? "Aguardando fala (o servidor está processando o áudio a cada 5 segundos)..." 
-                  : (audioBlob || audioSegments.length > 0)
-                    ? "Clique em \"Transcrever\" para processar o áudio gravado"
-                    : "A transcrição aparecerá aqui durante a gravação"}
+                  : "A transcrição aparecerá aqui durante a gravação"}
               </div>
             )}
           </div>
           
-          {isRecording && (
-            <p className="text-xs text-gray-500 mt-2">
-              Fale pausadamente e com clareza para melhores resultados
-            </p>
+          {/* Área de segmentos de áudio */}
+          {audioSegments.length > 0 && (
+            <div className="mt-4">
+              <h3 className="text-sm font-medium text-gray-700 mb-2">Áudios gravados ({audioSegments.length})</h3>
+              <div className="space-y-2">
+                {audioSegments.map((segment, index) => (
+                  <div key={segment.id} className="flex items-center justify-between bg-white border border-gray-100 rounded-lg p-2">
+                    <div className="flex items-center flex-1">
+                      <div className="text-xs font-medium text-gray-700 mr-2">
+                        {index + 1}
+                      </div>
+                      <audio controls className="h-8 flex-1 mr-2">
+                        <source src={segment.url} type="audio/webm" />
+                      </audio>
+                      <div className="text-xs text-gray-500 w-16 text-right">
+                        {formatTime(segment.duration)}
+                      </div>
+                    </div>
+                    <Button 
+                      variant="ghost" 
+                      size="icon" 
+                      className="h-6 w-6 text-gray-400 hover:text-red-500"
+                      onClick={() => deleteSegment(segment.id)}
+                    >
+                      <Trash2 className="h-3.5 w-3.5" />
+                    </Button>
+                  </div>
+                ))}
+              </div>
+            </div>
           )}
           
-          {/* Botões de ação - visíveis apenas quando não está gravando e tem áudio */}
-          {!isRecording && (audioBlob || audioSegments.length > 0) && (
-            <div className="flex flex-col gap-3">
-              <div className="flex gap-2">
-                <Button 
-                  onClick={handleTranscribe} 
-                  className="bg-[#006494] text-white hover:bg-[#13293D] text-sm flex-1"
-                  disabled={isTranscribing || audioSegments.length === 0}
-                >
-                  {isTranscribing ? (
-                    <>
-                      <RefreshCw className="mr-2 h-3 w-3 animate-spin" />
-                      Transcrevendo...
-                    </>
-                  ) : (
-                    <>
-                      <CheckCircle2 className="mr-2 h-3 w-3" />
-                      Transcrever
-                    </>
-                  )}
-                </Button>
-                
-                <Button 
-                  onClick={handleStartRecording} 
-                  className="text-sm bg-green-600 text-white hover:bg-green-700"
-                  disabled={isRecording || isTranscribing}
-                >
-                  <Mic className="mr-2 h-3 w-3" />
-                  Nova gravação
-                </Button>
+          {/* Ícone de aviso sobre permissão de microfone */}
+          <div className="text-center my-6">
+            <div className="flex justify-center mb-2">
+              <div className="bg-teal-500 text-white p-3 rounded-full">
+                <Volume2 className="h-8 w-8" />
               </div>
-              
+            </div>
+            <p className="text-sm text-gray-500">
+              Não se esqueça de permitir o acesso ao microfone nas configurações
+            </p>
+          </div>
+          
+          {/* Botões de ação */}
+          <div className="flex gap-4 justify-center">
+            {isRecording ? (
+              <Button 
+                onClick={handleStopRecording} 
+                className="bg-red-500 hover:bg-red-600 text-white rounded-full py-6 px-8"
+                size="lg"
+              >
+                <StopCircle className="mr-2 h-5 w-5" />
+                Parar gravação
+              </Button>
+            ) : (
+              <Button 
+                onClick={handleStartRecording} 
+                className="bg-teal-500 hover:bg-teal-600 text-white rounded-full py-6 px-8"
+                size="lg"
+                disabled={isTranscribing}
+              >
+                <Mic className="mr-2 h-5 w-5" />
+                Iniciar gravação
+              </Button>
+            )}
+            
+            <Button 
+              onClick={handleTranscribe} 
+              className="bg-pink-400 hover:bg-pink-500 text-white rounded-full py-6 px-8"
+              size="lg"
+              disabled={isRecording || isTranscribing || audioSegments.length === 0}
+            >
+              {isTranscribing ? (
+                <>
+                  <RefreshCw className="mr-2 h-5 w-5 animate-spin" />
+                  Processando...
+                </>
+              ) : (
+                <>
+                  <CheckCircle2 className="mr-2 h-5 w-5" />
+                  Gerar prontuário
+                </>
+              )}
+            </Button>
+          </div>
+          
+          {/* Botão para descartar tudo */}
+          {!isRecording && audioSegments.length > 0 && (
+            <div className="text-center mt-2">
               <Button 
                 onClick={handleReset} 
-                variant="outline" 
-                disabled={isTranscribing || audioSegments.length === 0}
-                className="text-sm border-gray-200 text-gray-700"
+                variant="ghost" 
+                disabled={isTranscribing}
+                className="text-sm text-gray-500 hover:text-red-500"
               >
-                <Trash2 className="mr-2 h-3 w-3" />
+                <Trash2 className="mr-1 h-3 w-3" />
                 Descartar tudo
               </Button>
             </div>

@@ -44,7 +44,16 @@ export function setupLiveTranscription(server: Server) {
   wss.on("connection", (ws, req) => {
     // Usamos o IP como parte do identificador para debug
     const ip = req.socket.remoteAddress || 'unknown';
+    const headers = req.headers;
     console.log(`Conexão WebSocket estabelecida para transcrição ao vivo de ${ip}`);
+    console.log(`Headers da requisição: ${JSON.stringify({
+      origin: headers.origin,
+      host: headers.host,
+      upgrade: headers.upgrade,
+      connection: headers.connection,
+      path: req.url
+    })}`);
+    console.log(`Protocolo aceito: ${ws.protocol}`);
     
     // Configurar timeout e keepalive para evitar desconexão
     req.socket.setTimeout(0);

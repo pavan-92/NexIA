@@ -122,14 +122,31 @@ export function useRecording(): RecordingHookResult {
         }
       }, 25000); // A cada 25 segundos
       
-      socket.onerror = () => {
-        console.error('WebSocket error, using fallback mode');
-        setUseFallbackMode(true);
+      socket.onerror = (error) => {
+        console.error('WebSocket error:', error);
+        console.log('Connection details:', { 
+          url: wsUrl, 
+          readyState: socket.readyState,
+          protocol: window.location.protocol
+        });
+        // Não ativar fallback imediatamente, vamos tentar uma nova conexão
+        setTimeout(() => {
+          if (socket.readyState !== WebSocket.OPEN) {
+            console.log('WebSocket still not open after error, using fallback mode');
+            setUseFallbackMode(true);
+          }
+        }, 3000); // Espera 3 segundos antes de decidir usar fallback
       };
       
-      socket.onclose = () => {
-        console.log('WebSocket connection closed, using fallback mode');
-        setUseFallbackMode(true);
+      socket.onclose = (event) => {
+        console.log('WebSocket connection closed, code:', event.code, 'reason:', event.reason);
+        // Não ativar fallback imediatamente, pode ser reconexão
+        setTimeout(() => {
+          if (socket.readyState !== WebSocket.OPEN) {
+            console.log('WebSocket still closed after waiting, using fallback mode');
+            setUseFallbackMode(true);
+          }
+        }, 3000); // Espera 3 segundos antes de decidir usar fallback
       };
       
       return socket;
