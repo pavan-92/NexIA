@@ -320,7 +320,7 @@ export default function RecordingInterface({
                 </Button>
                 
                 <Button 
-                  onClick={() => startRecording()} 
+                  onClick={handleStartRecording} 
                   className="text-sm bg-green-600 text-white hover:bg-green-700"
                   disabled={isRecording || isTranscribing}
                 >

@@ -54,10 +54,7 @@ export default function Consultation({ id }: { id?: string }) {
         description: "Os dados foram salvos com sucesso.",
       });
       queryClient.invalidateQueries({ queryKey: ["/api/consultations"] });
-      if (isNew) {
-        // Redirect to the new consultation page
-        window.location.href = `/consultation/${data.id}`;
-      }
+      // Não redirecionamos mais, tudo acontece na mesma página
     },
     onError: (error) => {
       toast({
