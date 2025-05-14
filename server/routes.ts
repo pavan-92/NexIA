@@ -262,7 +262,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ error: "No audio file provided" });
       }
       
+      // Log para depuração
+      console.log(`Recebido arquivo para transcrição: ${req.file.originalname || 'sem nome'}, tamanho: ${req.file.size} bytes`);
+      
+      if (!req.file.buffer || req.file.buffer.length === 0) {
+        return res.status(400).json({ error: "Audio file buffer is empty" });
+      }
+      
       const result = await transcribeAudio(req.file.buffer);
+      
+      if (!result || !result.text) {
+        return res.status(500).json({ error: "Failed to generate transcription" });
+      }
       
       res.json({
         text: result.text,
@@ -270,7 +281,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
       });
     } catch (error) {
       console.error("Transcription error:", error);
-      res.status(500).json({ error: "Failed to transcribe audio" });
+      
+      // Extrai a mensagem de erro mais descritiva
+      let errorMessage = "Failed to transcribe audio";
+      if (error instanceof Error) {
+        errorMessage = error.message;
+      }
+      
+      res.status(500).json({ error: errorMessage });
     }
   });
   

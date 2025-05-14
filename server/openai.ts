@@ -12,12 +12,32 @@ const openai = new OpenAI({ apiKey: OPENAI_API_KEY });
 // Transcribe audio using Whisper
 export async function transcribeAudio(buffer: Buffer): Promise<{ text: string, duration: number }> {
   try {
+    if (!buffer || buffer.length === 0) {
+      throw new Error("Buffer de áudio vazio ou inválido");
+    }
+    
+    // Verifica o tamanho do buffer
+    if (buffer.length < 1024) { // Menos de 1KB é provavelmente inválido
+      throw new Error("Arquivo de áudio muito pequeno ou corrompido");
+    }
+    
+    // Imprime informações de debug
+    console.log(`Processando arquivo de áudio: ${buffer.length} bytes`);
+    
     // Cria um arquivo temporário
     const tempDir = os.tmpdir();
     const tempFilePath = path.join(tempDir, `audio-${Date.now()}.webm`);
     
     // Escreve o buffer no arquivo
     fs.writeFileSync(tempFilePath, buffer);
+    
+    // Verifica se o arquivo foi criado corretamente
+    if (!fs.existsSync(tempFilePath)) {
+      throw new Error("Falha ao criar arquivo temporário");
+    }
+    
+    const fileStats = fs.statSync(tempFilePath);
+    console.log(`Arquivo temporário criado: ${fileStats.size} bytes`);
     
     // Abre o arquivo para leitura
     const fileStream = fs.createReadStream(tempFilePath);
@@ -29,19 +49,35 @@ export async function transcribeAudio(buffer: Buffer): Promise<{ text: string, d
     });
     
     // Limpa o arquivo temporário
-    fs.unlinkSync(tempFilePath);
+    try {
+      fs.unlinkSync(tempFilePath);
+    } catch (cleanupError) {
+      console.warn("Erro ao remover arquivo temporário:", cleanupError);
+      // Não interrompe o fluxo se não conseguir limpar
+    }
+    
+    if (!transcript || !transcript.text) {
+      throw new Error("Resposta de transcrição inválida da API");
+    }
     
     // Estima duração com base no número de palavras
     const wordCount = transcript.text.split(' ').length;
     const estimatedDuration = wordCount * 3; // ~3s por palavra (aproximação)
     
     return {
-      text: transcript.text,
+      text: transcript.text || "Sem texto transcrito",
       duration: estimatedDuration,
     };
   } catch (error) {
     console.error("Erro ao transcrever áudio:", error);
-    throw new Error("Falha ao transcrever áudio");
+    
+    // Mensagem de erro mais descritiva
+    let errorMessage = "Falha ao transcrever áudio";
+    if (error instanceof Error) {
+      errorMessage += `: ${error.message}`;
+    }
+    
+    throw new Error(errorMessage);
   }
 }
 

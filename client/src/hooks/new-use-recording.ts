@@ -330,30 +330,61 @@ export function useRecording(): RecordingHookResult {
         allChunks.push(segment.blob);
       });
       
+      // Log para depuração
+      console.log(`Combinando ${audioSegments.length} segmentos de áudio para transcrição`);
+      audioSegments.forEach((segment, index) => {
+        console.log(`Segmento ${index+1}: ${segment.blob.size} bytes, duração: ${segment.duration}s`);
+      });
+      
       const combinedBlob = new Blob(allChunks, { type: 'audio/webm' });
+      console.log(`Tamanho do blob combinado: ${combinedBlob.size} bytes`);
+      
+      if (combinedBlob.size < 1024) {
+        throw new Error("Áudio muito curto ou vazio. Por favor, grave novamente.");
+      }
       
       // Create FormData for API request
       const formData = new FormData();
-      formData.append('audio', combinedBlob);
+      formData.append('audio', combinedBlob, 'recording.webm');
       
       // Make API call to transcribe
-      const transcriptionResponse = await apiRequest("POST", "/api/transcribe", formData);
-      
-      // Extract transcription text
-      const { text } = transcriptionResponse;
-      
-      if (!text) {
-        throw new Error("Não foi possível transcrever o áudio");
+      try {
+        // Adicionando timeout para garantir que a requisição não fique pendente indefinidamente
+        const transcriptionResponse = await Promise.race([
+          apiRequest("POST", "/api/transcribe", formData),
+          new Promise((_, reject) => 
+            setTimeout(() => reject(new Error("Tempo esgotado. A transcrição está demorando muito.")), 30000)
+          )
+        ]) as any;
+        
+        // Extract transcription text
+        const { text } = transcriptionResponse;
+        
+        if (!text) {
+          throw new Error("A resposta da transcrição não contém texto");
+        }
+        
+        // Update live transcript
+        setLiveTranscript(text);
+        setIsLiveTranscribing(false);
+        
+        return text;
+      } catch (apiError) {
+        // Extrair a mensagem de erro da API se disponível
+        let errorMessage = "Erro na comunicação com o servidor";
+        
+        if (apiError.response && apiError.response.data && apiError.response.data.error) {
+          errorMessage = apiError.response.data.error;
+        } else if (apiError instanceof Error) {
+          errorMessage = apiError.message;
+        }
+        
+        throw new Error(`Erro na transcrição: ${errorMessage}`);
       }
-      
-      // Update live transcript
-      setLiveTranscript(text);
-      setIsLiveTranscribing(false);
-      
-      return text;
     } catch (err) {
       console.error("Transcription error:", err);
-      setError("Não foi possível transcrever o áudio. Tente novamente.");
+      const errorMessage = err instanceof Error ? err.message : "Erro desconhecido";
+      setError(`Não foi possível transcrever o áudio: ${errorMessage}`);
       return "";
     }
   };
