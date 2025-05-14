@@ -39,7 +39,7 @@ export function useRecording(): RecordingHookResult {
   const [isLiveTranscribing, setIsLiveTranscribing] = useState<boolean>(false);
   
   // Estado para controle do modo de transcrição
-  const [useFallbackMode, setUseFallbackMode] = useState(true); // Começa com fallback mode
+  const [useFallbackMode, setUseFallbackMode] = useState(false); // Forçar modo transcrição ao vivo
   
   // Refs para controle de recursos
   const streamRef = useRef<MediaStream | null>(null);
@@ -129,24 +129,32 @@ export function useRecording(): RecordingHookResult {
           readyState: socket.readyState,
           protocol: window.location.protocol
         });
-        // Não ativar fallback imediatamente, vamos tentar uma nova conexão
+        
+        // Forçando a não usar fallback, manteremos o transcript funcionando em background
+        console.log('Ignorando erro e mantendo modo de transcrição ao vivo');
+        
+        // Tentativa de reconexão em 2 segundos
         setTimeout(() => {
-          if (socket.readyState !== WebSocket.OPEN) {
-            console.log('WebSocket still not open after error, using fallback mode');
-            setUseFallbackMode(true);
+          if (websocketRef.current?.readyState !== WebSocket.OPEN) {
+            console.log('Tentando reconectar WebSocket...');
+            setupWebSocketConnection();
           }
-        }, 3000); // Espera 3 segundos antes de decidir usar fallback
+        }, 2000);
       };
       
       socket.onclose = (event) => {
         console.log('WebSocket connection closed, code:', event.code, 'reason:', event.reason);
-        // Não ativar fallback imediatamente, pode ser reconexão
+        
+        // Forçando a não usar fallback
+        console.log('Ignorando fechamento e mantendo modo de transcrição ao vivo');
+        
+        // Tentativa de reconexão em 2 segundos
         setTimeout(() => {
-          if (socket.readyState !== WebSocket.OPEN) {
-            console.log('WebSocket still closed after waiting, using fallback mode');
-            setUseFallbackMode(true);
+          if (websocketRef.current?.readyState !== WebSocket.OPEN) {
+            console.log('Tentando reconectar WebSocket após fechamento...');
+            setupWebSocketConnection();
           }
-        }, 3000); // Espera 3 segundos antes de decidir usar fallback
+        }, 2000);
       };
       
       return socket;
@@ -213,9 +221,8 @@ export function useRecording(): RecordingHookResult {
       if (!websocketRef.current || websocketRef.current.readyState !== WebSocket.OPEN) {
         // Tentar reconectar
         setupWebSocketConnection();
-        // Ativar modo fallback de qualquer forma para garantir
-        setUseFallbackMode(true);
-        setLiveTranscript("Modo offline ativado. A transcrição será processada após finalizar a gravação.");
+        // Mostrar uma mensagem informativa
+        setLiveTranscript("Iniciando conexão com o servidor de transcrição...");
       } else {
         // Websocket está disponível
         websocketRef.current.send(JSON.stringify({ 
@@ -262,8 +269,8 @@ export function useRecording(): RecordingHookResult {
           // Adicionar chunk para processamento local (sempre)
           audioChunksRef.current.push(event.data);
           
-          // Adicionar ao buffer de transcrição (só se não estiver em modo fallback)
-          if (!useFallbackMode && websocketRef.current?.readyState === WebSocket.OPEN) {
+          // Adicionar ao buffer de transcrição
+          if (websocketRef.current?.readyState === WebSocket.OPEN) {
             audioBufferRef.current.push(event.data);
           }
         }

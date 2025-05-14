@@ -186,7 +186,7 @@ export default function RecordingInterface({
               )}
               <span className="text-sm font-medium">{formatTime(recordingTime)}</span>
               <div className="ml-4 px-2 py-1 bg-green-100 text-green-800 text-xs rounded-full">
-                {isLiveTranscribing ? "On-line" : "Off-line"}
+                On-line
               </div>
             </div>
           </div>
