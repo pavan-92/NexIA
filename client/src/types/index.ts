@@ -19,7 +19,6 @@ export interface Patient {
   contact?: string;
   email?: string;
   address?: string;
-  healthInsurance?: string;
   cnsNumber?: string;
   medicalHistory?: string;
   createdAt: string;
@@ -70,7 +69,6 @@ export interface PatientFormData {
   contact?: string;
   email?: string;
   address?: string;
-  healthInsurance?: string;
   cnsNumber?: string;
   medicalHistory?: string;
 }

@@ -91,7 +91,7 @@ const patientFormSchema = z.object({
     .optional()
     .or(z.literal("")),
   address: z.string().optional(),
-  healthInsurance: z.string().optional(),
+
   cnsNumber: z.string()
     .optional()
     .refine((val) => !val || /^\d{15}$/.test(val.replace(/\D/g, '')), {
@@ -141,7 +141,7 @@ export default function PatientForm({ onSubmit, isSubmitting, defaultValues, onC
       contact: "",
       email: "",
       address: "",
-      healthInsurance: "",
+
       cnsNumber: "",
       medicalHistory: "",
     },
@@ -338,21 +338,6 @@ export default function PatientForm({ onSubmit, isSubmitting, defaultValues, onC
                   className="resize-none" 
                   {...field} 
                 />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-
-        {/* Plano de saúde */}
-        <FormField
-          control={form.control}
-          name="healthInsurance"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Plano de saúde</FormLabel>
-              <FormControl>
-                <Input placeholder="Nome do plano de saúde" {...field} />
               </FormControl>
               <FormMessage />
             </FormItem>

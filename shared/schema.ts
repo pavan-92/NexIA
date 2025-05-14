@@ -34,7 +34,7 @@ export const patients = pgTable("patients", {
   contact: text("contact"),
   email: text("email"),
   address: text("address"),
-  healthInsurance: text("health_insurance"),
+
   cnsNumber: text("cns_number"),
   medicalHistory: text("medical_history"),
   createdAt: timestamp("created_at").notNull().defaultNow(),
