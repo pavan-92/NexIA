@@ -2,7 +2,7 @@ import OpenAI from "openai";
 import * as fs from 'fs';
 import * as path from 'path';
 import * as os from 'os';
-import { Deepgram } from '@deepgram/sdk';
+import DeepgramSDK from '@deepgram/sdk';
 
 // Definindo explicitamente a chave da API OpenAI
 const OPENAI_API_KEY = process.env.OPENAI_API_KEY || "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";
@@ -11,8 +11,11 @@ const OPENAI_API_KEY = process.env.OPENAI_API_KEY || "sk-proj-w8X2sA95jR4FfZpqbH
 const openai = new OpenAI({ apiKey: OPENAI_API_KEY });
 
 // Initialize Deepgram client for audio transcription
-const DEEPGRAM_API_KEY = process.env.DEEPGRAM_API_KEY;
-const deepgram = new Deepgram(DEEPGRAM_API_KEY);
+const DEEPGRAM_API_KEY = process.env.DEEPGRAM_API_KEY || '';
+if (!DEEPGRAM_API_KEY) {
+  console.error("DEEPGRAM_API_KEY não encontrada nas variáveis de ambiente. A transcrição pode falhar.");
+}
+const deepgram = new DeepgramSDK.Deepgram(DEEPGRAM_API_KEY);
 
 // Transcribe audio using Deepgram
 export async function transcribeAudio(buffer: Buffer): Promise<{ text: string, duration: number }> {
