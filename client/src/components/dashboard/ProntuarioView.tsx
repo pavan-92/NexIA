@@ -23,10 +23,39 @@ export default function ProntuarioView({
   onExportPDF
 }: ProntuarioViewProps) {
   const [editedNotes, setEditedNotes] = useState(notes || {
-    chiefComplaint: "",
-    history: "",
-    diagnosis: "",
-    plan: ""
+    patientInfo: {
+      fullName: "",
+      birthDate: "",
+      sex: "",
+      cpf: "",
+      motherName: "",
+      address: ""
+    },
+    healthcareInfo: {
+      cnes: "",
+      professionalName: "",
+      professionalCNS: "",
+      professionalCBO: ""
+    },
+    consultation: {
+      dateTime: new Date().toLocaleString('pt-BR'),
+      consultationType: "Consulta médica",
+      chiefComplaint: "",
+      anamnesis: "",
+      diagnosis: "",
+      procedures: "",
+      medications: "",
+      referrals: "",
+      conduct: "",
+      clinicalEvolution: "",
+      physicalExam: ""
+    },
+    legalInfo: {
+      professionalSignature: "",
+      consultationProtocol: `PROT-${Date.now()}`,
+      observations: "",
+      informedConsent: ""
+    }
   });
   
   const { toast } = useToast();
@@ -65,10 +94,13 @@ export default function ProntuarioView({
     },
   });
 
-  const handleChange = (field: string, value: string) => {
+  const handleChange = (section: string, field: string, value: string) => {
     setEditedNotes((prev: any) => ({
       ...prev,
-      [field]: value,
+      [section]: {
+        ...prev[section],
+        [field]: value,
+      }
     }));
   };
 
@@ -107,90 +139,291 @@ export default function ProntuarioView({
         </div>
       </div>
       
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: 0.1 }}
-        >
-          <Card>
-            <CardHeader>
-              <CardTitle>Queixa Principal</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <Textarea
-                value={editedNotes?.chiefComplaint || ""}
-                onChange={(e) => handleChange("chiefComplaint", e.target.value)}
-                placeholder="Queixa principal do paciente..."
-                className="min-h-[100px]"
-                disabled={isSaving}
-              />
-            </CardContent>
-          </Card>
-        </motion.div>
-        
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: 0.2 }}
-        >
-          <Card>
-            <CardHeader>
-              <CardTitle>História da Moléstia Atual</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <Textarea
-                value={editedNotes?.history || ""}
-                onChange={(e) => handleChange("history", e.target.value)}
-                placeholder="História da moléstia atual..."
-                className="min-h-[100px]"
-                disabled={isSaving}
-              />
-            </CardContent>
-          </Card>
-        </motion.div>
-        
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: 0.3 }}
-        >
-          <Card>
-            <CardHeader>
-              <CardTitle>Hipótese Diagnóstica</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <Textarea
-                value={editedNotes?.diagnosis || ""}
-                onChange={(e) => handleChange("diagnosis", e.target.value)}
-                placeholder="Hipótese diagnóstica..."
-                className="min-h-[100px]"
-                disabled={isSaving}
-              />
-            </CardContent>
-          </Card>
-        </motion.div>
-        
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: 0.4 }}
-        >
-          <Card>
-            <CardHeader>
-              <CardTitle>Conduta</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <Textarea
-                value={editedNotes?.plan || ""}
-                onChange={(e) => handleChange("plan", e.target.value)}
-                placeholder="Plano de tratamento e conduta..."
-                className="min-h-[100px]"
-                disabled={isSaving}
-              />
-            </CardContent>
-          </Card>
-        </motion.div>
+      <div className="space-y-8">
+        {/* 1. IDENTIFICAÇÃO DO PACIENTE */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-xl flex items-center">
+              <Badge variant="outline" className="mr-2">1</Badge>
+              Identificação do Paciente
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <h4 className="text-sm font-medium mb-1">Nome completo</h4>
+                <Textarea 
+                  value={editedNotes?.patientInfo?.fullName || ""}
+                  onChange={(e) => handleChange("patientInfo", "fullName", e.target.value)}
+                  className="h-10 resize-none"
+                  disabled={isSaving}
+                />
+              </div>
+              <div>
+                <h4 className="text-sm font-medium mb-1">Data de nascimento</h4>
+                <Textarea 
+                  value={editedNotes?.patientInfo?.birthDate || ""}
+                  onChange={(e) => handleChange("patientInfo", "birthDate", e.target.value)}
+                  className="h-10 resize-none"
+                  disabled={isSaving}
+                />
+              </div>
+              <div>
+                <h4 className="text-sm font-medium mb-1">Sexo</h4>
+                <Textarea 
+                  value={editedNotes?.patientInfo?.sex || ""}
+                  onChange={(e) => handleChange("patientInfo", "sex", e.target.value)}
+                  className="h-10 resize-none"
+                  disabled={isSaving}
+                />
+              </div>
+              <div>
+                <h4 className="text-sm font-medium mb-1">CPF/CNS</h4>
+                <Textarea 
+                  value={editedNotes?.patientInfo?.cpf || ""}
+                  onChange={(e) => handleChange("patientInfo", "cpf", e.target.value)}
+                  className="h-10 resize-none"
+                  disabled={isSaving}
+                />
+              </div>
+              <div>
+                <h4 className="text-sm font-medium mb-1">Nome da mãe</h4>
+                <Textarea 
+                  value={editedNotes?.patientInfo?.motherName || ""}
+                  onChange={(e) => handleChange("patientInfo", "motherName", e.target.value)}
+                  className="h-10 resize-none"
+                  disabled={isSaving}
+                />
+              </div>
+              <div>
+                <h4 className="text-sm font-medium mb-1">Endereço completo</h4>
+                <Textarea 
+                  value={editedNotes?.patientInfo?.address || ""}
+                  onChange={(e) => handleChange("patientInfo", "address", e.target.value)}
+                  className="h-10 resize-none"
+                  disabled={isSaving}
+                />
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* 2. INFORMAÇÕES DA UNIDADE DE SAÚDE */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-xl flex items-center">
+              <Badge variant="outline" className="mr-2">2</Badge>
+              Informações da Unidade de Saúde
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <h4 className="text-sm font-medium mb-1">CNES</h4>
+                <Textarea 
+                  value={editedNotes?.healthcareInfo?.cnes || ""}
+                  onChange={(e) => handleChange("healthcareInfo", "cnes", e.target.value)}
+                  className="h-10 resize-none"
+                  disabled={isSaving}
+                />
+              </div>
+              <div>
+                <h4 className="text-sm font-medium mb-1">Nome do profissional</h4>
+                <Textarea 
+                  value={editedNotes?.healthcareInfo?.professionalName || ""}
+                  onChange={(e) => handleChange("healthcareInfo", "professionalName", e.target.value)}
+                  className="h-10 resize-none"
+                  disabled={isSaving}
+                />
+              </div>
+              <div>
+                <h4 className="text-sm font-medium mb-1">CNS do profissional</h4>
+                <Textarea 
+                  value={editedNotes?.healthcareInfo?.professionalCNS || ""}
+                  onChange={(e) => handleChange("healthcareInfo", "professionalCNS", e.target.value)}
+                  className="h-10 resize-none"
+                  disabled={isSaving}
+                />
+              </div>
+              <div>
+                <h4 className="text-sm font-medium mb-1">CBO do profissional</h4>
+                <Textarea 
+                  value={editedNotes?.healthcareInfo?.professionalCBO || ""}
+                  onChange={(e) => handleChange("healthcareInfo", "professionalCBO", e.target.value)}
+                  className="h-10 resize-none"
+                  disabled={isSaving}
+                />
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* 3. DADOS DA CONSULTA / ATENDIMENTO */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-xl flex items-center">
+              <Badge variant="outline" className="mr-2">3</Badge>
+              Dados da Consulta
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="flex flex-col gap-4">
+                <div>
+                  <h4 className="text-sm font-medium mb-1">Data e hora</h4>
+                  <Textarea 
+                    value={editedNotes?.consultation?.dateTime || ""}
+                    onChange={(e) => handleChange("consultation", "dateTime", e.target.value)}
+                    className="h-10 resize-none"
+                    disabled={isSaving}
+                  />
+                </div>
+                <div>
+                  <h4 className="text-sm font-medium mb-1">Tipo de atendimento</h4>
+                  <Textarea 
+                    value={editedNotes?.consultation?.consultationType || ""}
+                    onChange={(e) => handleChange("consultation", "consultationType", e.target.value)}
+                    className="h-10 resize-none"
+                    disabled={isSaving}
+                  />
+                </div>
+                <div>
+                  <h4 className="text-sm font-medium mb-1">Queixa principal</h4>
+                  <Textarea 
+                    value={editedNotes?.consultation?.chiefComplaint || ""}
+                    onChange={(e) => handleChange("consultation", "chiefComplaint", e.target.value)}
+                    className="min-h-[80px]"
+                    disabled={isSaving}
+                  />
+                </div>
+                <div>
+                  <h4 className="text-sm font-medium mb-1">Anamnese detalhada</h4>
+                  <Textarea 
+                    value={editedNotes?.consultation?.anamnesis || ""}
+                    onChange={(e) => handleChange("consultation", "anamnesis", e.target.value)}
+                    className="min-h-[120px]"
+                    disabled={isSaving}
+                  />
+                </div>
+                <div>
+                  <h4 className="text-sm font-medium mb-1">Hipótese diagnóstica / CID-10</h4>
+                  <Textarea 
+                    value={editedNotes?.consultation?.diagnosis || ""}
+                    onChange={(e) => handleChange("consultation", "diagnosis", e.target.value)}
+                    className="min-h-[80px]"
+                    disabled={isSaving}
+                  />
+                </div>
+              </div>
+              <div className="flex flex-col gap-4">
+                <div>
+                  <h4 className="text-sm font-medium mb-1">Procedimentos realizados</h4>
+                  <Textarea 
+                    value={editedNotes?.consultation?.procedures || ""}
+                    onChange={(e) => handleChange("consultation", "procedures", e.target.value)}
+                    className="min-h-[80px]"
+                    disabled={isSaving}
+                  />
+                </div>
+                <div>
+                  <h4 className="text-sm font-medium mb-1">Medicamentos prescritos</h4>
+                  <Textarea 
+                    value={editedNotes?.consultation?.medications || ""}
+                    onChange={(e) => handleChange("consultation", "medications", e.target.value)}
+                    className="min-h-[80px]"
+                    disabled={isSaving}
+                  />
+                </div>
+                <div>
+                  <h4 className="text-sm font-medium mb-1">Encaminhamentos</h4>
+                  <Textarea 
+                    value={editedNotes?.consultation?.referrals || ""}
+                    onChange={(e) => handleChange("consultation", "referrals", e.target.value)}
+                    className="min-h-[80px]"
+                    disabled={isSaving}
+                  />
+                </div>
+                <div>
+                  <h4 className="text-sm font-medium mb-1">Conduta adotada</h4>
+                  <Textarea 
+                    value={editedNotes?.consultation?.conduct || ""}
+                    onChange={(e) => handleChange("consultation", "conduct", e.target.value)}
+                    className="min-h-[80px]"
+                    disabled={isSaving}
+                  />
+                </div>
+                <div>
+                  <h4 className="text-sm font-medium mb-1">Evolução clínica</h4>
+                  <Textarea 
+                    value={editedNotes?.consultation?.clinicalEvolution || ""}
+                    onChange={(e) => handleChange("consultation", "clinicalEvolution", e.target.value)}
+                    className="min-h-[80px]"
+                    disabled={isSaving}
+                  />
+                </div>
+              </div>
+              <div className="col-span-1 md:col-span-2">
+                <h4 className="text-sm font-medium mb-1">Exame físico</h4>
+                <Textarea 
+                  value={editedNotes?.consultation?.physicalExam || ""}
+                  onChange={(e) => handleChange("consultation", "physicalExam", e.target.value)}
+                  className="min-h-[100px]"
+                  disabled={isSaving}
+                />
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* 4. DOCUMENTOS E REGISTRO LEGAL */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-xl flex items-center">
+              <Badge variant="outline" className="mr-2">4</Badge>
+              Documentos e Registro Legal
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <h4 className="text-sm font-medium mb-1">Assinatura digital</h4>
+                <Textarea 
+                  value={editedNotes?.legalInfo?.professionalSignature || ""}
+                  onChange={(e) => handleChange("legalInfo", "professionalSignature", e.target.value)}
+                  className="h-10 resize-none"
+                  disabled={isSaving}
+                />
+              </div>
+              <div>
+                <h4 className="text-sm font-medium mb-1">Protocolo interno</h4>
+                <Textarea 
+                  value={editedNotes?.legalInfo?.consultationProtocol || ""}
+                  onChange={(e) => handleChange("legalInfo", "consultationProtocol", e.target.value)}
+                  className="h-10 resize-none"
+                  disabled={isSaving}
+                />
+              </div>
+              <div>
+                <h4 className="text-sm font-medium mb-1">Consentimento informado</h4>
+                <Textarea 
+                  value={editedNotes?.legalInfo?.informedConsent || ""}
+                  onChange={(e) => handleChange("legalInfo", "informedConsent", e.target.value)}
+                  className="h-10 resize-none"
+                  disabled={isSaving}
+                />
+              </div>
+              <div>
+                <h4 className="text-sm font-medium mb-1">Observações</h4>
+                <Textarea 
+                  value={editedNotes?.legalInfo?.observations || ""}
+                  onChange={(e) => handleChange("legalInfo", "observations", e.target.value)}
+                  className="h-10 resize-none"
+                  disabled={isSaving}
+                />
+              </div>
+            </div>
+          </CardContent>
+        </Card>
       </div>
       
 
