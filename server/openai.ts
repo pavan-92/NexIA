@@ -2,14 +2,19 @@ import OpenAI from "openai";
 import * as fs from 'fs';
 import * as path from 'path';
 import * as os from 'os';
+import { Deepgram } from '@deepgram/sdk';
 
-// Definindo explicitamente a chave da API
-const OPENAI_API_KEY = "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";
+// Definindo explicitamente a chave da API OpenAI
+const OPENAI_API_KEY = process.env.OPENAI_API_KEY || "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";
 
 // the newest OpenAI model is "gpt-4o" which was released May 13, 2024. do not change this unless explicitly requested by the user
 const openai = new OpenAI({ apiKey: OPENAI_API_KEY });
 
-// Transcribe audio using Whisper
+// Initialize Deepgram client for audio transcription
+const DEEPGRAM_API_KEY = process.env.DEEPGRAM_API_KEY;
+const deepgram = new Deepgram(DEEPGRAM_API_KEY);
+
+// Transcribe audio using Deepgram
 export async function transcribeAudio(buffer: Buffer): Promise<{ text: string, duration: number }> {
   try {
     if (!buffer || buffer.length === 0) {
@@ -22,7 +27,7 @@ export async function transcribeAudio(buffer: Buffer): Promise<{ text: string, d
     }
     
     // Imprime informações de debug
-    console.log(`Processando arquivo de áudio: ${buffer.length} bytes`);
+    console.log(`Processando arquivo de áudio com Deepgram: ${buffer.length} bytes`);
     
     // Cria um arquivo temporário
     const tempDir = os.tmpdir();
@@ -39,14 +44,26 @@ export async function transcribeAudio(buffer: Buffer): Promise<{ text: string, d
     const fileStats = fs.statSync(tempFilePath);
     console.log(`Arquivo temporário criado: ${fileStats.size} bytes`);
     
-    // Abre o arquivo para leitura
-    const fileStream = fs.createReadStream(tempFilePath);
+    // Transcrição com Deepgram
+    console.log('Iniciando transcrição com Deepgram...');
     
-    // Chama a API OpenAI com o stream de arquivo
-    const transcript = await openai.audio.transcriptions.create({
-      file: fileStream,
-      model: "whisper-1",
-    });
+    // Set transcription options
+    const transcriptionOptions = {
+      punctuate: true,
+      language: "pt-BR",
+      model: "general",
+      smart_format: true,
+      diarize: true,
+    };
+
+    // Read file as buffer for Deepgram
+    const audioData = fs.readFileSync(tempFilePath);
+    
+    // Make request to Deepgram
+    const response = await deepgram.transcription.preRecorded(
+      { buffer: audioData, mimetype: 'audio/webm' },
+      transcriptionOptions
+    );
     
     // Limpa o arquivo temporário
     try {
@@ -56,20 +73,25 @@ export async function transcribeAudio(buffer: Buffer): Promise<{ text: string, d
       // Não interrompe o fluxo se não conseguir limpar
     }
     
-    if (!transcript || !transcript.text) {
-      throw new Error("Resposta de transcrição inválida da API");
+    // Extract transcript text
+    const transcript = response?.results?.channels?.[0]?.alternatives?.[0]?.transcript;
+    
+    if (!transcript) {
+      throw new Error("Resposta de transcrição inválida do Deepgram");
     }
     
+    console.log('Transcrição concluída com sucesso:', transcript.substring(0, 100) + '...');
+    
     // Estima duração com base no número de palavras
-    const wordCount = transcript.text.split(' ').length;
+    const wordCount = transcript.split(' ').length;
     const estimatedDuration = wordCount * 3; // ~3s por palavra (aproximação)
     
     return {
-      text: transcript.text || "Sem texto transcrito",
+      text: transcript,
       duration: estimatedDuration,
     };
   } catch (error) {
-    console.error("Erro ao transcrever áudio:", error);
+    console.error("Erro ao transcrever áudio com Deepgram:", error);
     
     // Mensagem de erro mais descritiva
     let errorMessage = "Falha ao transcrever áudio";

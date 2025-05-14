@@ -13,7 +13,7 @@ import {
   notesSchema
 } from "@shared/schema";
 import { createInsertSchema } from "drizzle-zod";
-import { setupLiveTranscription } from "./liveTranscriptionWithOpenAI";
+import { setupLiveTranscription } from "./liveTranscription";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   const httpServer = createServer(app);
