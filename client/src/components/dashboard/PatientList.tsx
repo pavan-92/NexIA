@@ -223,7 +223,8 @@ export default function PatientList() {
                   </DialogHeader>
                   <PatientForm 
                     onSubmit={(data) => addPatientMutation.mutate(data)} 
-                    isSubmitting={addPatientMutation.isPending} 
+                    isSubmitting={addPatientMutation.isPending}
+                    onCancel={() => setDialogOpen(false)}
                   />
                 </DialogContent>
               </Dialog>
