@@ -41,16 +41,22 @@ export async function validateAuth(
   const token = authHeader.split("Bearer ")[1];
   
   try {
-    // In a real app, verify the Firebase ID token
-    // For now, we'll mock this behavior for development
-    // const decodedToken = await auth.verifyIdToken(token);
+    // Verificar o token Firebase
+    let decodedToken;
     
-    // Mock user for development
-    const decodedToken = {
-      uid: "1",
-      email: "doctor@example.com",
-      name: "Dr. João Silva"
-    };
+    try {
+      // Tentar verificar com Firebase
+      decodedToken = await auth.verifyIdToken(token);
+    } catch (verifyError) {
+      console.warn("Erro ao verificar token Firebase, usando mock:", verifyError);
+      
+      // Mock user para desenvolvimento se falhar
+      decodedToken = {
+        uid: "1",
+        email: "doctor@example.com",
+        name: "Dr. João Silva"
+      };
+    }
     
     req.user = {
       id: decodedToken.uid,

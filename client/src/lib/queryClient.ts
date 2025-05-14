@@ -1,9 +1,23 @@
 import { QueryClient, QueryFunction } from "@tanstack/react-query";
+import { auth } from "@/lib/firebase";
 
 async function throwIfResNotOk(res: Response) {
   if (!res.ok) {
     const text = (await res.text()) || res.statusText;
     throw new Error(`${res.status}: ${text}`);
+  }
+}
+
+// Função para obter o token de autenticação atual
+async function getAuthToken(): Promise<string | null> {
+  try {
+    const user = auth.currentUser;
+    if (!user) return null;
+    
+    return await user.getIdToken(true); // true para forçar atualização
+  } catch (error) {
+    console.error("Erro ao obter token de autenticação:", error);
+    return null;
   }
 }
 
@@ -40,18 +54,33 @@ export async function apiRequest(...args: any[]): Promise<any> {
   // Verificar se é FormData ou dados normais
   const isFormData = data instanceof FormData;
   
+  // Obter token de autenticação
+  const token = await getAuthToken();
+  
   // Prepara o objeto de configuração básico
   const fetchConfig: RequestInit = {
     method,
     credentials: "include",
+    headers: {}
   };
+  
+  // Adicionar token de autenticação, se disponível
+  if (token) {
+    fetchConfig.headers = {
+      ...fetchConfig.headers,
+      "Authorization": `Bearer ${token}`
+    };
+  }
   
   // Adiciona os headers e body apropriados dependendo do tipo de dados
   if (isFormData) {
     // Não adiciona Content-Type para FormData (o navegador configura automaticamente)
     fetchConfig.body = data as FormData;
   } else if (data) {
-    fetchConfig.headers = { "Content-Type": "application/json" };
+    fetchConfig.headers = {
+      ...fetchConfig.headers,
+      "Content-Type": "application/json"
+    };
     fetchConfig.body = JSON.stringify(data);
   }
   
