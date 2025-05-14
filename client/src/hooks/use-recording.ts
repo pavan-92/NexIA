@@ -176,8 +176,8 @@ export function useRecording(): RecordingHookResult {
       
       // Configuração para integração com o serviço de transcrição em tempo real
       
-      // Inicializamos a área de transcrição com uma mensagem instrutiva
-      setLiveTranscript("Esperando você falar... A transcrição aparecerá aqui quando detectar sua voz.");
+      // Mensagem mais direta sobre a gravação em andamento
+      setLiveTranscript("Gravando... A transcrição aparecerá após processamento.");
       
       // Notificar o servidor que começamos a gravar (se não estiver no modo fallback)
       if (!useFallbackMode && websocketRef.current && websocketRef.current.readyState === WebSocket.OPEN) {
