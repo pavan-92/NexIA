@@ -102,11 +102,12 @@ export function setupLiveTranscription(server: Server) {
     
     // Manipular mensagens do cliente
     ws.on("message", async (message) => {
-      // Verificar se é um comando JSON ou dados de áudio (binário)
-      if (typeof message === "string" || message instanceof Buffer && message[0] === "{".charCodeAt(0)) {
+      // Verificar se a mensagem é uma string ou um Buffer que começa com '{'
+      if (typeof message === "string" || (message instanceof Buffer && message.length > 0 && message[0] === '{'.charCodeAt(0))) {
         try {
           // Tentar interpretar como JSON
-          const data = JSON.parse(message.toString());
+          const messageString = typeof message === "string" ? message : message.toString();
+          const data = JSON.parse(messageString);
           
           // Se recebemos um comando para gerar notas
           if (data.type === "generate_notes" && data.text) {
@@ -133,7 +134,7 @@ export function setupLiveTranscription(server: Server) {
             }
           }
         } catch (e) {
-          // Se não for JSON válido, tratar como dados de áudio
+          // Se não for JSON válido e for um Buffer, tratar como dados de áudio
           if (message instanceof Buffer) {
             const buffers = audioBuffers.get(connectionId) || [];
             buffers.push(message);
@@ -141,7 +142,7 @@ export function setupLiveTranscription(server: Server) {
           }
         }
       } else if (message instanceof Buffer) {
-        // Armazenar chunk de áudio no buffer
+        // Se for um Buffer mas não começa com '{', é áudio 
         const buffers = audioBuffers.get(connectionId) || [];
         buffers.push(message);
         audioBuffers.set(connectionId, buffers);

@@ -124,7 +124,35 @@ export function useRecording(): RecordingHookResult {
       
       socket.onclose = () => {
         console.log('WebSocket connection closed');
-        setUseFallbackMode(true);
+        
+        // Tentar reconectar ao invés de ativar o modo fallback imediatamente
+        setTimeout(() => {
+          // Só ativa o modo fallback se não conseguir reconectar após algumas tentativas
+          if (websocketRef.current?.readyState !== WebSocket.OPEN) {
+            console.log("Não foi possível reconectar após tentativas");
+            setUseFallbackMode(true);
+          }
+        }, 2000);
+        
+        // Tentar reconectar o WebSocket
+        try {
+          const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+          const wsUrl = `${protocol}//${window.location.host}/ws`;
+          const newSocket = new WebSocket(wsUrl);
+          
+          newSocket.onopen = () => {
+            console.log('WebSocket reconectado com sucesso');
+            websocketRef.current = newSocket;
+            setUseFallbackMode(false);
+          };
+          
+          // Repassar os mesmos handlers do socket original
+          newSocket.onmessage = socket.onmessage;
+          newSocket.onerror = socket.onerror;
+          newSocket.onclose = socket.onclose;
+        } catch (err) {
+          console.error('Falha ao reconectar WebSocket:', err);
+        }
       };
     } catch (err) {
       console.error('Error setting up WebSocket:', err);
@@ -179,8 +207,10 @@ export function useRecording(): RecordingHookResult {
         setRecordingTime((prevTime) => prevTime + 1);
       }, 1000);
       
-      // Notificar o servidor (se não estiver no modo fallback)
-      if (!useFallbackMode && websocketRef.current && websocketRef.current.readyState === WebSocket.OPEN) {
+      // Tentar usar o websocket se estiver disponível
+      if (websocketRef.current && websocketRef.current.readyState === WebSocket.OPEN) {
+        // Resetar explicitamente o fallback mode quando iniciamos gravação bem-sucedida
+        setUseFallbackMode(false);
         websocketRef.current.send(JSON.stringify({ 
           type: "start_recording"
         }));
@@ -220,9 +250,60 @@ export function useRecording(): RecordingHookResult {
         }, 5000); // A cada 5 segundos
         
       } else {
-        console.log("Usando modo de gravação local (fallback)");
-        // No modo fallback, a transcrição só acontecerá no final
-        setLiveTranscript("Modo offline ativado. A transcrição será processada após finalizar a gravação.");
+        // Tentar inicializar a conexão WebSocket
+        try {
+          const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+          const wsUrl = `${protocol}//${window.location.host}/ws`;
+          
+          const newSocket = new WebSocket(wsUrl);
+          newSocket.onopen = () => {
+            console.log("Conexão WebSocket estabelecida durante a gravação");
+            websocketRef.current = newSocket;
+            setUseFallbackMode(false);
+            
+            // Notificar que estamos iniciando a gravação
+            newSocket.send(JSON.stringify({ 
+              type: "start_recording"
+            }));
+          };
+          
+          // Transferir os mesmos handlers de mensagem
+          newSocket.onmessage = (event) => {
+            try {
+              const data = JSON.parse(event.data);
+              console.log('WebSocket message received:', data);
+              
+              if (data.type === 'transcript') {
+                setLiveTranscript(data.text);
+                if (data.isFinal) {
+                  setIsLiveTranscribing(false);
+                }
+              } 
+              else if (data.type === 'notes') {
+                toast({
+                  title: "Prontuário gerado",
+                  description: "O prontuário médico foi criado com sucesso.",
+                });
+              }
+            } catch (err) {
+              console.error('Error parsing WebSocket message:', err);
+            }
+          };
+          
+          // Se falhar depois de um tempo, ativar o modo fallback
+          setTimeout(() => {
+            if (newSocket.readyState !== WebSocket.OPEN) {
+              console.log("Usando modo de gravação local (fallback)");
+              setUseFallbackMode(true);
+              setLiveTranscript("Modo offline ativado. A transcrição será processada após finalizar a gravação.");
+            }
+          }, 3000);
+          
+        } catch (err) {
+          console.log("Usando modo de gravação local (fallback)");
+          setUseFallbackMode(true);
+          setLiveTranscript("Modo offline ativado. A transcrição será processada após finalizar a gravação.");
+        }
       }
       
       // Handle data available event
