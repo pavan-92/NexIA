@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Link } from "wouter";
 import { motion, AnimatePresence } from "framer-motion";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
@@ -30,9 +30,12 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { Patient } from "@/types";
+import { Patient, PatientFormData } from "@/types";
 import { formatDate, getInitials } from "@/lib/utils";
 import { PlusCircle, Search, UserPlus, Loader2 } from "lucide-react";
+import PatientForm from "./PatientForm";
+import { apiRequest } from "@/lib/queryClient";
+import { useToast } from "@/hooks/use-toast";
 
 export default function PatientList() {
   const [searchQuery, setSearchQuery] = useState("");

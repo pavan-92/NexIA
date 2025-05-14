@@ -11,13 +11,16 @@ export interface User {
 export interface Patient {
   id: number;
   userId: string;
+  cpf: string;
   name: string;
   birthDate: string;
-  gender: string;
-  contact: string;
-  email: string;
+  gender?: string;
+  motherName?: string;
+  contact?: string;
+  email?: string;
   address?: string;
   healthInsurance?: string;
+  cnsNumber?: string;
   medicalHistory?: string;
   createdAt: string;
   updatedAt: string;
@@ -59,13 +62,16 @@ export interface RegisterFormData {
 }
 
 export interface PatientFormData {
+  cpf: string;
   name: string;
   birthDate: string;
-  gender: string;
-  contact: string;
-  email: string;
+  gender?: string;
+  motherName?: string;
+  contact?: string;
+  email?: string;
   address?: string;
   healthInsurance?: string;
+  cnsNumber?: string;
   medicalHistory?: string;
 }
 
