@@ -1,4 +1,4 @@
-import express, { type Express, Request, Response } from "express";
+import express, { type Express, Request, Response, NextFunction } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { transcribeAudio, generateMedicalNotes, translateText } from "./openai";
@@ -13,11 +13,15 @@ import {
   notesSchema
 } from "@shared/schema";
 import { createInsertSchema } from "drizzle-zod";
+import { setupLiveTranscription } from "./liveTranscription";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   const httpServer = createServer(app);
   
-  // Set up WebSocket for real-time updates
+  // Set up WebSocket for real-time transcription
+  setupLiveTranscription(httpServer);
+  
+  // Set up WebSocket for API updates (separate path)
   const wss = new WebSocketServer({ server: httpServer, path: "/api/ws" });
   
   wss.on("connection", (ws) => {
