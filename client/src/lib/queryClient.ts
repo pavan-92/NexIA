@@ -37,12 +37,25 @@ export async function apiRequest(...args: any[]): Promise<any> {
     [method, url, data] = args;
   }
 
-  const res = await fetch(url, {
+  // Verificar se é FormData ou dados normais
+  const isFormData = data instanceof FormData;
+  
+  // Prepara o objeto de configuração básico
+  const fetchConfig: RequestInit = {
     method,
-    headers: data ? { "Content-Type": "application/json" } : {},
-    body: data ? JSON.stringify(data) : undefined,
     credentials: "include",
-  });
+  };
+  
+  // Adiciona os headers e body apropriados dependendo do tipo de dados
+  if (isFormData) {
+    // Não adiciona Content-Type para FormData (o navegador configura automaticamente)
+    fetchConfig.body = data as FormData;
+  } else if (data) {
+    fetchConfig.headers = { "Content-Type": "application/json" };
+    fetchConfig.body = JSON.stringify(data);
+  }
+  
+  const res = await fetch(url, fetchConfig);
 
   await throwIfResNotOk(res);
   return res.json().catch(() => null);

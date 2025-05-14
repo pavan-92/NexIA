@@ -30,6 +30,7 @@ export default function RecordingInterface({
   isNew,
   onTranscriptionComplete
 }: RecordingInterfaceProps) {
+
   const {
     isRecording,
     audioBlob,
