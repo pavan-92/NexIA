@@ -41,10 +41,38 @@ export default function PatientList() {
   const [searchQuery, setSearchQuery] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [activeTab, setActiveTab] = useState("all");
+  const [dialogOpen, setDialogOpen] = useState(false);
   const patientsPerPage = 10;
+  const { toast } = useToast();
+  const queryClient = useQueryClient();
 
   const { data: patients, isLoading } = useQuery<Patient[]>({
     queryKey: ["/api/patients"],
+  });
+  
+  const addPatientMutation = useMutation({
+    mutationFn: async (data: PatientFormData) => {
+      return apiRequest({ 
+        url: "/api/patients", 
+        method: "POST", 
+        data 
+      });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/patients"] });
+      toast({
+        title: "Paciente adicionado",
+        description: "O paciente foi adicionado com sucesso",
+      });
+      setDialogOpen(false);
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Erro",
+        description: error.message || "Ocorreu um erro ao adicionar o paciente",
+        variant: "destructive",
+      });
+    },
   });
 
   // Filter patients based on search query and active tab
@@ -52,8 +80,8 @@ export default function PatientList() {
     ? patients.filter(
         (patient) =>
           patient.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-          patient.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
-          patient.contact.includes(searchQuery)
+          (patient.email && patient.email.toLowerCase().includes(searchQuery.toLowerCase())) ||
+          (patient.contact && patient.contact.includes(searchQuery))
       )
     : [];
 
@@ -106,24 +134,24 @@ export default function PatientList() {
           />
         </div>
         <div className="flex items-center gap-2 w-full sm:w-auto">
-          <Dialog>
+          <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
             <DialogTrigger asChild>
               <Button className="gap-1 bg-primary text-primary-foreground hover:bg-primary/90 w-full sm:w-auto">
                 <UserPlus className="h-4 w-4" />
                 <span>Novo Paciente</span>
               </Button>
             </DialogTrigger>
-            <DialogContent>
+            <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
               <DialogHeader>
                 <DialogTitle>Adicionar Novo Paciente</DialogTitle>
                 <DialogDescription>
-                  Preencha os detalhes do paciente abaixo.
+                  Preencha os detalhes do paciente abaixo. Os campos marcados com * são obrigatórios.
                 </DialogDescription>
               </DialogHeader>
-              {/* Patient form would go here */}
-              <div className="py-4 text-center text-muted-foreground">
-                Formulário de cadastro de pacientes
-              </div>
+              <PatientForm 
+                onSubmit={(data) => addPatientMutation.mutate(data)} 
+                isSubmitting={addPatientMutation.isPending} 
+              />
             </DialogContent>
           </Dialog>
           <Dialog>
@@ -178,24 +206,24 @@ export default function PatientList() {
                   ? "Tente refinar sua busca ou adicione um novo paciente."
                   : "Você ainda não tem pacientes cadastrados."}
               </p>
-              <Dialog>
+              <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
                 <DialogTrigger asChild>
                   <Button className="gap-1">
                     <UserPlus className="h-4 w-4" />
                     <span>Adicionar Paciente</span>
                   </Button>
                 </DialogTrigger>
-                <DialogContent>
+                <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
                   <DialogHeader>
                     <DialogTitle>Adicionar Novo Paciente</DialogTitle>
                     <DialogDescription>
-                      Preencha os detalhes do paciente abaixo.
+                      Preencha os detalhes do paciente abaixo. Os campos marcados com * são obrigatórios.
                     </DialogDescription>
                   </DialogHeader>
-                  {/* Patient form would go here */}
-                  <div className="py-4 text-center text-muted-foreground">
-                    Formulário de cadastro de pacientes
-                  </div>
+                  <PatientForm 
+                    onSubmit={(data) => addPatientMutation.mutate(data)} 
+                    isSubmitting={addPatientMutation.isPending} 
+                  />
                 </DialogContent>
               </Dialog>
             </div>
@@ -217,8 +245,7 @@ export default function PatientList() {
                 <TableBody>
                   <AnimatePresence>
                     {currentPatients.map((patient) => (
-                      <TableRow key={patient.id} asChild>
-                        <motion.tr variants={itemVariants}>
+                      <motion.tr key={patient.id} variants={itemVariants} className="border-b hover:bg-muted/50 data-[state=selected]:bg-muted">
                           <TableCell>
                             <div className="flex items-center space-x-3">
                               <Avatar>
@@ -253,7 +280,6 @@ export default function PatientList() {
                             </div>
                           </TableCell>
                         </motion.tr>
-                      </TableRow>
                     ))}
                   </AnimatePresence>
                 </TableBody>
