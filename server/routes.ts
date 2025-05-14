@@ -4,7 +4,7 @@ import { storage } from "./storage";
 import { transcribeAudio, generateMedicalNotes, translateText } from "./openai";
 import { validateAuth } from "./middleware/auth";
 import { uploadAudio } from "./middleware/upload";
-import { WebSocketServer } from "ws";
+import { WebSocketServer, WebSocket } from "ws";
 import { z } from "zod";
 import {
   insertUserSchema,
@@ -23,15 +23,88 @@ export async function registerRoutes(app: Express): Promise<Server> {
   wss.on("connection", (ws) => {
     console.log("WebSocket connection established");
     
-    ws.on("message", (message) => {
+    // Receber mensagens do cliente
+    ws.on("message", async (message) => {
       try {
-        const data = JSON.parse(message.toString());
-        console.log("WebSocket message received:", data);
-      } catch (error) {
-        console.error("Invalid WebSocket message", error);
+        // Se a mensagem for um objeto JSON, processamos
+        if (message.toString().startsWith('{')) {
+          const data = JSON.parse(message.toString());
+          console.log("WebSocket command received:", data);
+          
+          // Processamento específico para comandos
+          if (data.type === "start_recording") {
+            console.log("Iniciando gravação");
+            ws.send(JSON.stringify({ 
+              type: "status", 
+              status: "recording_started" 
+            }));
+          } 
+          else if (data.type === "stop_recording") {
+            console.log("Parando gravação");
+            ws.send(JSON.stringify({ 
+              type: "status", 
+              status: "recording_stopped" 
+            }));
+          }
+          else if (data.type === "transcribe") {
+            console.log("Recebido áudio para transcrição");
+            
+            try {
+              if (data.audio) {
+                // Simular processamento de transcrição
+                const transcript = "Este é um exemplo de transcrição. Na implementação real, usaremos o serviço Deepgram.";
+                
+                // Enviar a transcrição de volta ao cliente
+                ws.send(JSON.stringify({
+                  type: "transcript",
+                  text: transcript,
+                  isFinal: true
+                }));
+                
+                // Gerar notas médicas a partir da transcrição
+                const notes = await generateMedicalNotes(transcript);
+                
+                if (ws.readyState === WebSocket.OPEN) {
+                  ws.send(JSON.stringify({ 
+                    type: "notes", 
+                    notes 
+                  }));
+                }
+              }
+            } catch (err) {
+              const error = err as Error;
+              console.error("Error processing transcription:", error.message);
+              if (ws.readyState === WebSocket.OPEN) {
+                ws.send(JSON.stringify({ 
+                  type: "error", 
+                  message: "Erro ao processar transcrição" 
+                }));
+              }
+            }
+          }
+        } else {
+          // Se a mensagem não é JSON, é provavelmente áudio bruto
+          console.log("Recebido áudio binário");
+          
+          // Na implementação real, isso seria enviado para o serviço de transcrição
+          if (ws.readyState === WebSocket.OPEN) {
+            // Simular uma transcrição parcial
+            setTimeout(() => {
+              ws.send(JSON.stringify({ 
+                type: "transcript", 
+                text: "Transcrição em andamento...", 
+                isFinal: false 
+              }));
+            }, 500);
+          }
+        }
+      } catch (err) {
+        const error = err as Error;
+        console.error("Error processing WebSocket message:", error.message);
       }
     });
     
+    // Lidar com fechamento da conexão
     ws.on("close", () => {
       console.log("WebSocket connection closed");
     });

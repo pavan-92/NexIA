@@ -12,6 +12,8 @@ interface RecordingHookResult {
   generateNotes: (transcription: string) => Promise<any>;
   resetRecording: () => void;
   error: string | null;
+  liveTranscript: string | null;
+  isLiveTranscribing: boolean;
 }
 
 export function useRecording(): RecordingHookResult {
@@ -19,17 +21,76 @@ export function useRecording(): RecordingHookResult {
   const [audioBlob, setAudioBlob] = useState<Blob | null>(null);
   const [recordingTime, setRecordingTime] = useState(0);
   const [error, setError] = useState<string | null>(null);
+  const [liveTranscript, setLiveTranscript] = useState<string | null>(null);
+  const [isLiveTranscribing, setIsLiveTranscribing] = useState(false);
   
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const audioChunksRef = useRef<Blob[]>([]);
   const streamRef = useRef<MediaStream | null>(null);
   const timerIntervalRef = useRef<number | null>(null);
+  const websocketRef = useRef<WebSocket | null>(null);
   
   const { toast } = useToast();
 
-  // Clean up resources when component unmounts
+  // Inicializar WebSocket
   useEffect(() => {
+    // Criar conexão WebSocket
+    const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+    const wsUrl = `${protocol}//${window.location.host}/api/ws`;
+    
+    const socket = new WebSocket(wsUrl);
+    websocketRef.current = socket;
+    
+    // Configurar handlers de WebSocket
+    socket.onopen = () => {
+      console.log('WebSocket connection established');
+    };
+    
+    socket.onmessage = (event) => {
+      try {
+        const data = JSON.parse(event.data);
+        console.log('WebSocket message received:', data);
+        
+        if (data.type === 'transcript') {
+          setLiveTranscript(data.text);
+          if (data.isFinal) {
+            setIsLiveTranscribing(false);
+          }
+        } 
+        else if (data.type === 'notes') {
+          toast({
+            title: "Prontuário gerado",
+            description: "O prontuário médico foi criado com sucesso.",
+          });
+        }
+        else if (data.type === 'error') {
+          setError(data.message);
+          toast({
+            variant: "destructive",
+            title: "Erro na transcrição",
+            description: data.message,
+          });
+        }
+      } catch (err) {
+        console.error('Error parsing WebSocket message:', err);
+      }
+    };
+    
+    socket.onerror = (err) => {
+      console.error('WebSocket error:', err);
+      setError('Erro na conexão com o serviço de transcrição.');
+    };
+    
+    socket.onclose = () => {
+      console.log('WebSocket connection closed');
+    };
+    
+    // Limpar WebSocket quando componente desmontar
     return () => {
+      if (socket.readyState === WebSocket.OPEN) {
+        socket.close();
+      }
+      
       if (streamRef.current) {
         streamRef.current.getTracks().forEach(track => track.stop());
       }
@@ -38,7 +99,7 @@ export function useRecording(): RecordingHookResult {
         clearInterval(timerIntervalRef.current);
       }
     };
-  }, []);
+  }, [toast]);
 
   const startRecording = async (): Promise<void> => {
     try {
