@@ -52,7 +52,7 @@ export const generatePDF = (consultation: Consultation, patient: Patient): void 
     doc.text(title, 15, startY);
     
     doc.setTextColor(30, 30, 30);
-    const textLines = doc.splitTextToSize(content, pageWidth - 30);
+    const textLines = doc.splitTextToSize(content || "Não informado", pageWidth - 30);
     doc.text(textLines, 15, startY + 7);
     
     return startY + 7 + (textLines.length * 7);
@@ -60,20 +60,134 @@ export const generatePDF = (consultation: Consultation, patient: Patient): void 
   
   let currentY = 113;
   
-  if (consultation.notes.chiefComplaint) {
-    currentY = addSection('Queixa Principal', consultation.notes.chiefComplaint, currentY);
+  // Section 1: Patient Info
+  doc.setFontSize(14);
+  doc.setTextColor(30, 30, 30);
+  doc.text('1. IDENTIFICAÇÃO DO PACIENTE', 15, currentY);
+  currentY += 10;
+  
+  if (consultation.notes?.patientInfo) {
+    const patientInfo = consultation.notes.patientInfo;
+    doc.setFontSize(11);
+    doc.text(`Nome completo: ${patientInfo.fullName || patient.name}`, 15, currentY);
+    currentY += 7;
+    doc.text(`Data de nascimento: ${patientInfo.birthDate || formatDate(patient.birthDate)}`, 15, currentY);
+    currentY += 7;
+    doc.text(`Sexo: ${patientInfo.sex || patient.gender || "Não informado"}`, 15, currentY);
+    currentY += 7;
+    doc.text(`CPF/CNS: ${patientInfo.cpf || patient.cpf || "Não informado"}`, 15, currentY);
+    currentY += 7;
+    doc.text(`Nome da mãe: ${patientInfo.motherName || patient.motherName || "Não informado"}`, 15, currentY);
+    currentY += 7;
+    doc.text(`Endereço: ${patientInfo.address || patient.address || "Não informado"}`, 15, currentY);
+    currentY += 15;
   }
   
-  if (consultation.notes.history) {
-    currentY = addSection('História da Moléstia Atual', consultation.notes.history, currentY + 5);
+  // Section 2: Healthcare Facility Info
+  doc.setFontSize(14);
+  doc.setTextColor(30, 30, 30);
+  doc.text('2. INFORMAÇÕES DA UNIDADE DE SAÚDE', 15, currentY);
+  currentY += 10;
+  
+  if (consultation.notes?.healthcareInfo) {
+    const healthcareInfo = consultation.notes.healthcareInfo;
+    doc.setFontSize(11);
+    doc.text(`CNES: ${healthcareInfo.cnes || "Não informado"}`, 15, currentY);
+    currentY += 7;
+    doc.text(`Profissional: ${healthcareInfo.professionalName || consultation.doctorName}`, 15, currentY);
+    currentY += 7;
+    doc.text(`CNS do profissional: ${healthcareInfo.professionalCNS || "Não informado"}`, 15, currentY);
+    currentY += 7;
+    doc.text(`CBO do profissional: ${healthcareInfo.professionalCBO || "Não informado"}`, 15, currentY);
+    currentY += 15;
   }
   
-  if (consultation.notes.diagnosis) {
-    currentY = addSection('Hipótese Diagnóstica', consultation.notes.diagnosis, currentY + 5);
+  // Section 3: Consultation Data
+  doc.setFontSize(14);
+  doc.setTextColor(30, 30, 30);
+  doc.text('3. DADOS DA CONSULTA', 15, currentY);
+  currentY += 10;
+  
+  if (consultation.notes?.consultation) {
+    const consultData = consultation.notes.consultation;
+    
+    // Check if we need to add a new page before consultation details
+    if (currentY > doc.internal.pageSize.getHeight() - 30) {
+      doc.addPage();
+      currentY = 20;
+    }
+    
+    currentY = addSection('Data e hora', consultData.dateTime || formatDateTime(consultation.date), currentY);
+    currentY = addSection('Tipo de atendimento', consultData.consultationType || "Consulta médica", currentY + 5);
+    currentY = addSection('Queixa principal', consultData.chiefComplaint || "", currentY + 5);
+    
+    // Add a new page if needed
+    if (currentY > doc.internal.pageSize.getHeight() - 50) {
+      doc.addPage();
+      currentY = 20;
+    }
+    
+    currentY = addSection('Anamnese', consultData.anamnesis || "", currentY + 5);
+    
+    if (currentY > doc.internal.pageSize.getHeight() - 50) {
+      doc.addPage();
+      currentY = 20;
+    }
+    
+    currentY = addSection('Hipótese diagnóstica', consultData.diagnosis || "", currentY + 5);
+    currentY = addSection('Procedimentos realizados', consultData.procedures || "", currentY + 5);
+    
+    if (currentY > doc.internal.pageSize.getHeight() - 50) {
+      doc.addPage();
+      currentY = 20;
+    }
+    
+    currentY = addSection('Medicamentos prescritos', consultData.medications || "", currentY + 5);
+    currentY = addSection('Encaminhamentos', consultData.referrals || "", currentY + 5);
+    
+    if (currentY > doc.internal.pageSize.getHeight() - 50) {
+      doc.addPage();
+      currentY = 20;
+    }
+    
+    currentY = addSection('Conduta adotada', consultData.conduct || "", currentY + 5);
+    currentY = addSection('Evolução clínica', consultData.clinicalEvolution || "", currentY + 5);
+    
+    if (currentY > doc.internal.pageSize.getHeight() - 50) {
+      doc.addPage();
+      currentY = 20;
+    }
+    
+    currentY = addSection('Exame físico', consultData.physicalExam || "", currentY + 5);
   }
   
-  if (consultation.notes.plan) {
-    currentY = addSection('Conduta', consultation.notes.plan, currentY + 5);
+  // Section 4: Legal Documents
+  if (currentY > doc.internal.pageSize.getHeight() - 40) {
+    doc.addPage();
+    currentY = 20;
+  } else {
+    currentY += 10;
+  }
+  
+  doc.setFontSize(14);
+  doc.setTextColor(30, 30, 30);
+  doc.text('4. DOCUMENTOS E REGISTRO LEGAL', 15, currentY);
+  currentY += 10;
+  
+  if (consultation.notes?.legalInfo) {
+    const legalInfo = consultation.notes.legalInfo;
+    doc.setFontSize(11);
+    doc.text(`Assinatura digital: ${legalInfo.professionalSignature || "Documento pendente de assinatura digital"}`, 15, currentY);
+    currentY += 7;
+    doc.text(`Protocolo interno: ${legalInfo.consultationProtocol || ""}`, 15, currentY);
+    currentY += 7;
+    
+    if (legalInfo.observations) {
+      doc.text(`Observações: ${legalInfo.observations}`, 15, currentY);
+      currentY += 7;
+    }
+    
+    doc.text(`Consentimento informado: ${legalInfo.informedConsent || "Consentimento informado obtido verbalmente"}`, 15, currentY);
   }
   
   // Add footer
