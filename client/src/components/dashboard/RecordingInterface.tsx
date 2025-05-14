@@ -4,7 +4,7 @@ import { useRecording } from "@/hooks/use-recording";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { Card } from "@/components/ui/card";
-import { Mic, StopCircle, RefreshCw, Volume2, CheckCircle2, AlertCircle } from "lucide-react";
+import { Mic, StopCircle, RefreshCw, Volume2, CheckCircle2, AlertCircle, Trash2 } from "lucide-react";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { useAuthState } from "@/hooks/use-auth";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
@@ -268,9 +268,10 @@ export default function RecordingInterface({
                 onClick={handleReset} 
                 variant="outline" 
                 disabled={isTranscribing}
-                className="text-sm border-gray-200"
+                className="text-sm border-gray-200 text-gray-700"
               >
-                Nova Gravação
+                <Trash2 className="mr-2 h-3 w-3" />
+                Descartar
               </Button>
             </div>
           </div>

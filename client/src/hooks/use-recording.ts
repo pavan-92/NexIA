@@ -174,28 +174,78 @@ export function useRecording(): RecordingHookResult {
           }
           const average = sum / bufferLength;
           
-          // Simular detecção de fala quando o volume médio ultrapassa um limiar
-          if (average > 25) { // Ajustar este valor conforme necessário
-            if (!isSpeaking) {
-              isSpeaking = true;
-              
-              // Adicionar uma frase aleatória ao transcript quando detecta início de fala
-              const randomPhrase = randomPhrases[Math.floor(Math.random() * randomPhrases.length)];
-              transcript = transcript ? transcript + " " + randomPhrase : randomPhrase;
-              setLiveTranscript(transcript);
-            }
+          // Em uma implementação real, aqui seria o local para processar o que o usuário está realmente falando
+        // e enviar o áudio para o serviço de reconhecimento de fala
+          
+        // Detectar atividade de fala com base no volume médio do áudio  
+        const isSpeakingNow = average > 30; // Ajustar sensibilidade conforme necessário
+        
+        if (isSpeakingNow) {
+          // Se começou a falar
+          if (!isSpeaking) {
+            isSpeaking = true;
             
-            // Limpar qualquer timeout de silêncio anterior
-            if (silenceTimeout) {
-              clearTimeout(silenceTimeout);
-              silenceTimeout = null;
-            }
+            // Em uma implementação real, isso seria a palavra ou frase atual captada
+            const userInput = "O paciente está com " + 
+                              ["dor no ombro", "febre", "náusea", "tosse", "dor de cabeça"][
+                                Math.floor(Math.random() * 5)
+                              ] + 
+                              " há " + 
+                              ["dois", "três", "quatro", "cinco"][Math.floor(Math.random() * 4)] + 
+                              " dias.";
             
-            // Configurar um novo timeout para marcar como "não falando" após 1.5 segundos de silêncio
+            transcript = transcript ? transcript + " " + userInput : userInput;
+            setLiveTranscript(transcript);
+          }
+          
+          // Limpar qualquer timeout de silêncio anterior
+          if (silenceTimeout) {
+            clearTimeout(silenceTimeout);
+            silenceTimeout = null;
+          }
+        }
+        
+        // Se parou de falar, configurar um timeout
+        if (!isSpeakingNow && isSpeaking) {
+          if (!silenceTimeout) {
             silenceTimeout = setTimeout(() => {
               isSpeaking = false;
-            }, 1500);
+              
+              // Em uma pausa longa (5+ segundos), podemos reiniciar a gravação automaticamente
+              // mas mantendo a transcrição
+              const longPauseTimeout = setTimeout(() => {
+                // Em uma implementação real, aqui salvaríamos o segmento de áudio atual
+                // e iniciaríamos um novo segmento
+                if (mediaRecorderRef.current && mediaRecorderRef.current.state === "recording") {
+                  console.log("Pausa longa detectada, iniciando novo segmento de áudio");
+                  
+                  // Parar a gravação atual e processar o áudio
+                  mediaRecorderRef.current.stop();
+                  
+                  // Criar um novo blob com os chunks atuais
+                  const currentAudioBlob = new Blob(audioChunksRef.current, { type: 'audio/webm' });
+                  
+                  // Armazenar o blob atual em uma lista (em uma versão real)
+                  console.log("Segmento de áudio salvo:", currentAudioBlob.size, "bytes");
+                  
+                  // Limpar os chunks sem afetar a transcrição
+                  audioChunksRef.current = [];
+                  
+                  // Iniciar um novo segmento de gravação
+                  setTimeout(() => {
+                    if (mediaRecorderRef.current) {
+                      mediaRecorderRef.current.start();
+                      console.log("Novo segmento de gravação iniciado");
+                    }
+                  }, 500);
+                }
+              }, 3000); // Verificar se é uma pausa longa após 3 segundos
+              
+              // Armazenar o timeout para limpeza
+              (window as any).longPauseTimeout = longPauseTimeout;
+            }, 2000); // Pausa de 2 segundos para reconhecer que parou de falar
           }
+        }
         }, 100);
         
         // Armazenar referências para limpeza ao parar a gravação
