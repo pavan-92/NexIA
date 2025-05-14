@@ -45,70 +45,89 @@ export function useRecording(): RecordingHookResult {
   
   const { toast } = useToast();
 
+  // Estado para controle do modo de transcrição
+  const [useFallbackMode, setUseFallbackMode] = useState(false);
+  
   // Inicializar WebSocket
   useEffect(() => {
     // Criar conexão WebSocket para transcrição em tempo real
-    const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-    const wsUrl = `${protocol}//${window.location.host}/ws`;
-    
-    const socket = new WebSocket(wsUrl);
-    websocketRef.current = socket;
-    
-    // Configurar handlers de WebSocket
-    socket.onopen = () => {
-      console.log('WebSocket connection established');
-    };
-    
-    socket.onmessage = (event) => {
-      try {
-        const data = JSON.parse(event.data);
-        console.log('WebSocket message received:', data);
-        
-        if (data.type === 'transcript') {
-          setLiveTranscript(data.text);
-          if (data.isFinal) {
-            setIsLiveTranscribing(false);
-          }
-        } 
-        else if (data.type === 'notes') {
-          toast({
-            title: "Prontuário gerado",
-            description: "O prontuário médico foi criado com sucesso.",
-          });
-        }
-        else if (data.type === 'error') {
-          setError(data.message);
-          toast({
-            variant: "destructive",
-            title: "Erro na transcrição",
-            description: data.message,
-          });
-        }
-      } catch (err) {
-        console.error('Error parsing WebSocket message:', err);
-      }
-    };
-    
-    socket.onerror = (err) => {
-      console.error('WebSocket error:', err);
+    try {
+      const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+      const wsUrl = `${protocol}//${window.location.host}/ws`;
       
-      // Mostrar um erro mais sutil e continuar funcionando
-      console.log('Modo de fallback: transcrição após finalizar gravação');
-      toast({
-        variant: "default",
-        title: "Modo alternativo ativado",
-        description: "A transcrição será processada após finalizar a gravação.",
-      });
-    };
-    
-    socket.onclose = () => {
-      console.log('WebSocket connection closed');
-    };
+      const socket = new WebSocket(wsUrl);
+      websocketRef.current = socket;
+      
+      // Configurar handlers de WebSocket
+      socket.onopen = () => {
+        console.log('WebSocket connection established');
+        setUseFallbackMode(false);
+      };
+      
+      socket.onmessage = (event) => {
+        try {
+          const data = JSON.parse(event.data);
+          console.log('WebSocket message received:', data);
+          
+          if (data.type === 'transcript') {
+            setLiveTranscript(data.text);
+            if (data.isFinal) {
+              setIsLiveTranscribing(false);
+            }
+          } 
+          else if (data.type === 'notes') {
+            toast({
+              title: "Prontuário gerado",
+              description: "O prontuário médico foi criado com sucesso.",
+            });
+          }
+          else if (data.type === 'error') {
+            console.log('Erro recebido do servidor:', data.message);
+            // Não mostramos o erro para o usuário, apenas ativamos o modo de fallback
+            setUseFallbackMode(true);
+          }
+          else if (data.type === 'status' && data.status === 'fallback_mode') {
+            console.log('Modo fallback ativado pelo servidor:', data.message);
+            setUseFallbackMode(true);
+            
+            // Se não for um erro crítico, mostramos um toast informativo
+            toast({
+              variant: "default",
+              title: "Modo alternativo ativado",
+              description: "A transcrição em tempo real não está disponível. Suas gravações serão processadas normalmente."
+            });
+          }
+        } catch (err) {
+          console.error('Error parsing WebSocket message:', err);
+        }
+      };
+      
+      socket.onerror = (err) => {
+        console.error('WebSocket error:', err);
+        
+        // Ativar modo de fallback
+        setUseFallbackMode(true);
+        console.log('Modo de fallback: transcrição após finalizar gravação');
+        toast({
+          variant: "default",
+          title: "Modo alternativo ativado",
+          description: "A transcrição será processada após finalizar a gravação.",
+        });
+      };
+      
+      socket.onclose = () => {
+        console.log('WebSocket connection closed');
+        setUseFallbackMode(true);
+      };
+    } catch (err) {
+      console.error('Error setting up WebSocket:', err);
+      setUseFallbackMode(true);
+    }
     
     // Limpar WebSocket quando componente desmontar
     return () => {
-      if (socket.readyState === WebSocket.OPEN) {
-        socket.close();
+      if (websocketRef.current && websocketRef.current.readyState === WebSocket.OPEN) {
+        websocketRef.current.close();
       }
       
       if (streamRef.current) {
@@ -160,11 +179,14 @@ export function useRecording(): RecordingHookResult {
       // Inicializamos a área de transcrição com uma mensagem instrutiva
       setLiveTranscript("Esperando você falar... A transcrição aparecerá aqui quando detectar sua voz.");
       
-      // Notificar o servidor que começamos a gravar
-      if (websocketRef.current && websocketRef.current.readyState === WebSocket.OPEN) {
+      // Notificar o servidor que começamos a gravar (se não estiver no modo fallback)
+      if (!useFallbackMode && websocketRef.current && websocketRef.current.readyState === WebSocket.OPEN) {
         websocketRef.current.send(JSON.stringify({ 
           type: "start_recording"
         }));
+        console.log("Modo de transcrição em tempo real ativado");
+      } else {
+        console.log("Usando modo de gravação local (fallback)");
       }
       
       // Configurar um detector de áudio para capturar e enviar o som em tempo real
@@ -175,9 +197,14 @@ export function useRecording(): RecordingHookResult {
             // Adicionar chunk para eventual download/processamento local
             audioChunksRef.current.push(event.data);
             
-            // Enviar o chunk para o servidor em tempo real via WebSocket
-            if (websocketRef.current && websocketRef.current.readyState === WebSocket.OPEN) {
-              websocketRef.current.send(event.data);
+            // Enviar o chunk para o servidor em tempo real via WebSocket (se não estiver no modo fallback)
+            if (!useFallbackMode && websocketRef.current && websocketRef.current.readyState === WebSocket.OPEN) {
+              try {
+                websocketRef.current.send(event.data);
+              } catch (err) {
+                console.error("Erro ao enviar áudio para o servidor:", err);
+                setUseFallbackMode(true);
+              }
             }
           }
         };
@@ -314,10 +341,18 @@ export function useRecording(): RecordingHookResult {
         console.error("Erro ao configurar o processamento de áudio em tempo real:", err);
       }
       
-      toast({
-        title: "Gravação iniciada",
-        description: "Fale normalmente durante a consulta. A transcrição aparecerá em tempo real.",
-      });
+      // Mensagem diferente dependendo do modo
+      if (useFallbackMode) {
+        toast({
+          title: "Gravação iniciada (modo offline)",
+          description: "Fale normalmente durante a consulta. A transcrição será processada ao finalizar.",
+        });
+      } else {
+        toast({
+          title: "Gravação iniciada",
+          description: "Fale normalmente durante a consulta. A transcrição aparecerá em tempo real.",
+        });
+      }
     } catch (err) {
       setError("Não foi possível acessar o microfone. Verifique as permissões do navegador.");
       console.error("Error starting recording:", err);
@@ -345,11 +380,16 @@ export function useRecording(): RecordingHookResult {
           timerIntervalRef.current = null;
         }
         
-        // Notificar o servidor que paramos de gravar
-        if (websocketRef.current && websocketRef.current.readyState === WebSocket.OPEN) {
-          websocketRef.current.send(JSON.stringify({ 
-            type: "stop_recording"
-          }));
+        // Notificar o servidor que paramos de gravar (se não estiver no modo fallback)
+        if (!useFallbackMode && websocketRef.current && websocketRef.current.readyState === WebSocket.OPEN) {
+          try {
+            websocketRef.current.send(JSON.stringify({ 
+              type: "stop_recording"
+            }));
+          } catch (err) {
+            console.error("Erro ao notificar o servidor sobre fim da gravação:", err);
+            setUseFallbackMode(true);
+          }
         }
         
         // Stop media recorder

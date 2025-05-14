@@ -8,8 +8,25 @@ export function setupLiveTranscription(server: Server) {
   const wss = new WebSocketServer({ server, path: "/ws" });
   
   // Create Deepgram client
-  const deepgramApiKey = process.env.DEEPGRAM_API_KEY;
-  const deepgram = deepgramApiKey ? new DeepgramSDK.Deepgram(deepgramApiKey) : null;
+  let deepgram: any = null;
+  try {
+    const deepgramApiKey = process.env.DEEPGRAM_API_KEY;
+    
+    if (!deepgramApiKey) {
+      console.log("DEEPGRAM_API_KEY não encontrada nas variáveis de ambiente");
+    } else if (deepgramApiKey.trim() === "" || deepgramApiKey === "undefined" || deepgramApiKey === "null") {
+      console.log("DEEPGRAM_API_KEY está vazia ou inválida");
+    } else {
+      try {
+        deepgram = new DeepgramSDK.Deepgram(deepgramApiKey);
+        console.log("Cliente Deepgram inicializado com sucesso");
+      } catch (initErr) {
+        console.error("Erro ao inicializar cliente Deepgram:", initErr);
+      }
+    }
+  } catch (err) {
+    console.error("Erro ao verificar configuração Deepgram:", err);
+  }
   
   wss.on("connection", (ws) => {
     console.log("WebSocket connection established for live transcription");
@@ -20,7 +37,8 @@ export function setupLiveTranscription(server: Server) {
     // Inicializar deepgram se disponível
     const initializeDeepgram = () => {
       if (!deepgram) {
-        console.log("Deepgram API key not configured, using fallback mode");
+        console.log("Deepgram API key not configured or invalid, using fallback mode");
+        console.log("DEEPGRAM_API_KEY exists:", !!process.env.DEEPGRAM_API_KEY);
         
         // Notificar o cliente que não temos Deepgram disponível
         if (ws.readyState === WebSocket.OPEN) {
@@ -32,6 +50,8 @@ export function setupLiveTranscription(server: Server) {
         }
         return null;
       }
+      
+      console.log("Attempting to initialize Deepgram live transcription...");
       
       try {
         const liveTx = deepgram.transcription.live({
