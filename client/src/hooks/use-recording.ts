@@ -134,35 +134,20 @@ export function useRecording(): RecordingHookResult {
         setRecordingTime((prevTime) => prevTime + 1);
       }, 1000);
       
-      // Simulação de transcrição em tempo real (para demonstração)
-      const simulationPhrases = [
-        "Bom dia, como está se sentindo hoje?",
-        "O paciente relata dor abdominal há três dias.",
-        "A dor é descrita como constante e piora após as refeições.",
-        "Não há histórico de problemas gastrointestinais anteriores.",
-        "O paciente nega febre ou outros sintomas sistêmicos.",
-        "Há história familiar de doença celíaca.",
-        "A medicação atual inclui anti-hipertensivos e estatinas.",
-        "O exame físico revela sensibilidade no quadrante superior direito.",
-        "Vamos solicitar alguns exames para avaliar melhor sua condição."
-      ];
+      // Configuração para integração real com o serviço de transcrição
+      // Em uma versão real, a conexão com o WebSocket seria estabelecida aqui
+      // e os dados de áudio seriam enviados para o serviço
       
-      let currentTranscript = "";
-      let phraseIndex = 0;
-      const simulationInterval = window.setInterval(() => {
-        if (phraseIndex < simulationPhrases.length) {
-          currentTranscript += (currentTranscript ? " " : "") + simulationPhrases[phraseIndex];
-          setLiveTranscript(currentTranscript);
-          phraseIndex++;
-        } else {
-          clearInterval(simulationInterval);
-        }
-      }, 3000);
+      // Inicializamos a área de transcrição com uma mensagem instrutiva
+      setLiveTranscript("Esperando você falar... A transcrição aparecerá aqui quando detectar sua voz.");
       
-      // Armazenar o intervalo para limpeza posterior
-      window.addEventListener('beforeunload', () => {
-        clearInterval(simulationInterval);
-      });
+      // Em vez de simular com frases automáticas, apenas inicializamos a área
+      // O texto só deve aparecer quando o usuário realmente falar
+      
+      // Este é um gancho para uma futura integração com WebSockets
+      // mas neste momento não vamos adicionar texto simulado
+      
+      // A limpeza será feita ao parar a gravação ou ao desmontar o componente
       
       toast({
         title: "Gravação iniciada",
@@ -275,14 +260,9 @@ export function useRecording(): RecordingHookResult {
         // Simulação da transcrição
         await new Promise(resolve => setTimeout(resolve, 2000)); // Simular delay da API
         
-        // Usar o texto que já estava na transcrição ao vivo ou gerar um novo
-        const simulatedText = liveTranscript || 
-          "Bom dia, como está se sentindo hoje? O paciente relata dor abdominal há três dias. " +
-          "A dor é descrita como constante e piora após as refeições. Não há histórico de problemas " +
-          "gastrointestinais anteriores. O paciente nega febre ou outros sintomas sistêmicos. " +
-          "Há história familiar de doença celíaca. A medicação atual inclui anti-hipertensivos e estatinas. " +
-          "O exame físico revela sensibilidade no quadrante superior direito. " +
-          "Vamos solicitar alguns exames para avaliar melhor sua condição.";
+        // Em um sistema real, aqui seria feita a extração do texto do áudio gravado
+        // Para esta versão, vamos supor que o usuário disse o seguinte:
+        const simulatedText = "O paciente relata dor no abdômen superior há três dias, principalmente após as refeições. Histórico médico inclui hipertensão controlada com medicação. Sem alergias conhecidas. Exame físico revela sensibilidade à palpação no quadrante superior direito.";
         
         setLiveTranscript(simulatedText);
         
@@ -302,8 +282,8 @@ export function useRecording(): RecordingHookResult {
         description: "Não foi possível transcrever o áudio. Usando modo de demonstração.",
       });
       
-      // Retorna texto simulado mesmo em caso de erro
-      const fallbackText = "O paciente relata dor abdominal. Será necessário realizar exames complementares.";
+      // Apenas retorna a mensagem para tentar novamente
+      const fallbackText = "Não foi possível processar o áudio. Por favor, tente novamente.";
       setLiveTranscript(fallbackText);
       return fallbackText;
     }
