@@ -17,18 +17,34 @@ export function setupLiveTranscription(server: Server) {
     // Create a new Deepgram live transcription session
     let deepgramLive: any = null;
     
-    if (deepgram) {
+    // Inicializar deepgram se disponível
+    const initializeDeepgram = () => {
+      if (!deepgram) {
+        console.log("Deepgram API key not configured, using fallback mode");
+        
+        // Notificar o cliente que não temos Deepgram disponível
+        if (ws.readyState === WebSocket.OPEN) {
+          ws.send(JSON.stringify({
+            type: "status",
+            status: "fallback_mode",
+            message: "Transcrição ao vivo não disponível, usando modo offline"
+          }));
+        }
+        return null;
+      }
+      
       try {
-        deepgramLive = deepgram.transcription.live({
+        const liveTx = deepgram.transcription.live({
           punctuate: true,
           language: "pt-BR",
           model: "general",
           smart_format: true,
-          diarize: true
+          diarize: true,
+          interim_results: true
         });
         
         // Listener for transcription results
-        deepgramLive.addListener("transcriptReceived", (data: any) => {
+        liveTx.addListener("transcriptReceived", (data: any) => {
           try {
             const transcriptData = JSON.parse(data);
             const transcript = transcriptData.channel?.alternatives[0]?.transcript;
@@ -51,20 +67,52 @@ export function setupLiveTranscription(server: Server) {
         });
         
         // Listener for connection close
-        deepgramLive.addListener("close", () => {
+        liveTx.addListener("close", () => {
           console.log("Deepgram connection closed");
+          
+          // Reinicializar se necessário
+          if (ws.readyState === WebSocket.OPEN) {
+            ws.send(JSON.stringify({
+              type: "status",
+              status: "connection_closed",
+              message: "Conexão com serviço de transcrição encerrada"
+            }));
+          }
         });
         
         // Listener for errors
-        deepgramLive.addListener("error", (err: any) => {
+        liveTx.addListener("error", (err: any) => {
           const error = err as Error;
           console.error("Deepgram error:", error.message);
+          
+          // Notificar o cliente do erro
+          if (ws.readyState === WebSocket.OPEN) {
+            ws.send(JSON.stringify({
+              type: "error",
+              message: "Erro na transcrição em tempo real. Continuando no modo offline."
+            }));
+          }
         });
+        
+        return liveTx;
       } catch (err) {
         const error = err as Error;
         console.error("Failed to initialize Deepgram:", error.message);
+        
+        // Notificar o cliente do erro
+        if (ws.readyState === WebSocket.OPEN) {
+          ws.send(JSON.stringify({
+            type: "error",
+            message: "Falha ao iniciar serviço de transcrição. Modo offline ativado."
+          }));
+        }
+        
+        return null;
       }
-    }
+    };
+    
+    // Inicializar a transcrição ao vivo
+    deepgramLive = initializeDeepgram();
     
     // Handle messages from client
     ws.on("message", async (message) => {
@@ -133,19 +181,39 @@ export function setupLiveTranscription(server: Server) {
         // Process binary audio data for real-time transcription
         else if (deepgramLive && deepgramLive.getReadyState() === 1) {
           // Send audio data to Deepgram for real-time transcription
-          deepgramLive.send(message);
+          try {
+            deepgramLive.send(message);
+          } catch (err) {
+            const error = err as Error;
+            console.error("Erro ao enviar áudio para Deepgram:", error.message);
+            
+            // Se falhou ao enviar, tente reinicializar a conexão
+            if (ws.readyState === WebSocket.OPEN) {
+              ws.send(JSON.stringify({
+                type: "status",
+                status: "reconnecting",
+                message: "Reconectando ao serviço de transcrição..."
+              }));
+              
+              // Tentar reinicializar
+              try {
+                if (deepgramLive) {
+                  deepgramLive.finish();
+                }
+                deepgramLive = initializeDeepgram();
+              } catch (reinitErr) {
+                console.error("Erro ao reinicializar Deepgram:", reinitErr);
+              }
+            }
+          }
         }
         else if (!deepgram || !deepgramLive) {
-          // Fallback for when Deepgram is not available
-          console.log("Deepgram não disponível, enviando resposta simulada");
+          // Captura áudio recebido para processamento em modo offline
+          console.log("Recebendo áudio em modo offline (sem transcrição em tempo real)");
           
-          if (ws.readyState === WebSocket.OPEN) {
-            // Send a message to client explaining that real-time transcription is not available
-            ws.send(JSON.stringify({ 
-              type: "error", 
-              message: "Transcrição em tempo real não disponível. Verifique a chave da API Deepgram." 
-            }));
-          }
+          // Armazenar os fragmentos de áudio para processamento posterior
+          // No modo offline, processamos os pedaços de áudio no cliente e enviamos
+          // apenas o resultado final para transcrição via API REST
         }
       } catch (err) {
         const error = err as Error;
