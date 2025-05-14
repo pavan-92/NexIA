@@ -8,7 +8,6 @@ import { generatePDF } from "@/lib/pdf";
 import Sidebar from "@/components/dashboard/Sidebar";
 import ConsultationView from "@/components/dashboard/ConsultationView";
 import RecordingInterface from "@/components/dashboard/RecordingInterface";
-import PubMedSearch from "@/components/dashboard/PubMedSearch";
 import TranscriptView from "@/components/dashboard/TranscriptView";
 import ProntuarioView from "@/components/dashboard/ProntuarioView";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -248,51 +247,6 @@ export default function Consultation({ id }: { id?: string }) {
             
             {/* Cards inferiores em grid */}
             <div className="consultation-grid">
-              {/* Sugestões de perguntas */}
-              <motion.div variants={itemVariants} initial="hidden" animate="visible">
-                <div className="consultation-card">
-                  <div className="consultation-card-header">
-                    <h3 className="consultation-card-title">
-                      <span className="flex items-center justify-center w-6 h-6 mr-2 text-blue-600">
-                        <FileText className="h-5 w-5" />
-                      </span>
-                      Sugestões de perguntas
-                    </h3>
-                    <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
-                      <span className="sr-only">Expandir</span>
-                    </Button>
-                  </div>
-                  <div className="consultation-card-content space-y-3">
-                    <ul className="space-y-3">
-                      <li className="flex items-start">
-                        <span className="text-gray-600 mr-2">•</span>
-                        <span>Sentiu algum tipo de desconforto relacionado ao estômago?</span>
-                      </li>
-                      <li className="flex items-start">
-                        <span className="text-gray-600 mr-2">•</span>
-                        <span>Você está com diarreia faz quantos dias?</span>
-                      </li>
-                    </ul>
-                    
-                    <div className="mt-6">
-                      <h4 className="font-medium text-gray-800 mb-2">Possíveis hipóteses diagnósticas</h4>
-                      <div className="space-y-2">
-                        <div className="tag-pill tag-blue">Retocolite Ulcerativa (K51.0)</div>
-                        <div className="tag-pill tag-blue">Colite ulcerativa (K51)</div>
-                      </div>
-                    </div>
-                    
-                    <div className="mt-6">
-                      <h4 className="font-medium text-gray-800 mb-2">Queixa principal</h4>
-                      <div className="space-y-2">
-                        <div className="tag-pill tag-blue">diarreia</div>
-                        <div className="tag-pill tag-blue">queimação</div>
-                        <div className="tag-pill tag-blue">dor abdominal</div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </motion.div>
               
               {/* Alergias */}
               <motion.div variants={itemVariants} initial="hidden" animate="visible">
@@ -381,26 +335,6 @@ export default function Consultation({ id }: { id?: string }) {
                         Upload
                       </Button>
                     </div>
-                  </div>
-                </div>
-              </motion.div>
-              
-              {/* Pesquisa na PubMed */}
-              <motion.div variants={itemVariants} initial="hidden" animate="visible">
-                <div className="consultation-card">
-                  <div className="consultation-card-header">
-                    <h3 className="consultation-card-title">
-                      <span className="flex items-center justify-center w-6 h-6 mr-2 text-blue-600">
-                        <FileText className="h-5 w-5" />
-                      </span>
-                      Pesquisa na PubMed
-                    </h3>
-                    <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
-                      <span className="sr-only">Expandir</span>
-                    </Button>
-                  </div>
-                  <div className="consultation-card-content">
-                    <PubMedSearch />
                   </div>
                 </div>
               </motion.div>
