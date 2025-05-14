@@ -201,7 +201,7 @@ export default function RecordingInterface({
             ) : (
               <div className="text-gray-500 text-sm italic flex items-center justify-center h-64">
                 {isRecording 
-                  ? "Aguardando fala (o servidor está processando o áudio a cada 5 segundos)..." 
+                  ? "Capturando fala... (o áudio é enviado a cada 5 segundos para processamento)" 
                   : "A transcrição aparecerá aqui durante a gravação"}
               </div>
             )}

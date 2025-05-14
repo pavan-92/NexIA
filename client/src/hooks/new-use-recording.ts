@@ -63,8 +63,9 @@ export function useRecording(): RecordingHookResult {
     }
     
     try {
-      const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-      const wsUrl = `${protocol}//${window.location.host}/ws`;
+      // No ambiente Replit, sempre usar ws: porque o proxy lida com a segurança
+      const wsUrl = `ws://${window.location.host}/ws`;
+      console.log("Conectando ao WebSocket usando URL:", wsUrl);
       
       const socket = new WebSocket(wsUrl);
       websocketRef.current = socket;
