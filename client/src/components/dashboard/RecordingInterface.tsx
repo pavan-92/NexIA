@@ -130,6 +130,32 @@ export default function RecordingInterface({
   const handleStopRecording = async () => {
     try {
       await stopRecording();
+      
+      // Inicia automaticamente a transcrição após parar a gravação
+      setIsTranscribing(true);
+      try {
+        const text = await transcribeAudio();
+        onTranscriptionComplete(text);
+        
+        // Save transcription if we have a consultation ID
+        if (consultationId && !isNew) {
+          saveAudio(text);
+        }
+        
+        toast({
+          title: "Áudio transcrito",
+          description: "O áudio foi transcrito automaticamente.",
+        });
+      } catch (err) {
+        console.error("Transcription error:", err);
+        toast({
+          variant: "destructive",
+          title: "Erro na transcrição",
+          description: "Não foi possível transcrever o áudio automaticamente. Tente usar o botão 'Gerar prontuário'.",
+        });
+      } finally {
+        setIsTranscribing(false);
+      }
     } catch (err) {
       console.error("Error stopping recording:", err);
     }
@@ -202,10 +228,10 @@ export default function RecordingInterface({
             ) : (
               <div className="text-gray-500 text-sm italic flex items-center justify-center h-64">
                 {isRecording 
-                  ? "Gravando áudio... Após parar a gravação, clique em 'Gerar Prontuário' para transcrever." 
+                  ? "Gravando áudio... A transcrição acontecerá automaticamente após parar a gravação." 
                   : isTranscribing
                     ? "Processando o áudio. Aguarde um momento..."
-                    : "A transcrição aparecerá aqui após processar a gravação"}
+                    : "A transcrição aparecerá aqui após parar a gravação"}
               </div>
             )}
           </div>
