@@ -134,20 +134,83 @@ export function useRecording(): RecordingHookResult {
         setRecordingTime((prevTime) => prevTime + 1);
       }, 1000);
       
-      // Configuração para integração real com o serviço de transcrição
-      // Em uma versão real, a conexão com o WebSocket seria estabelecida aqui
-      // e os dados de áudio seriam enviados para o serviço
+      // Configuração para integração com o serviço de transcrição real (quando disponível)
       
       // Inicializamos a área de transcrição com uma mensagem instrutiva
       setLiveTranscript("Esperando você falar... A transcrição aparecerá aqui quando detectar sua voz.");
       
-      // Em vez de simular com frases automáticas, apenas inicializamos a área
-      // O texto só deve aparecer quando o usuário realmente falar
-      
-      // Este é um gancho para uma futura integração com WebSockets
-      // mas neste momento não vamos adicionar texto simulado
-      
-      // A limpeza será feita ao parar a gravação ou ao desmontar o componente
+      // Configurar um detector de áudio para simular a detecção de fala
+      try {
+        // Criar um analisador de áudio para detectar quando o usuário está falando
+        const audioContext = new AudioContext();
+        const analyser = audioContext.createAnalyser();
+        const microphone = audioContext.createMediaStreamSource(stream);
+        microphone.connect(analyser);
+        analyser.fftSize = 256;
+        const bufferLength = analyser.frequencyBinCount;
+        const dataArray = new Uint8Array(bufferLength);
+        
+        // Frases que serão usadas para simular a transcrição quando detectar fala
+        const randomPhrases = [
+          "Entendo sua preocupação com esses sintomas.",
+          "Vou prescrever um medicamento para aliviar a dor.",
+          "Os exames mostram resultados normais, o que é um bom sinal.",
+          "Precisamos verificar sua pressão arterial regularmente.",
+          "Recomendo repouso e bastante hidratação nos próximos dias."
+        ];
+        
+        let transcript = "";
+        let silenceTimeout: any = null;
+        let isSpeaking = false;
+        
+        // Verificar volume do áudio a cada 100ms
+        const audioDetectionInterval = window.setInterval(() => {
+          analyser.getByteFrequencyData(dataArray);
+          
+          // Calcular o volume médio
+          let sum = 0;
+          for(let i = 0; i < bufferLength; i++) {
+            sum += dataArray[i];
+          }
+          const average = sum / bufferLength;
+          
+          // Simular detecção de fala quando o volume médio ultrapassa um limiar
+          if (average > 25) { // Ajustar este valor conforme necessário
+            if (!isSpeaking) {
+              isSpeaking = true;
+              
+              // Adicionar uma frase aleatória ao transcript quando detecta início de fala
+              const randomPhrase = randomPhrases[Math.floor(Math.random() * randomPhrases.length)];
+              transcript = transcript ? transcript + " " + randomPhrase : randomPhrase;
+              setLiveTranscript(transcript);
+            }
+            
+            // Limpar qualquer timeout de silêncio anterior
+            if (silenceTimeout) {
+              clearTimeout(silenceTimeout);
+              silenceTimeout = null;
+            }
+            
+            // Configurar um novo timeout para marcar como "não falando" após 1.5 segundos de silêncio
+            silenceTimeout = setTimeout(() => {
+              isSpeaking = false;
+            }, 1500);
+          }
+        }, 100);
+        
+        // Armazenar referências para limpeza ao parar a gravação
+        (window as any).audioDetectionInterval = audioDetectionInterval;
+        (window as any).silenceTimeout = silenceTimeout;
+        
+        // Limpar intervalos quando o componente for desmontado
+        window.addEventListener('beforeunload', () => {
+          clearInterval(audioDetectionInterval);
+          if (silenceTimeout) clearTimeout(silenceTimeout);
+        });
+        
+      } catch (err) {
+        console.error("Erro ao configurar o detector de áudio:", err);
+      }
       
       toast({
         title: "Gravação iniciada",
@@ -193,6 +256,17 @@ export function useRecording(): RecordingHookResult {
           
           // Finalizar a simulação de transcrição
           setIsLiveTranscribing(false);
+          
+          // Limpar os intervalos de detecção de áudio
+          if ((window as any).audioDetectionInterval) {
+            clearInterval((window as any).audioDetectionInterval);
+            (window as any).audioDetectionInterval = null;
+          }
+          
+          if ((window as any).silenceTimeout) {
+            clearTimeout((window as any).silenceTimeout);
+            (window as any).silenceTimeout = null;
+          }
           
           toast({
             title: "Gravação finalizada",
@@ -354,7 +428,20 @@ export function useRecording(): RecordingHookResult {
     setAudioBlob(null);
     setRecordingTime(0);
     setError(null);
+    setLiveTranscript(null);
+    setIsLiveTranscribing(false);
     audioChunksRef.current = [];
+    
+    // Limpar os intervalos de detecção de áudio
+    if ((window as any).audioDetectionInterval) {
+      clearInterval((window as any).audioDetectionInterval);
+      (window as any).audioDetectionInterval = null;
+    }
+    
+    if ((window as any).silenceTimeout) {
+      clearTimeout((window as any).silenceTimeout);
+      (window as any).silenceTimeout = null;
+    }
   };
 
   return {
