@@ -47,10 +47,39 @@ export async function transcribeAudio(buffer: Buffer): Promise<{ text: string, d
 
 // Generate medical notes from transcription
 export async function generateMedicalNotes(transcription: string): Promise<{
-  chiefComplaint: string;
-  history: string;
-  diagnosis: string;
-  plan: string;
+  patientInfo: {
+    fullName: string;
+    birthDate: string;
+    sex: string;
+    cpf: string;
+    motherName: string;
+    address: string;
+  };
+  healthcareInfo: {
+    cnes: string;
+    professionalName: string;
+    professionalCNS: string;
+    professionalCBO: string;
+  };
+  consultation: {
+    dateTime: string;
+    consultationType: string;
+    chiefComplaint: string;
+    anamnesis: string;
+    diagnosis: string;
+    procedures: string;
+    medications: string;
+    referrals: string;
+    conduct: string;
+    clinicalEvolution: string;
+    physicalExam: string;
+  };
+  legalInfo: {
+    professionalSignature: string;
+    consultationProtocol: string;
+    observations: string;
+    informedConsent: string;
+  };
 }> {
   try {
     const response = await openai.chat.completions.create({
@@ -58,26 +87,55 @@ export async function generateMedicalNotes(transcription: string): Promise<{
       messages: [
         {
           role: "system",
-          content: `You are a medical assistant that helps doctors organize patient information. 
-          Analyze the following conversation transcript between a doctor and a patient. 
-          Then generate a structured medical record with the following sections:
+          content: `Você é um assistente médico especializado em criar prontuários eletrônicos de pacientes completos, seguindo requisitos legais brasileiros.
           
-          1. Chief Complaint: A concise statement of the patient's main issue
-          2. History of Present Illness: Detailed chronological description of the patient's symptoms
-          3. Diagnosis: Potential diagnoses based on the information provided
-          4. Treatment Plan: Recommended next steps, medications, and follow-up
+          Analise a transcrição da consulta médica e gere um prontuário eletrônico estruturado com TODOS os seguintes campos obrigatórios:
           
-          Your response should be in JSON format with the following structure:
-          {
-            "chiefComplaint": "string",
-            "history": "string",
-            "diagnosis": "string",
-            "plan": "string"
-          }`
+          1. IDENTIFICAÇÃO DO PACIENTE:
+            - Nome completo do paciente
+            - Data de nascimento (no formato DD/MM/AAAA)
+            - Sexo
+            - CPF ou CNS (Cartão Nacional de Saúde)
+            - Nome da mãe
+            - Endereço completo (CEP, UF, município, logradouro, número)
+          
+          2. INFORMAÇÕES DA UNIDADE DE SAÚDE:
+            - CNES (Código Nacional do Estabelecimento de Saúde)
+            - Nome do profissional responsável pelo atendimento
+            - CNS do profissional
+            - CBO (Código Brasileiro de Ocupações) do profissional
+          
+          3. DADOS DA CONSULTA/ATENDIMENTO:
+            - Data e hora do atendimento (DD/MM/AAAA HH:MM)
+            - Tipo de atendimento (ex: consulta médica, acolhimento, visita domiciliar)
+            - Queixa principal/motivo da consulta
+            - Anamnese detalhada
+            - Hipótese diagnóstica/CID-10
+            - Procedimentos realizados (com código SIGTAP quando aplicável)
+            - Medicamentos prescritos (com código HÓRUS/BNM quando aplicável)
+            - Encaminhamentos realizados
+            - Conduta adotada
+            - Evolução clínica
+            - Registro de exame físico (quando aplicável)
+          
+          4. DOCUMENTOS E REGISTRO LEGAL:
+            - Assinatura digital do profissional (obrigatória para validade legal)
+            - Número do atendimento ou protocolo interno
+            - Campo de observações (quando necessário)
+            - Consentimento informado (em atendimentos específicos)
+          
+          IMPORTANTE:
+          - Para campos com dados pessoais não especificados na transcrição, use informações fictícias IDENTIFICANDO que são ilustrativas
+          - Mantenha o formato clínico e profissional
+          - Seja detalhado e específico nos campos de anamnese, diagnóstico e conduta
+          - Inclua TODOS os campos acima no formato JSON solicitado, mesmo que tenha que usar dados ilustrativos
+          - Responda APENAS com os dados estruturados no formato JSON solicitado
+          
+          Use EXATAMENTE o seguinte formato JSON em sua resposta:`
         },
         {
           role: "user",
-          content: transcription
+          content: transcription + "\n\nGere um prontuário eletrônico completo em formato JSON com todos os campos obrigatórios conforme a estrutura especificada:"
         }
       ],
       response_format: { type: "json_object" }
@@ -86,10 +144,39 @@ export async function generateMedicalNotes(transcription: string): Promise<{
     const result = JSON.parse(response.choices[0].message.content || "{}");
     
     return {
-      chiefComplaint: result.chiefComplaint || "",
-      history: result.history || "",
-      diagnosis: result.diagnosis || "",
-      plan: result.plan || ""
+      patientInfo: {
+        fullName: result.patientInfo?.fullName || "Nome não informado",
+        birthDate: result.patientInfo?.birthDate || "Data não informada",
+        sex: result.patientInfo?.sex || "Não informado",
+        cpf: result.patientInfo?.cpf || "Não informado",
+        motherName: result.patientInfo?.motherName || "Não informado",
+        address: result.patientInfo?.address || "Não informado"
+      },
+      healthcareInfo: {
+        cnes: result.healthcareInfo?.cnes || "Não informado",
+        professionalName: result.healthcareInfo?.professionalName || "Não informado",
+        professionalCNS: result.healthcareInfo?.professionalCNS || "Não informado",
+        professionalCBO: result.healthcareInfo?.professionalCBO || "Não informado"
+      },
+      consultation: {
+        dateTime: result.consultation?.dateTime || new Date().toLocaleString('pt-BR'),
+        consultationType: result.consultation?.consultationType || "Consulta médica",
+        chiefComplaint: result.consultation?.chiefComplaint || "Não informado",
+        anamnesis: result.consultation?.anamnesis || "Não informado",
+        diagnosis: result.consultation?.diagnosis || "Não informado",
+        procedures: result.consultation?.procedures || "Não informado",
+        medications: result.consultation?.medications || "Não informado",
+        referrals: result.consultation?.referrals || "Não informado",
+        conduct: result.consultation?.conduct || "Não informado",
+        clinicalEvolution: result.consultation?.clinicalEvolution || "Não informado",
+        physicalExam: result.consultation?.physicalExam || "Não informado"
+      },
+      legalInfo: {
+        professionalSignature: result.legalInfo?.professionalSignature || "Documento pendente de assinatura digital",
+        consultationProtocol: result.legalInfo?.consultationProtocol || `PROT-${Date.now()}`,
+        observations: result.legalInfo?.observations || "",
+        informedConsent: result.legalInfo?.informedConsent || "Consentimento informado obtido verbalmente"
+      }
     };
   } catch (error) {
     console.error("Error generating medical notes:", error);

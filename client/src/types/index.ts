@@ -37,10 +37,39 @@ export interface Consultation {
   audioUrl?: string;
   duration?: number;
   notes: {
-    chiefComplaint?: string;
-    history?: string;
-    diagnosis?: string;
-    plan?: string;
+    patientInfo?: {
+      fullName: string;
+      birthDate: string;
+      sex: string;
+      cpf: string;
+      motherName: string;
+      address: string;
+    };
+    healthcareInfo?: {
+      cnes: string;
+      professionalName: string;
+      professionalCNS: string;
+      professionalCBO: string;
+    };
+    consultation?: {
+      dateTime: string;
+      consultationType: string;
+      chiefComplaint: string;
+      anamnesis: string;
+      diagnosis: string;
+      procedures: string;
+      medications: string;
+      referrals: string;
+      conduct: string;
+      clinicalEvolution: string;
+      physicalExam: string;
+    };
+    legalInfo?: {
+      professionalSignature: string;
+      consultationProtocol: string;
+      observations: string;
+      informedConsent: string;
+    };
   };
   createdAt: string;
   updatedAt: string;
@@ -92,10 +121,39 @@ export interface TranscriptionResponse {
 }
 
 export interface NotesResponse {
-  chiefComplaint: string;
-  history: string;
-  diagnosis: string;
-  plan: string;
+  patientInfo: {
+    fullName: string;
+    birthDate: string;
+    sex: string;
+    cpf: string;
+    motherName: string;
+    address: string;
+  };
+  healthcareInfo: {
+    cnes: string;
+    professionalName: string;
+    professionalCNS: string;
+    professionalCBO: string;
+  };
+  consultation: {
+    dateTime: string;
+    consultationType: string;
+    chiefComplaint: string;
+    anamnesis: string;
+    diagnosis: string;
+    procedures: string;
+    medications: string;
+    referrals: string;
+    conduct: string;
+    clinicalEvolution: string;
+    physicalExam: string;
+  };
+  legalInfo: {
+    professionalSignature: string;
+    consultationProtocol: string;
+    observations: string;
+    informedConsent: string;
+  };
 }
 
 // Plans
