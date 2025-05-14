@@ -31,6 +31,8 @@ export default function RecordingInterface({
     transcribeAudio,
     resetRecording,
     error,
+    liveTranscript,
+    isLiveTranscribing,
   } = useRecording();
   
   const [audioUrl, setAudioUrl] = useState<string | null>(null);
@@ -186,6 +188,19 @@ export default function RecordingInterface({
                 <StopCircle className="h-5 w-5" />
               </Button>
             </div>
+            
+            {/* Transcrição em tempo real */}
+            {isLiveTranscribing && (
+              <div className="mt-4 p-3 bg-blue-50 border border-blue-100 rounded-lg">
+                <div className="flex items-center mb-2">
+                  <div className="animate-pulse text-blue-500 text-sm font-medium mr-2">●</div>
+                  <div className="text-sm font-medium text-blue-600">Transcrição em tempo real</div>
+                </div>
+                <div className="text-sm text-gray-700 font-light italic">
+                  {liveTranscript || "Aguardando fala..."}
+                </div>
+              </div>
+            )}
             
             <p className="text-xs text-gray-500 mt-2">
               Fale pausadamente e com clareza para melhores resultados

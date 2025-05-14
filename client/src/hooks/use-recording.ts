@@ -292,5 +292,7 @@ export function useRecording(): RecordingHookResult {
     generateNotes,
     resetRecording,
     error,
+    liveTranscript,
+    isLiveTranscribing
   };
 }
