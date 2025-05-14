@@ -296,3 +296,157 @@
 .hover-scale:hover {
   transform: scale(1.02);
 }
+
+/* Layout da consulta */
+.consultation-layout {
+  padding: 1.5rem;
+  max-width: 1600px;
+  margin: 0 auto;
+}
+
+.patient-header {
+  background: white;
+  border-radius: 0.5rem;
+  padding: 1.5rem;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  margin-bottom: 1.5rem;
+}
+
+.patient-name {
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: #1e293b;
+  margin-bottom: 1rem;
+}
+
+.patient-info {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1.5rem;
+  margin-bottom: 1rem;
+}
+
+.patient-info-item {
+  min-width: 100px;
+}
+
+.patient-info-label {
+  font-size: 0.75rem;
+  color: #64748b;
+  margin-bottom: 0.25rem;
+}
+
+.patient-info-value {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: #334155;
+}
+
+.patient-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.patient-tag {
+  font-size: 0.75rem;
+  background: #e2e8f0;
+  color: #475569;
+  padding: 0.25rem 0.75rem;
+  border-radius: 0.25rem;
+}
+
+.consultation-section {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.consultation-main {
+  width: 100%;
+}
+
+.consultation-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 450px), 1fr));
+  gap: 1.5rem;
+}
+
+.consultation-card-full {
+  background: white;
+  border-radius: 0.5rem;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+}
+
+.consultation-card {
+  background: white;
+  border-radius: 0.5rem;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.consultation-card-header-highlight {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem 1.5rem;
+  background: linear-gradient(90deg, rgba(18, 94, 166, 0.08) 0%, rgba(74, 153, 211, 0.04) 100%);
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.consultation-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem 1.5rem;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.consultation-card-title {
+  display: flex;
+  align-items: center;
+  font-size: 0.9375rem;
+  font-weight: 600;
+  color: #1e293b;
+}
+
+.consultation-card-content {
+  padding: 1.5rem;
+  flex: 1;
+}
+
+.tag-pill {
+  display: inline-flex;
+  align-items: center;
+  font-size: 0.75rem;
+  font-weight: 500;
+  padding: 0.25rem 0.75rem;
+  border-radius: 1rem;
+}
+
+.tag-blue {
+  background-color: #eff6ff;
+  color: #1d4ed8;
+}
+
+.tag-green {
+  background-color: #ecfdf5;
+  color: #047857;
+}
+
+.tag-yellow {
+  background-color: #fef3c7;
+  color: #b45309;
+}
+
+.tag-red {
+  background-color: #fee2e2;
+  color: #b91c1c;
+}
+
+.medical-bg {
+  background-color: #f8fafc;
+}
