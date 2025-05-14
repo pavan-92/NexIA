@@ -49,7 +49,7 @@ export default function RecordingInterface({
   
   const [audioUrl, setAudioUrl] = useState<string | null>(null);
   const [isTranscribing, setIsTranscribing] = useState(false);
-  const { user } = useAuthState();
+  const { user } = useAuthState(); // Obtém usuário autenticado
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
@@ -203,7 +203,9 @@ export default function RecordingInterface({
               <div className="text-gray-500 text-sm italic flex items-center justify-center h-64">
                 {isRecording 
                   ? "Gravando áudio... Após parar a gravação, clique em 'Gerar Prontuário' para transcrever." 
-                  : "A transcrição aparecerá aqui após processar a gravação"}
+                  : isTranscribing
+                    ? "Processando o áudio. Aguarde um momento..."
+                    : "A transcrição aparecerá aqui após processar a gravação"}
               </div>
             )}
           </div>
