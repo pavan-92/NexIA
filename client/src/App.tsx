@@ -41,14 +41,14 @@ function Router() {
         <Route path="/patients">
           {() => <ProtectedRoute component={Patients} />}
         </Route>
+        <Route path="/consultation/new">
+          {() => <ProtectedRoute component={Consultation} />}
+        </Route>
         <Route path="/consultation/:id">
           {(params) => {
             const ConsultationWithParams = () => <Consultation id={params.id} />;
             return <ProtectedRoute component={ConsultationWithParams} />;
           }}
-        </Route>
-        <Route path="/consultation/new">
-          {() => <ProtectedRoute component={Consultation} />}
         </Route>
         <Route path="/history">
           {() => <ProtectedRoute component={History} />}

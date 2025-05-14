@@ -77,7 +77,7 @@ export default function Dashboard() {
               </p>
             </div>
             <div className="mt-4 md:mt-0 flex flex-col sm:flex-row gap-2">
-              <Link href="/patients">
+              <Link to="/patients">
                 <span className="w-full sm:w-auto">
                   <Button variant="outline" className="w-full sm:w-auto border-gray-300 hover:bg-gray-50 hover:text-blue-600 transition-all duration-200">
                     <Users className="mr-2 h-4 w-4" />
@@ -85,7 +85,7 @@ export default function Dashboard() {
                   </Button>
                 </span>
               </Link>
-              <Link href="/consultation/new">
+              <Link to="/consultation/new">
                 <span className="w-full sm:w-auto">
                   <Button className="w-full sm:w-auto bg-blue-600 text-white hover:bg-blue-700 shadow-sm hover:shadow transition-all duration-200">
                     <PlusCircle className="mr-2 h-4 w-4" />

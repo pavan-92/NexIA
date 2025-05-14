@@ -88,8 +88,8 @@ export default function Sidebar() {
     <>
       {/* Mobile Header */}
       <div className="lg:hidden fixed top-0 left-0 right-0 z-40 py-3 px-4 bg-background border-b border-border flex items-center justify-between">
-        <span 
-          onClick={() => window.location.href = "/"}
+        <a 
+          href="/"
           className="flex items-center cursor-pointer"
         >
           <img 
@@ -97,7 +97,7 @@ export default function Sidebar() {
             alt="NexIA" 
             className="h-8" 
           />
-        </span>
+        </a>
         <Button 
           variant="ghost" 
           size="icon" 
@@ -134,17 +134,19 @@ export default function Sidebar() {
                 <ul className="space-y-1 px-2">
                   {links.map((link) => (
                     <li key={link.href}>
-                      <span
+                      <a 
+                        href={link.href}
+                        onClick={(e) => {
+                          e.preventDefault();
+                          setIsMobileOpen(false);
+                          window.location.href = link.href;
+                        }}
                         className={cn(
                           "flex items-center space-x-3 rounded-md px-3 py-2 text-sm font-medium cursor-pointer transition-all duration-200",
                           location === link.href
                             ? "bg-[#1B98E0]/10 text-[#006494] font-medium"
                             : "text-gray-600 hover:bg-[#1B98E0]/5 hover:text-[#006494]"
                         )}
-                        onClick={() => {
-                          window.location.href = link.href;
-                          setIsMobileOpen(false);
-                        }}
                       >
                         <span className={cn(
                           "flex items-center justify-center w-6 h-6",
@@ -153,7 +155,7 @@ export default function Sidebar() {
                           {link.icon}
                         </span>
                         <span>{link.label}</span>
-                      </span>
+                      </a>
                     </li>
                   ))}
                 </ul>
@@ -183,8 +185,8 @@ export default function Sidebar() {
       >
         <div className="p-4 flex items-center justify-between border-b border-border h-16">
           {!isCollapsed && (
-            <span
-              onClick={() => window.location.href = "/"}
+            <a
+              href="/"
               className="cursor-pointer"
             >
               <img 
@@ -192,7 +194,7 @@ export default function Sidebar() {
                 alt="NexIA" 
                 className="h-8" 
               />
-            </span>
+            </a>
           )}
           <Button 
             variant="ghost" 
@@ -221,7 +223,12 @@ export default function Sidebar() {
           <ul className="space-y-1 px-2">
             {links.map((link) => (
               <li key={link.href}>
-                <span
+                <a
+                  href={link.href}
+                  onClick={(e) => {
+                    e.preventDefault();
+                    window.location.href = link.href;
+                  }}
                   className={cn(
                     "flex items-center rounded-md px-3 py-2 text-sm font-medium cursor-pointer transition-all duration-200",
                     location === link.href
@@ -229,7 +236,6 @@ export default function Sidebar() {
                       : "text-gray-600 hover:bg-[#1B98E0]/5 hover:text-[#006494]",
                     isCollapsed && "justify-center"
                   )}
-                  onClick={() => window.location.href = link.href}
                 >
                   <span className={cn(
                     "flex items-center justify-center w-6 h-6",
@@ -238,7 +244,7 @@ export default function Sidebar() {
                     {link.icon}
                   </span>
                   {!isCollapsed && <span className="ml-3">{link.label}</span>}
-                </span>
+                </a>
               </li>
             ))}
           </ul>
