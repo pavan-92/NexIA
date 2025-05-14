@@ -204,8 +204,16 @@
   @apply bg-white rounded-xl shadow-sm hover:shadow-md transition-all duration-300 overflow-hidden;
 }
 
+.consultation-card-full {
+  @apply col-span-1 md:col-span-2 lg:col-span-3 bg-white rounded-xl shadow-sm hover:shadow-md transition-all duration-300 overflow-hidden border-2 border-blue-100;
+}
+
 .consultation-card-header {
   @apply flex items-center justify-between p-4 border-b border-gray-100;
+}
+
+.consultation-card-header-highlight {
+  @apply flex items-center justify-between p-4 border-b border-blue-100 bg-blue-50/50;
 }
 
 .consultation-card-title {

@@ -222,15 +222,15 @@ export default function Consultation({ id }: { id?: string }) {
             animate="visible"
             className="consultation-grid"
           >
-            {/* Consulta em andamento */}
+            {/* Iniciar consulta - Card horizontal em destaque */}
             <motion.div variants={itemVariants}>
-              <div className="consultation-card">
-                <div className="consultation-card-header">
+              <div className="consultation-card-full">
+                <div className="consultation-card-header-highlight">
                   <h3 className="consultation-card-title">
-                    <span className="flex items-center justify-center w-6 h-6 mr-2 text-blue-600">
-                      <Mic className="h-5 w-5" />
+                    <span className="flex items-center justify-center w-7 h-7 mr-2 text-blue-600 bg-blue-100 rounded-full">
+                      <Mic className="h-4 w-4" />
                     </span>
-                    Consulta em andamento
+                    Iniciar consulta
                   </h3>
                   <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
                     <span className="sr-only">Expandir</span>
