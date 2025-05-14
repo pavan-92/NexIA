@@ -47,9 +47,9 @@ export function useRecording(): RecordingHookResult {
 
   // Inicializar WebSocket
   useEffect(() => {
-    // Criar conexão WebSocket
+    // Criar conexão WebSocket para transcrição em tempo real
     const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-    const wsUrl = `${protocol}//${window.location.host}/api/ws`;
+    const wsUrl = `${protocol}//${window.location.host}/ws`;
     
     const socket = new WebSocket(wsUrl);
     websocketRef.current = socket;
@@ -148,14 +148,37 @@ export function useRecording(): RecordingHookResult {
         setRecordingTime((prevTime) => prevTime + 1);
       }, 1000);
       
-      // Configuração para integração com o serviço de transcrição real (quando disponível)
+      // Configuração para integração com o serviço de transcrição em tempo real
       
       // Inicializamos a área de transcrição com uma mensagem instrutiva
       setLiveTranscript("Esperando você falar... A transcrição aparecerá aqui quando detectar sua voz.");
       
-      // Configurar um detector de áudio para simular a detecção de fala
+      // Notificar o servidor que começamos a gravar
+      if (websocketRef.current && websocketRef.current.readyState === WebSocket.OPEN) {
+        websocketRef.current.send(JSON.stringify({ 
+          type: "start_recording"
+        }));
+      }
+      
+      // Configurar um detector de áudio para capturar e enviar o som em tempo real
       try {
-        // Criar um analisador de áudio para detectar quando o usuário está falando
+        // Configurar o MediaRecorder para capturar e enviar áudio em tempo real
+        mediaRecorderRef.current.ondataavailable = (event) => {
+          if (event.data.size > 0) {
+            // Adicionar chunk para eventual download/processamento local
+            audioChunksRef.current.push(event.data);
+            
+            // Enviar o chunk para o servidor em tempo real via WebSocket
+            if (websocketRef.current && websocketRef.current.readyState === WebSocket.OPEN) {
+              websocketRef.current.send(event.data);
+            }
+          }
+        };
+        
+        // Configurar para coletar chunks a cada 250ms para transcrição em tempo real
+        mediaRecorderRef.current.start(250);
+        
+        // Configurar detector de volume para melhorar a experiência do usuário
         const audioContext = new AudioContext();
         const analyser = audioContext.createAnalyser();
         const microphone = audioContext.createMediaStreamSource(stream);
@@ -164,18 +187,8 @@ export function useRecording(): RecordingHookResult {
         const bufferLength = analyser.frequencyBinCount;
         const dataArray = new Uint8Array(bufferLength);
         
-        // Frases que serão usadas para simular a transcrição quando detectar fala
-        const randomPhrases = [
-          "Entendo sua preocupação com esses sintomas.",
-          "Vou prescrever um medicamento para aliviar a dor.",
-          "Os exames mostram resultados normais, o que é um bom sinal.",
-          "Precisamos verificar sua pressão arterial regularmente.",
-          "Recomendo repouso e bastante hidratação nos próximos dias."
-        ];
-        
-        let transcript = "";
-        let silenceTimeout: any = null;
         let isSpeaking = false;
+        let silenceTimeout: any = null;
         
         // Verificar volume do áudio a cada 100ms
         const audioDetectionInterval = window.setInterval(() => {
@@ -188,69 +201,89 @@ export function useRecording(): RecordingHookResult {
           }
           const average = sum / bufferLength;
           
-          // Em uma implementação real, aqui seria o local para processar o que o usuário está realmente falando
-        // e enviar o áudio para o serviço de reconhecimento de fala
+          // Detectar atividade de fala com base no volume médio do áudio  
+          const isSpeakingNow = average > 30; // Ajustar sensibilidade conforme necessário
           
-        // Detectar atividade de fala com base no volume médio do áudio  
-        const isSpeakingNow = average > 30; // Ajustar sensibilidade conforme necessário
-        
-        if (isSpeakingNow) {
-          // Se começou a falar
-          if (!isSpeaking) {
-            isSpeaking = true;
+          if (isSpeakingNow) {
+            // Se começou a falar
+            if (!isSpeaking) {
+              isSpeaking = true;
+              
+              // Atualizar status visual caso a transcrição demore
+              if (!liveTranscript || liveTranscript === "Esperando você falar... A transcrição aparecerá aqui quando detectar sua voz.") {
+                setLiveTranscript("Processando sua fala...");
+              }
+            }
             
-            // Apenas registramos que a pessoa está falando sem gerar texto simulado
-            setLiveTranscript("Áudio sendo gravado... (A transcrição real será processada ao finalizar a gravação)");
+            // Limpar qualquer timeout de silêncio anterior
+            if (silenceTimeout) {
+              clearTimeout(silenceTimeout);
+              silenceTimeout = null;
+            }
           }
           
-          // Limpar qualquer timeout de silêncio anterior
-          if (silenceTimeout) {
-            clearTimeout(silenceTimeout);
-            silenceTimeout = null;
+          // Se parou de falar, configurar um timeout para pausas longas
+          if (!isSpeakingNow && isSpeaking) {
+            if (!silenceTimeout) {
+              silenceTimeout = setTimeout(() => {
+                isSpeaking = false;
+                
+                // Em uma pausa longa, podemos tratar a segmentação automática se desejado
+                const longPauseTimeout = setTimeout(() => {
+                  if (mediaRecorderRef.current && mediaRecorderRef.current.state === "recording") {
+                    console.log("Pausa longa detectada, iniciando novo segmento de áudio");
+                    
+                    // Parar a gravação atual
+                    mediaRecorderRef.current.stop();
+                    
+                    // Criar um novo blob com os chunks atuais
+                    const currentAudioBlob = new Blob(audioChunksRef.current, { type: 'audio/webm' });
+                    
+                    // Criar URL para o áudio
+                    const audioUrl = URL.createObjectURL(currentAudioBlob);
+                    
+                    // Gerar ID único para o segmento
+                    const segmentId = Date.now().toString();
+                    
+                    // Calcular duração do segmento (em segundos)
+                    const segmentDuration = recordingTime - currentSegmentStart;
+                    
+                    // Criar novo segmento de áudio
+                    const newSegment: AudioSegment = {
+                      id: segmentId,
+                      blob: currentAudioBlob,
+                      url: audioUrl,
+                      duration: segmentDuration,
+                      timestamp: Date.now()
+                    };
+                    
+                    // Adicionar à lista de segmentos
+                    setAudioSegments(prevSegments => [...prevSegments, newSegment]);
+                    
+                    // Atualizar blob principal para compatibilidade
+                    setAudioBlob(currentAudioBlob);
+                    
+                    // Atualizar o início do próximo segmento
+                    setCurrentSegmentStart(recordingTime);
+                    
+                    // Limpar os chunks para o próximo segmento
+                    audioChunksRef.current = [];
+                    
+                    // Iniciar um novo segmento de gravação
+                    setTimeout(() => {
+                      if (mediaRecorderRef.current) {
+                        mediaRecorderRef.current.start(250);
+                        console.log("Novo segmento de gravação iniciado");
+                      }
+                    }, 500);
+                  }
+                }, 3000); // Verificar se é uma pausa longa após 3 segundos
+                
+                // Armazenar o timeout para limpeza
+                (window as any).longPauseTimeout = longPauseTimeout;
+              }, 2000); // Pausa de 2 segundos para reconhecer que parou de falar
+            }
           }
-        }
-        
-        // Se parou de falar, configurar um timeout
-        if (!isSpeakingNow && isSpeaking) {
-          if (!silenceTimeout) {
-            silenceTimeout = setTimeout(() => {
-              isSpeaking = false;
-              
-              // Em uma pausa longa (5+ segundos), podemos reiniciar a gravação automaticamente
-              // mas mantendo a transcrição
-              const longPauseTimeout = setTimeout(() => {
-                // Em uma implementação real, aqui salvaríamos o segmento de áudio atual
-                // e iniciaríamos um novo segmento
-                if (mediaRecorderRef.current && mediaRecorderRef.current.state === "recording") {
-                  console.log("Pausa longa detectada, iniciando novo segmento de áudio");
-                  
-                  // Parar a gravação atual e processar o áudio
-                  mediaRecorderRef.current.stop();
-                  
-                  // Criar um novo blob com os chunks atuais
-                  const currentAudioBlob = new Blob(audioChunksRef.current, { type: 'audio/webm' });
-                  
-                  // Armazenar o blob atual em uma lista (em uma versão real)
-                  console.log("Segmento de áudio salvo:", currentAudioBlob.size, "bytes");
-                  
-                  // Limpar os chunks sem afetar a transcrição
-                  audioChunksRef.current = [];
-                  
-                  // Iniciar um novo segmento de gravação
-                  setTimeout(() => {
-                    if (mediaRecorderRef.current) {
-                      mediaRecorderRef.current.start();
-                      console.log("Novo segmento de gravação iniciado");
-                    }
-                  }, 500);
-                }
-              }, 3000); // Verificar se é uma pausa longa após 3 segundos
-              
-              // Armazenar o timeout para limpeza
-              (window as any).longPauseTimeout = longPauseTimeout;
-            }, 2000); // Pausa de 2 segundos para reconhecer que parou de falar
-          }
-        }
         }, 100);
         
         // Armazenar referências para limpeza ao parar a gravação
@@ -261,10 +294,17 @@ export function useRecording(): RecordingHookResult {
         window.addEventListener('beforeunload', () => {
           clearInterval(audioDetectionInterval);
           if (silenceTimeout) clearTimeout(silenceTimeout);
+          
+          // Notificar servidor que paramos de gravar
+          if (websocketRef.current && websocketRef.current.readyState === WebSocket.OPEN) {
+            websocketRef.current.send(JSON.stringify({ 
+              type: "stop_recording"
+            }));
+          }
         });
         
       } catch (err) {
-        console.error("Erro ao configurar o detector de áudio:", err);
+        console.error("Erro ao configurar o processamento de áudio em tempo real:", err);
       }
       
       toast({
@@ -296,6 +336,13 @@ export function useRecording(): RecordingHookResult {
         if (timerIntervalRef.current) {
           clearInterval(timerIntervalRef.current);
           timerIntervalRef.current = null;
+        }
+        
+        // Notificar o servidor que paramos de gravar
+        if (websocketRef.current && websocketRef.current.readyState === WebSocket.OPEN) {
+          websocketRef.current.send(JSON.stringify({ 
+            type: "stop_recording"
+          }));
         }
         
         // Stop media recorder
@@ -332,7 +379,8 @@ export function useRecording(): RecordingHookResult {
           streamRef.current?.getTracks().forEach(track => track.stop());
           streamRef.current = null;
           
-          // Finalizar a simulação de transcrição
+          // Não reiniciamos a transcrição ao parar - mantemos o texto para que o usuário possa ver
+          // o que foi transcrito até o momento
           setIsLiveTranscribing(false);
           
           // Limpar os intervalos de detecção de áudio
@@ -344,6 +392,11 @@ export function useRecording(): RecordingHookResult {
           if ((window as any).silenceTimeout) {
             clearTimeout((window as any).silenceTimeout);
             (window as any).silenceTimeout = null;
+          }
+          
+          if ((window as any).longPauseTimeout) {
+            clearTimeout((window as any).longPauseTimeout);
+            (window as any).longPauseTimeout = null;
           }
           
           toast({
@@ -370,23 +423,52 @@ export function useRecording(): RecordingHookResult {
 
   const transcribeAudio = async (): Promise<string> => {
     try {
-      if (!audioBlob) {
+      // Verificar se temos áudio para transcrever - se não temos o blob principal mas temos segmentos, podemos combinar eles
+      if (!audioBlob && audioSegments.length === 0) {
         setError("Nenhum áudio para transcrever.");
         throw new Error("No audio to transcribe");
       }
       
+      // Se já temos uma transcrição ao vivo do WebSocket, podemos usá-la diretamente
+      if (liveTranscript && liveTranscript !== "Esperando você falar..." && 
+          liveTranscript !== "Processando sua fala..." &&
+          !liveTranscript.includes("transcrição aparecerá aqui")) {
+        
+        toast({
+          title: "Transcrição finalizada",
+          description: "Usando a transcrição capturada em tempo real.",
+        });
+        
+        // Já temos a transcrição em tempo real, então apenas retornamos
+        return liveTranscript;
+      }
+      
       toast({
-        title: "Transcrevendo áudio",
-        description: "Isso pode levar alguns segundos...",
+        title: "Processando transcrição final",
+        description: "Estamos finalizando a transcrição completa do áudio...",
       });
       
-      // Simulação da transcrição (para demonstração)
+      // Se chegamos aqui, significa que a transcrição em tempo real não funcionou completamente
+      // e precisamos processar o áudio completo
       try {
-        // Criar form data para API real (mas use simulação primeiro)
-        const formData = new FormData();
-        formData.append('audio', audioBlob, 'recording.webm');
+        // Processar todos os segmentos de áudio para criar um único blob
+        let finalAudioBlob = audioBlob;
         
-        // Tentar com a API real primeiro
+        // Se temos segmentos, podemos combinar todos eles
+        if (audioSegments.length > 0) {
+          const audioChunks: Blob[] = [];
+          audioSegments.forEach(segment => {
+            audioChunks.push(segment.blob);
+          });
+          
+          finalAudioBlob = new Blob(audioChunks, { type: 'audio/webm' });
+        }
+        
+        // Criar form data com o áudio completo
+        const formData = new FormData();
+        formData.append('audio', finalAudioBlob as Blob, 'recording.webm');
+        
+        // Enviar para transcrição
         const response = await fetch('/api/transcribe', {
           method: 'POST',
           body: formData,
@@ -396,34 +478,50 @@ export function useRecording(): RecordingHookResult {
         if (response.ok) {
           const data = await response.json();
           
+          // Atualizar a transcrição na UI
+          setLiveTranscript(data.text);
+          
           toast({
             title: "Transcrição concluída",
-            description: "O texto da consulta foi gerado com sucesso.",
+            description: "O texto da consulta foi processado com sucesso.",
           });
           
           return data.text;
         } else {
-          // Se a API falhar, use simulação
-          throw new Error('Usando simulação');
+          // Se a API falhar e já temos alguma transcrição parcial, usamos ela
+          if (liveTranscript && !liveTranscript.includes("transcrição aparecerá aqui")) {
+            console.log("API falhou, usando transcrição parcial existente");
+            return liveTranscript;
+          }
+          
+          // Senão, usamos um fallback básico
+          throw new Error('Erro ao processar transcrição');
         }
       } catch (apiError) {
-        console.log("Usando transcrição simulada (modo demo)");
+        console.log("Erro na API de transcrição:", apiError);
         
-        // Simulação da transcrição
-        await new Promise(resolve => setTimeout(resolve, 2000)); // Simular delay da API
+        // Se já temos alguma transcrição parcial, podemos usá-la mesmo com o erro
+        if (liveTranscript && !liveTranscript.includes("transcrição aparecerá aqui") &&
+            liveTranscript !== "Esperando você falar...") {
+          toast({
+            title: "Usando transcrição parcial",
+            description: "Não foi possível processar o áudio completo, usando transcrição parcial.",
+          });
+          
+          return liveTranscript;
+        }
         
-        // Em um sistema real, aqui seria feita a extração do texto do áudio gravado
-        // Para esta versão, vamos supor que o usuário disse o seguinte:
-        const simulatedText = "[Este seria o texto transcrito do áudio. Como o áudio foi gravado em modo simulado, não há transcrição real disponível.]";
-        
-        setLiveTranscript(simulatedText);
+        // Caso realmente não conseguimos transcrever nada
+        const fallbackText = "Não foi possível processar a transcrição completa. Por favor, tente novamente ou verifique a conexão com o servidor.";
+        setLiveTranscript(fallbackText);
         
         toast({
-          title: "Transcrição concluída (Modo Demo)",
-          description: "Texto da consulta gerado com sucesso em modo demonstração.",
+          variant: "destructive",
+          title: "Falha na transcrição",
+          description: "Ocorreu um erro ao processar o áudio.",
         });
         
-        return simulatedText;
+        return fallbackText;
       }
     } catch (err) {
       setError("Erro ao transcrever o áudio.");
