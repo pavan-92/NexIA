@@ -152,8 +152,9 @@ export function useRecording(): RecordingHookResult {
       setIsLiveTranscribing(true);
       setCurrentSegmentStart(recordingTime); // Marcar início do novo segmento
       
-      // Mensagem clara sobre gravação em andamento
-      setLiveTranscript("Gravando... A transcrição aparecerá aqui em breve.");
+      // Inicializamos com null para que a transcrição do Deepgram apareça diretamente
+      // quando começar a ser recebida via WebSocket
+      setLiveTranscript(null);
       
       // Request microphone access
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
@@ -177,8 +178,8 @@ export function useRecording(): RecordingHookResult {
         console.log("Modo de transcrição em tempo real ativado");
       } else {
         console.log("Usando modo de gravação local (fallback)");
-        // Ajustar mensagem
-        setLiveTranscript("Gravando... A transcrição será processada após finalizar a gravação.");
+        // No modo fallback, a transcrição só acontecerá no final
+        setLiveTranscript("Modo offline ativado. A transcrição será processada após finalizar a gravação.");
       }
       
       // Handle data available event
@@ -194,7 +195,7 @@ export function useRecording(): RecordingHookResult {
             } catch (err) {
               console.error("Erro ao enviar áudio para o servidor:", err);
               setUseFallbackMode(true);
-              setLiveTranscript("Gravando... A transcrição será processada após finalizar a gravação.");
+              setLiveTranscript("Erro de conexão. A transcrição será processada após finalizar a gravação.");
             }
           }
         }
