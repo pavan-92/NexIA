@@ -49,6 +49,10 @@ export function useRecording(): RecordingHookResult {
   const timerIntervalRef = useRef<number | null>(null);
   const websocketRef = useRef<WebSocket | null>(null);
   
+  // Refs para acumular áudio e enviar periodicamente
+  const audioBufferRef = useRef<Blob[]>([]);
+  const transcriptionTimerRef = useRef<number | null>(null);
+  
   const { toast } = useToast();
   
   // Inicializar WebSocket
@@ -140,6 +144,10 @@ export function useRecording(): RecordingHookResult {
       if (timerIntervalRef.current) {
         clearInterval(timerIntervalRef.current);
       }
+      
+      if (transcriptionTimerRef.current) {
+        clearInterval(transcriptionTimerRef.current);
+      }
     };
   }, [toast]);
 
@@ -147,12 +155,13 @@ export function useRecording(): RecordingHookResult {
     try {
       // Reset state
       audioChunksRef.current = [];
+      audioBufferRef.current = [];
       setError(null);
       setIsRecording(true);
       setIsLiveTranscribing(true);
       setCurrentSegmentStart(recordingTime); // Marcar início do novo segmento
       
-      // Inicializamos com null para que a transcrição do Deepgram apareça diretamente
+      // Inicializamos com null para que a transcrição do ChatGPT apareça diretamente
       // quando começar a ser recebida via WebSocket
       setLiveTranscript(null);
       
@@ -175,7 +184,41 @@ export function useRecording(): RecordingHookResult {
         websocketRef.current.send(JSON.stringify({ 
           type: "start_recording"
         }));
-        console.log("Modo de transcrição em tempo real ativado");
+        console.log("Modo de transcrição em tempo real ativado com ChatGPT");
+        
+        // Configurar o temporizador para enviar áudio acumulado a cada 5 segundos
+        if (transcriptionTimerRef.current) {
+          clearInterval(transcriptionTimerRef.current);
+        }
+        
+        transcriptionTimerRef.current = window.setInterval(() => {
+          if (audioBufferRef.current.length > 0 && 
+              websocketRef.current && 
+              websocketRef.current.readyState === WebSocket.OPEN) {
+            
+            try {
+              // Combinar os chunks em um único blob para envio
+              const combinedBlob = new Blob(audioBufferRef.current, { type: 'audio/webm' });
+              
+              // Só envia se tiver um tamanho razoável para transcrição
+              if (combinedBlob.size > 30000) { // 30KB mínimo
+                console.log(`Enviando ${audioBufferRef.current.length} chunks de áudio para transcrição (${combinedBlob.size} bytes)`);
+                
+                // Define mensagem de status enquanto processa
+                setLiveTranscript(prev => prev || "Processando áudio...");
+                
+                // Enviar para o servidor
+                websocketRef.current.send(combinedBlob);
+                
+                // Limpar buffer após envio
+                audioBufferRef.current = [];
+              }
+            } catch (err) {
+              console.error("Erro ao enviar áudio acumulado:", err);
+            }
+          }
+        }, 5000); // A cada 5 segundos
+        
       } else {
         console.log("Usando modo de gravação local (fallback)");
         // No modo fallback, a transcrição só acontecerá no final
@@ -185,18 +228,13 @@ export function useRecording(): RecordingHookResult {
       // Handle data available event
       mediaRecorder.ondataavailable = (event) => {
         if (event.data.size > 0) {
-          // Adicionar chunk para processamento local
+          // Adicionar chunk para processamento local (sempre)
           audioChunksRef.current.push(event.data);
           
-          // Enviar chunk para o servidor (no modo online)
-          if (!useFallbackMode && websocketRef.current && websocketRef.current.readyState === WebSocket.OPEN) {
-            try {
-              websocketRef.current.send(event.data);
-            } catch (err) {
-              console.error("Erro ao enviar áudio para o servidor:", err);
-              setUseFallbackMode(true);
-              setLiveTranscript("Erro de conexão. A transcrição será processada após finalizar a gravação.");
-            }
+          // Adicionar ao buffer de transcrição (quando no modo online)
+          if (!useFallbackMode) {
+            // Agora apenas armazenamos no buffer, o envio é feito pelo timer
+            audioBufferRef.current.push(event.data);
           }
         }
       };
@@ -226,10 +264,15 @@ export function useRecording(): RecordingHookResult {
       // Stop recording flag
       setIsRecording(false);
       
-      // Stop timer
+      // Stop timers
       if (timerIntervalRef.current) {
         clearInterval(timerIntervalRef.current);
         timerIntervalRef.current = null;
+      }
+      
+      if (transcriptionTimerRef.current) {
+        clearInterval(transcriptionTimerRef.current);
+        transcriptionTimerRef.current = null;
       }
       
       // Notificar o servidor que paramos de gravar (se não estiver no modo fallback)
@@ -356,6 +399,7 @@ export function useRecording(): RecordingHookResult {
     setIsLiveTranscribing(false);
     setError(null);
     audioChunksRef.current = [];
+    audioBufferRef.current = [];
     
     // Clean up any resources
     if (streamRef.current) {
