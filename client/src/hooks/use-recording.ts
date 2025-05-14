@@ -2,6 +2,15 @@ import { useState, useRef, useEffect } from 'react';
 import { apiRequest } from '@/lib/queryClient';
 import { useToast } from '@/hooks/use-toast';
 
+// Define um segmento de áudio individual
+interface AudioSegment {
+  id: string;
+  blob: Blob;
+  url: string;
+  duration: number;
+  timestamp: number;
+}
+
 interface RecordingHookResult {
   isRecording: boolean;
   audioBlob: Blob | null;
@@ -11,6 +20,8 @@ interface RecordingHookResult {
   transcribeAudio: () => Promise<string>;
   generateNotes: (transcription: string) => Promise<any>;
   resetRecording: () => void;
+  deleteSegment: (segmentId: string) => void;
+  audioSegments: AudioSegment[]; 
   error: string | null;
   liveTranscript: string | null;
   isLiveTranscribing: boolean;
@@ -23,6 +34,8 @@ export function useRecording(): RecordingHookResult {
   const [error, setError] = useState<string | null>(null);
   const [liveTranscript, setLiveTranscript] = useState<string | null>(null);
   const [isLiveTranscribing, setIsLiveTranscribing] = useState(false);
+  const [audioSegments, setAudioSegments] = useState<AudioSegment[]>([]);
+  const [currentSegmentStart, setCurrentSegmentStart] = useState<number>(0);
   
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const audioChunksRef = useRef<Blob[]>([]);
@@ -108,6 +121,7 @@ export function useRecording(): RecordingHookResult {
       setError(null);
       setLiveTranscript(null);
       setIsLiveTranscribing(true);
+      setCurrentSegmentStart(recordingTime); // Marcar início do novo segmento
       
       // Request microphone access
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
@@ -297,6 +311,29 @@ export function useRecording(): RecordingHookResult {
         mediaRecorderRef.current.onstop = () => {
           // Create audio blob
           const audioBlob = new Blob(audioChunksRef.current, { type: 'audio/webm' });
+          
+          // Criar URL para o áudio
+          const audioUrl = URL.createObjectURL(audioBlob);
+          
+          // Gerar ID único para o segmento
+          const segmentId = Date.now().toString();
+          
+          // Calcular duração do segmento (em segundos)
+          const segmentDuration = recordingTime - currentSegmentStart;
+          
+          // Criar novo segmento de áudio
+          const newSegment: AudioSegment = {
+            id: segmentId,
+            blob: audioBlob,
+            url: audioUrl,
+            duration: segmentDuration,
+            timestamp: Date.now()
+          };
+          
+          // Adicionar à lista de segmentos
+          setAudioSegments(prevSegments => [...prevSegments, newSegment]);
+          
+          // Atualizar também o blob principal para compatibilidade
           setAudioBlob(audioBlob);
           setIsRecording(false);
           
@@ -319,8 +356,8 @@ export function useRecording(): RecordingHookResult {
           }
           
           toast({
-            title: "Gravação finalizada",
-            description: `Duração: ${Math.floor(recordingTime / 60)}:${(recordingTime % 60).toString().padStart(2, '0')}`,
+            title: "Segmento de áudio gravado",
+            description: `Duração: ${Math.floor(segmentDuration / 60)}:${(segmentDuration % 60).toString().padStart(2, '0')}`,
           });
           
           resolve();
