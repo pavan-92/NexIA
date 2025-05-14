@@ -181,12 +181,12 @@ export default function RecordingInterface({
               {isRecording && (
                 <>
                   <div className="animate-pulse text-red-500 text-sm mr-2">●</div>
-                  <span className="text-sm font-medium mr-4">Transcrição ao vivo</span>
+                  <span className="text-sm font-medium mr-4">Gravando</span>
                 </>
               )}
               <span className="text-sm font-medium">{formatTime(recordingTime)}</span>
-              <div className="ml-4 px-2 py-1 bg-green-100 text-green-800 text-xs rounded-full">
-                On-line
+              <div className="ml-4 px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded-full">
+                Pronto
               </div>
             </div>
           </div>
@@ -201,8 +201,8 @@ export default function RecordingInterface({
             ) : (
               <div className="text-gray-500 text-sm italic flex items-center justify-center h-64">
                 {isRecording 
-                  ? "Capturando fala... (o áudio é enviado a cada 5 segundos para processamento)" 
-                  : "A transcrição aparecerá aqui durante a gravação"}
+                  ? "Gravando áudio... Após parar a gravação, clique em 'Gerar Prontuário' para transcrever." 
+                  : "A transcrição aparecerá aqui após processar a gravação"}
               </div>
             )}
           </div>

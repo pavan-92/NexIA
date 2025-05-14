@@ -218,62 +218,15 @@ export function useRecording(): RecordingHookResult {
         setRecordingTime((prevTime) => prevTime + 1);
       }, 1000);
       
-      // Verificar se o websocket está disponível
-      if (!websocketRef.current || websocketRef.current.readyState !== WebSocket.OPEN) {
-        // Tentar reconectar
-        setupWebSocketConnection();
-        // Mostrar uma mensagem informativa
-        setLiveTranscript("Iniciando conexão com o servidor de transcrição...");
-      } else {
-        // Websocket está disponível
-        websocketRef.current.send(JSON.stringify({ 
-          type: "start_recording" 
-        }));
-        
-        // Configurar envio periódico de áudio
-        if (transcriptionTimerRef.current) {
-          clearInterval(transcriptionTimerRef.current);
-        }
-        
-        transcriptionTimerRef.current = window.setInterval(() => {
-          if (audioBufferRef.current.length > 0 && 
-              websocketRef.current && 
-              websocketRef.current.readyState === WebSocket.OPEN) {
-            
-            try {
-              // Combinar os chunks em um único blob para envio
-              const combinedBlob = new Blob(audioBufferRef.current, { type: 'audio/webm' });
-              
-              // Só envia se tiver um tamanho razoável para transcrição
-              if (combinedBlob.size > 30000) { // 30KB mínimo
-                console.log(`Enviando ${audioBufferRef.current.length} chunks de áudio para transcrição (${combinedBlob.size} bytes)`);
-                
-                // Define mensagem de status enquanto processa
-                setLiveTranscript(prev => prev || "Processando áudio...");
-                
-                // Enviar para o servidor
-                websocketRef.current.send(combinedBlob);
-                
-                // Limpar buffer após envio
-                audioBufferRef.current = [];
-              }
-            } catch (err) {
-              console.error("Erro ao enviar áudio acumulado:", err);
-            }
-          }
-        }, 5000); // A cada 5 segundos
-      }
+      // Não vamos usar WebSocket para a transcrição tempo real (problemas de conexão)
+      // Em vez disso, mostramos informações instrutivas para o usuário
+      setLiveTranscript("Gravando áudio. Após finalizar, clique em 'Gerar Prontuário'.");
       
       // Handle data available event
       mediaRecorder.ondataavailable = (event) => {
         if (event.data.size > 0) {
-          // Adicionar chunk para processamento local (sempre)
+          // Adicionar chunk apenas para processamento local
           audioChunksRef.current.push(event.data);
-          
-          // Adicionar ao buffer de transcrição
-          if (websocketRef.current?.readyState === WebSocket.OPEN) {
-            audioBufferRef.current.push(event.data);
-          }
         }
       };
       
