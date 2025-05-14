@@ -71,7 +71,13 @@ export function useRecording(): RecordingHookResult {
       
       socket.onopen = () => {
         console.log('WebSocket connection established');
-        setUseFallbackMode(false);
+        // Espera 1.5 segundos e então envia um ping inicial para verificar se a conexão está funcionando
+        setTimeout(() => {
+          if (socket.readyState === WebSocket.OPEN) {
+            console.log('Enviando ping inicial');
+            socket.send(JSON.stringify({ type: "ping" }));
+          }
+        }, 1500);
       };
       
       socket.onmessage = (event) => {

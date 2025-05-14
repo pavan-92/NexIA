@@ -283,7 +283,7 @@ export default function RecordingInterface({
             ) : (
               <div className="text-gray-500 text-sm italic flex-grow flex items-center justify-center">
                 {isRecording 
-                  ? "Aguardando fala..." 
+                  ? "Aguardando fala (o servidor está processando o áudio a cada 5 segundos)..." 
                   : (audioBlob || audioSegments.length > 0)
                     ? "Clique em \"Transcrever\" para processar o áudio gravado"
                     : "A transcrição aparecerá aqui durante a gravação"}

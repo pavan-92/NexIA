@@ -229,17 +229,20 @@ export function setupLiveTranscription(server: Server) {
     });
     
     // Informar ao cliente que estamos conectados e prontos
-    if (ws.readyState === WebSocket.OPEN) {
-      try {
-        ws.send(JSON.stringify({
-          type: "status",
-          status: "connected",
-          message: "Transcrição ao vivo com OpenAI ativada"
-        }));
-      } catch (err) {
-        console.error("Erro ao enviar mensagem de confirmação:", err);
+    setTimeout(() => {
+      if (ws.readyState === WebSocket.OPEN) {
+        try {
+          ws.send(JSON.stringify({
+            type: "status",
+            status: "connected",
+            message: "Transcrição ao vivo com OpenAI ativada"
+          }));
+          console.log("Mensagem de status 'connected' enviada para o cliente");
+        } catch (err) {
+          console.error("Erro ao enviar mensagem de confirmação:", err);
+        }
       }
-    }
+    }, 1000); // Pequeno delay para garantir que o cliente está pronto para receber
   });
   
   return wss;
