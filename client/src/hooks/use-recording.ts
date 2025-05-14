@@ -199,17 +199,8 @@ export function useRecording(): RecordingHookResult {
           if (!isSpeaking) {
             isSpeaking = true;
             
-            // Em uma implementação real, isso seria a palavra ou frase atual captada
-            const userInput = "O paciente está com " + 
-                              ["dor no ombro", "febre", "náusea", "tosse", "dor de cabeça"][
-                                Math.floor(Math.random() * 5)
-                              ] + 
-                              " há " + 
-                              ["dois", "três", "quatro", "cinco"][Math.floor(Math.random() * 4)] + 
-                              " dias.";
-            
-            transcript = transcript ? transcript + " " + userInput : userInput;
-            setLiveTranscript(transcript);
+            // Apenas registramos que a pessoa está falando sem gerar texto simulado
+            setLiveTranscript("Áudio sendo gravado... (A transcrição real será processada ao finalizar a gravação)");
           }
           
           // Limpar qualquer timeout de silêncio anterior
@@ -423,7 +414,7 @@ export function useRecording(): RecordingHookResult {
         
         // Em um sistema real, aqui seria feita a extração do texto do áudio gravado
         // Para esta versão, vamos supor que o usuário disse o seguinte:
-        const simulatedText = "O paciente relata dor no abdômen superior há três dias, principalmente após as refeições. Histórico médico inclui hipertensão controlada com medicação. Sem alergias conhecidas. Exame físico revela sensibilidade à palpação no quadrante superior direito.";
+        const simulatedText = "[Este seria o texto transcrito do áudio. Como o áudio foi gravado em modo simulado, não há transcrição real disponível.]";
         
         setLiveTranscript(simulatedText);
         
