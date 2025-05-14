@@ -189,18 +189,17 @@ export default function RecordingInterface({
               </Button>
             </div>
             
-            {/* Transcrição em tempo real */}
-            {isLiveTranscribing && (
-              <div className="mt-4 p-3 bg-blue-50 border border-blue-100 rounded-lg">
-                <div className="flex items-center mb-2">
-                  <div className="animate-pulse text-blue-500 text-sm font-medium mr-2">●</div>
-                  <div className="text-sm font-medium text-blue-600">Transcrição em tempo real</div>
-                </div>
-                <div className="text-sm text-gray-700 font-light italic">
-                  {liveTranscript || "Aguardando fala..."}
-                </div>
+            {/* Área de transcrição em tempo real - durante gravação */}
+            <div className="p-4 bg-blue-50 rounded-lg border border-blue-100 min-h-[200px] flex flex-col">
+              <div className="flex items-center mb-2">
+                <div className="animate-pulse text-blue-500 text-sm font-medium mr-2">●</div>
+                <h3 className="text-sm font-medium text-blue-700">Transcrição em tempo real</h3>
               </div>
-            )}
+              
+              <div className="text-sm text-gray-700 flex-grow">
+                {liveTranscript || "Aguardando fala..."}
+              </div>
+            </div>
             
             <p className="text-xs text-gray-500 mt-2">
               Fale pausadamente e com clareza para melhores resultados
@@ -229,6 +228,21 @@ export default function RecordingInterface({
                   </audio>
                 )}
               </div>
+            </div>
+            
+            {/* Área de transcrição - gravação concluída */}
+            <div className="p-4 bg-white rounded-lg border border-gray-200 min-h-[200px] flex flex-col">
+              <h3 className="text-sm font-medium text-gray-700 mb-2">Transcrição da consulta</h3>
+              
+              {liveTranscript ? (
+                <div className="text-sm text-gray-700 flex-grow">
+                  {liveTranscript}
+                </div>
+              ) : (
+                <div className="text-gray-500 text-sm italic flex-grow flex items-center justify-center">
+                  Clique em "Transcrever" para processar o áudio gravado
+                </div>
+              )}
             </div>
             
             <div className="flex gap-2">
@@ -261,7 +275,7 @@ export default function RecordingInterface({
             </div>
           </div>
         ) : (
-          <div>
+          <div className="space-y-4">
             <div className="flex items-center justify-between mb-3">
               <p className="text-sm text-gray-500">
                 Grave a consulta para gerar a transcrição
@@ -276,8 +290,19 @@ export default function RecordingInterface({
               </Button>
             </div>
             
-            <div className="h-12 bg-gray-50 rounded-lg border border-gray-100 flex items-center justify-center">
-              <span className="text-gray-400 text-sm">Clique no botão para iniciar gravação</span>
+            {/* Área para transcrição - mesmo quando não está gravando */}
+            <div className="p-4 bg-white rounded-lg border border-gray-200 min-h-[200px] flex flex-col">
+              <h3 className="text-sm font-medium text-gray-700 mb-2">Transcrição da consulta</h3>
+              
+              {liveTranscript ? (
+                <div className="text-sm text-gray-700 flex-grow">
+                  {liveTranscript}
+                </div>
+              ) : (
+                <div className="text-gray-400 text-sm italic flex-grow flex items-center justify-center">
+                  A transcrição aparecerá aqui em tempo real durante a gravação
+                </div>
+              )}
             </div>
             
             <p className="text-xs text-gray-500 mt-2">
