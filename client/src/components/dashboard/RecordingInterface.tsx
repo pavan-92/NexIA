@@ -4,7 +4,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { useAuthState } from "@/hooks/use-auth";
-import { useRecording } from "@/hooks/use-recording";
+import { useRecording } from "@/hooks/new-use-recording";
 
 import { Progress } from "@/components/ui/progress";
 import { Button } from "@/components/ui/button";

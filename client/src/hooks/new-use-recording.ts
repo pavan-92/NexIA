@@ -2,7 +2,6 @@ import { useState, useRef, useEffect, useCallback } from "react";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { blobToBase64 } from "@/lib/utils";
-import { v4 as uuidv4 } from 'uuid';
 import { generateId } from "@/lib/utils";
 
 interface AudioSegment {
@@ -40,7 +39,7 @@ export function useRecording(): RecordingHookResult {
   const [isLiveTranscribing, setIsLiveTranscribing] = useState<boolean>(false);
   
   // Estado para controle do modo de transcrição
-  const [useFallbackMode, setUseFallbackMode] = useState(false);
+  const [useFallbackMode, setUseFallbackMode] = useState(true); // Começa com fallback mode
   
   // Refs para controle de recursos
   const streamRef = useRef<MediaStream | null>(null);
@@ -55,7 +54,89 @@ export function useRecording(): RecordingHookResult {
   
   const { toast } = useToast();
   
-  // Inicializar WebSocket - removido a inicialização automática para evitar o ciclo de reconexões
+  // Função para inicializar a conexão WebSocket
+  const setupWebSocketConnection = useCallback(() => {
+    // Limpar qualquer conexão existente
+    if (websocketRef.current) {
+      websocketRef.current.close();
+      websocketRef.current = null;
+    }
+    
+    try {
+      const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+      const wsUrl = `${protocol}//${window.location.host}/ws`;
+      
+      const socket = new WebSocket(wsUrl);
+      websocketRef.current = socket;
+      
+      socket.onopen = () => {
+        console.log('WebSocket connection established');
+        setUseFallbackMode(false);
+      };
+      
+      socket.onmessage = (event) => {
+        try {
+          const data = JSON.parse(event.data);
+          console.log('WebSocket message received:', data);
+          
+          if (data.type === 'transcript') {
+            setLiveTranscript(data.text);
+            if (data.isFinal) {
+              setIsLiveTranscribing(false);
+            }
+          } 
+          else if (data.type === 'notes') {
+            toast({
+              title: "Prontuário gerado",
+              description: "O prontuário médico foi criado com sucesso.",
+            });
+          }
+        } catch (err) {
+          console.error('Error parsing WebSocket message:', err);
+        }
+      };
+      
+      socket.onerror = () => {
+        console.error('WebSocket error, using fallback mode');
+        setUseFallbackMode(true);
+      };
+      
+      socket.onclose = () => {
+        console.log('WebSocket connection closed, using fallback mode');
+        setUseFallbackMode(true);
+      };
+      
+      return socket;
+    } catch (err) {
+      console.error('Error setting up WebSocket:', err);
+      setUseFallbackMode(true);
+      return null;
+    }
+  }, [toast]);
+  
+  // Inicializar WebSocket ao montar o componente
+  useEffect(() => {
+    const socket = setupWebSocketConnection();
+    
+    return () => {
+      if (socket && socket.readyState === WebSocket.OPEN) {
+        socket.close();
+      }
+      
+      // Limpar recursos
+      if (streamRef.current) {
+        streamRef.current.getTracks().forEach(track => track.stop());
+      }
+      
+      if (timerIntervalRef.current) {
+        clearInterval(timerIntervalRef.current);
+      }
+      
+      if (transcriptionTimerRef.current) {
+        clearInterval(transcriptionTimerRef.current);
+      }
+    };
+  }, [setupWebSocketConnection]);
 
   const startRecording = async (): Promise<void> => {
     try {
@@ -85,16 +166,20 @@ export function useRecording(): RecordingHookResult {
         setRecordingTime((prevTime) => prevTime + 1);
       }, 1000);
       
-      // Tentar usar o websocket se estiver disponível
-      if (websocketRef.current && websocketRef.current.readyState === WebSocket.OPEN) {
-        // Resetar explicitamente o fallback mode quando iniciamos gravação bem-sucedida
-        setUseFallbackMode(false);
+      // Verificar se o websocket está disponível
+      if (!websocketRef.current || websocketRef.current.readyState !== WebSocket.OPEN) {
+        // Tentar reconectar
+        setupWebSocketConnection();
+        // Ativar modo fallback de qualquer forma para garantir
+        setUseFallbackMode(true);
+        setLiveTranscript("Modo offline ativado. A transcrição será processada após finalizar a gravação.");
+      } else {
+        // Websocket está disponível
         websocketRef.current.send(JSON.stringify({ 
-          type: "start_recording"
+          type: "start_recording" 
         }));
-        console.log("Modo de transcrição em tempo real ativado com ChatGPT");
         
-        // Configurar o temporizador para enviar áudio acumulado a cada 5 segundos
+        // Configurar envio periódico de áudio
         if (transcriptionTimerRef.current) {
           clearInterval(transcriptionTimerRef.current);
         }
@@ -126,12 +211,6 @@ export function useRecording(): RecordingHookResult {
             }
           }
         }, 5000); // A cada 5 segundos
-        
-      } else {
-        // Usar modo fallback diretamente para evitar loops
-        console.log("Usando modo de gravação local (fallback)");
-        setUseFallbackMode(true);
-        setLiveTranscript("Modo offline ativado. A transcrição será processada após finalizar a gravação.");
       }
       
       // Handle data available event
@@ -140,9 +219,8 @@ export function useRecording(): RecordingHookResult {
           // Adicionar chunk para processamento local (sempre)
           audioChunksRef.current.push(event.data);
           
-          // Adicionar ao buffer de transcrição (quando no modo online)
-          if (!useFallbackMode) {
-            // Agora apenas armazenamos no buffer, o envio é feito pelo timer
+          // Adicionar ao buffer de transcrição (só se não estiver em modo fallback)
+          if (!useFallbackMode && websocketRef.current?.readyState === WebSocket.OPEN) {
             audioBufferRef.current.push(event.data);
           }
         }
@@ -184,15 +262,14 @@ export function useRecording(): RecordingHookResult {
         transcriptionTimerRef.current = null;
       }
       
-      // Notificar o servidor que paramos de gravar (se não estiver no modo fallback)
-      if (!useFallbackMode && websocketRef.current && websocketRef.current.readyState === WebSocket.OPEN) {
+      // Notificar o servidor (apenas se o websocket estiver disponível)
+      if (websocketRef.current?.readyState === WebSocket.OPEN) {
         try {
           websocketRef.current.send(JSON.stringify({ 
-            type: "stop_recording"
+            type: "stop_recording" 
           }));
         } catch (err) {
           console.error("Erro ao notificar o servidor sobre fim da gravação:", err);
-          setUseFallbackMode(true);
         }
       }
       
@@ -251,9 +328,6 @@ export function useRecording(): RecordingHookResult {
       
       const combinedBlob = new Blob(allChunks, { type: 'audio/webm' });
       
-      // Convert blob to base64 for API request
-      const base64Audio = await blobToBase64(combinedBlob);
-      
       // Create FormData for API request
       const formData = new FormData();
       formData.append('audio', combinedBlob);
@@ -286,12 +360,56 @@ export function useRecording(): RecordingHookResult {
         throw new Error("É necessário transcrever o áudio antes de gerar o prontuário");
       }
       
-      // Make API call to generate notes
-      const response = await apiRequest("POST", "/api/generate-notes", {
-        text: transcription
-      });
-      
-      return response;
+      // Se tiver WebSocket disponível, usar para gerar notas
+      if (websocketRef.current?.readyState === WebSocket.OPEN) {
+        websocketRef.current.send(JSON.stringify({ 
+          type: "generate_notes",
+          text: transcription
+        }));
+        
+        // Retornar uma promise que será resolvida quando recebermos as notas
+        return new Promise((resolve) => {
+          const messageHandler = (event: MessageEvent) => {
+            try {
+              const data = JSON.parse(event.data);
+              if (data.type === 'notes') {
+                // Remover o handler
+                if (websocketRef.current) {
+                  websocketRef.current.removeEventListener('message', messageHandler);
+                }
+                resolve(data.notes);
+              }
+            } catch (err) {
+              console.error('Error parsing WebSocket message:', err);
+            }
+          };
+          
+          // Adicionar handler temporário
+          if (websocketRef.current) {
+            websocketRef.current.addEventListener('message', messageHandler);
+            
+            // Timeout para fallback em 10 segundos
+            setTimeout(() => {
+              if (websocketRef.current) {
+                websocketRef.current.removeEventListener('message', messageHandler);
+              }
+              
+              // Fazer a requisição via REST API como fallback
+              apiRequest("POST", "/api/generate-notes", {
+                text: transcription
+              }).then(resolve).catch(err => {
+                console.error("Error in fallback notes generation:", err);
+                throw err;
+              });
+            }, 10000);
+          }
+        });
+      } else {
+        // Usar REST API
+        return await apiRequest("POST", "/api/generate-notes", {
+          text: transcription
+        });
+      }
     } catch (err) {
       console.error("Error generating notes:", err);
       setError("Não foi possível gerar o prontuário. Tente novamente.");
