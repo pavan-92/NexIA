@@ -517,6 +517,7 @@ export function useRecording(): RecordingHookResult {
     setError(null);
     setLiveTranscript(null);
     setIsLiveTranscribing(false);
+    setAudioSegments([]);
     audioChunksRef.current = [];
     
     // Limpar os intervalos de detecção de áudio
@@ -530,6 +531,29 @@ export function useRecording(): RecordingHookResult {
       (window as any).silenceTimeout = null;
     }
   };
+  
+  // Função para deletar um segmento específico de áudio
+  const deleteSegment = (segmentId: string): void => {
+    setAudioSegments(prevSegments => {
+      // Filtrar para remover o segmento específico
+      const updatedSegments = prevSegments.filter(segment => segment.id !== segmentId);
+      
+      // Se não sobrar nenhum segmento, resetar o audioBlob principal
+      if (updatedSegments.length === 0) {
+        setAudioBlob(null);
+      } else {
+        // Caso contrário, definir o último segmento como o atual
+        setAudioBlob(updatedSegments[updatedSegments.length - 1].blob);
+      }
+      
+      toast({
+        title: "Segmento removido",
+        description: "O segmento de áudio foi excluído com sucesso.",
+      });
+      
+      return updatedSegments;
+    });
+  };
 
   return {
     isRecording,
@@ -540,6 +564,8 @@ export function useRecording(): RecordingHookResult {
     transcribeAudio,
     generateNotes,
     resetRecording,
+    deleteSegment,
+    audioSegments,
     error,
     liveTranscript,
     isLiveTranscribing

@@ -33,6 +33,9 @@ export default function RecordingInterface({
     error,
     liveTranscript,
     isLiveTranscribing,
+    audioSegments,
+    deleteSegment,
+    generateNotes,
   } = useRecording();
   
   const [audioUrl, setAudioUrl] = useState<string | null>(null);
@@ -207,28 +210,58 @@ export default function RecordingInterface({
           </div>
         ) : audioBlob ? (
           <div className="space-y-4">
-            <div className="bg-gray-50 rounded-lg p-3">
+            {/* Informações gerais da gravação */}
+            <div className="bg-gray-50 rounded-lg p-3 mb-2">
               <div className="flex items-center justify-between">
                 <div className="flex items-center">
                   <div className="h-8 w-8 bg-[#1B98E0]/10 rounded-full flex items-center justify-center text-[#006494] mr-3">
                     <Volume2 className="h-4 w-4" />
                   </div>
                   <div>
-                    <div className="font-medium text-sm">Áudio gravado</div>
+                    <div className="font-medium text-sm">Áudios gravados</div>
                     <div className="text-xs text-gray-500">
-                      Duração: {formatTime(recordingTime)}
+                      {audioSegments.length} segmento(s) • Total: {formatTime(recordingTime)}
                     </div>
                   </div>
                 </div>
-                
-                {audioUrl && (
-                  <audio controls className="h-8 w-32">
-                    <source src={audioUrl} type="audio/webm" />
-                    Seu navegador não suporta a reprodução de áudio.
-                  </audio>
-                )}
               </div>
             </div>
+            
+            {/* Lista de segmentos de áudio */}
+            {audioSegments.length > 0 && (
+              <div className="space-y-2 mb-3">
+                {audioSegments.map((segment, index) => (
+                  <div key={segment.id} className="flex items-center justify-between bg-white border border-gray-100 rounded-lg p-2">
+                    <div className="flex items-center">
+                      <div className="text-xs font-medium text-gray-700 mr-2">
+                        {index + 1}
+                      </div>
+                      <audio controls className="h-8 w-32 mr-2">
+                        <source src={segment.url} type="audio/webm" />
+                      </audio>
+                      <div className="text-xs text-gray-500">
+                        {formatTime(segment.duration)}
+                      </div>
+                    </div>
+                    <Button 
+                      variant="ghost" 
+                      size="icon" 
+                      className="h-6 w-6 text-gray-400 hover:text-red-500"
+                      onClick={() => deleteSegment(segment.id)}
+                    >
+                      <Trash2 className="h-3.5 w-3.5" />
+                    </Button>
+                  </div>
+                ))}
+              </div>
+            )}
+            
+            {/* Caso não tenha segmentos, mostra mensagem */}
+            {audioSegments.length === 0 && (
+              <div className="bg-gray-50 rounded-lg p-3 text-center text-gray-500 text-sm italic mb-3">
+                Não há segmentos de áudio gravados
+              </div>
+            )}
             
             {/* Área de transcrição - gravação concluída */}
             <div className="p-4 bg-white rounded-lg border border-gray-200 min-h-[200px] flex flex-col">
@@ -245,33 +278,46 @@ export default function RecordingInterface({
               )}
             </div>
             
-            <div className="flex gap-2">
-              <Button 
-                onClick={handleTranscribe} 
-                className="bg-[#006494] text-white hover:bg-[#13293D] text-sm flex-1"
-                disabled={isTranscribing}
-              >
-                {isTranscribing ? (
-                  <>
-                    <RefreshCw className="mr-2 h-3 w-3 animate-spin" />
-                    Transcrevendo...
-                  </>
-                ) : (
-                  <>
-                    <CheckCircle2 className="mr-2 h-3 w-3" />
-                    Transcrever
-                  </>
-                )}
-              </Button>
+            <div className="flex flex-col gap-3">
+              {/* Botões principais */}
+              <div className="flex gap-2">
+                <Button 
+                  onClick={handleTranscribe} 
+                  className="bg-[#006494] text-white hover:bg-[#13293D] text-sm flex-1"
+                  disabled={isTranscribing || audioSegments.length === 0}
+                >
+                  {isTranscribing ? (
+                    <>
+                      <RefreshCw className="mr-2 h-3 w-3 animate-spin" />
+                      Transcrevendo...
+                    </>
+                  ) : (
+                    <>
+                      <CheckCircle2 className="mr-2 h-3 w-3" />
+                      Transcrever
+                    </>
+                  )}
+                </Button>
+                
+                <Button 
+                  onClick={() => startRecording()} 
+                  className="text-sm bg-green-600 text-white hover:bg-green-700"
+                  disabled={isRecording || isTranscribing}
+                >
+                  <Mic className="mr-2 h-3 w-3" />
+                  Nova gravação
+                </Button>
+              </div>
               
+              {/* Botão de descartar tudo */}
               <Button 
                 onClick={handleReset} 
                 variant="outline" 
-                disabled={isTranscribing}
+                disabled={isTranscribing || audioSegments.length === 0}
                 className="text-sm border-gray-200 text-gray-700"
               >
                 <Trash2 className="mr-2 h-3 w-3" />
-                Descartar
+                Descartar tudo
               </Button>
             </div>
           </div>
