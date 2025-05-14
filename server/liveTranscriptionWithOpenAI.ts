@@ -15,15 +15,43 @@ const audioBuffers: Map<string, Buffer[]> = new Map();
 // Função para iniciar o servidor WebSocket
 export function setupLiveTranscription(server: Server) {
   // Set up WebSocket for real-time transcription
-  const wss = new WebSocketServer({ server, path: "/ws" });
+  const wss = new WebSocketServer({ 
+    server, 
+    path: "/ws",
+    // Configurações para WebSocket mais tolerante
+    clientTracking: true,
+    perMessageDeflate: {
+      zlibDeflateOptions: {
+        // ver: https://nodejs.org/api/zlib.html#zlib_class_options
+        chunkSize: 1024,
+        memLevel: 7,
+        level: 3
+      },
+      zlibInflateOptions: {
+        chunkSize: 10 * 1024
+      },
+      // Outros padrões
+      serverNoContextTakeover: true, // recomendado
+      clientNoContextTakeover: true, // recomendado
+      serverMaxWindowBits: 10, // recomendado
+      concurrencyLimit: 10, // limite de callbacks processadas simultaneamente
+      threshold: 1024 // tamanho compressão mínima em bytes
+    }
+  });
   
   console.log("Servidor WebSocket para transcrição com OpenAI inicializado");
   
-  wss.on("connection", (ws) => {
-    console.log("Conexão WebSocket estabelecida para transcrição ao vivo");
+  wss.on("connection", (ws, req) => {
+    // Usamos o IP como parte do identificador para debug
+    const ip = req.socket.remoteAddress || 'unknown';
+    console.log(`Conexão WebSocket estabelecida para transcrição ao vivo de ${ip}`);
+    
+    // Configurar timeout e keepalive para evitar desconexão
+    req.socket.setTimeout(0);
+    req.socket.setKeepAlive(true, 60000); // 60 segundos
     
     // Identificador único para esta conexão
-    const connectionId = Date.now().toString();
+    const connectionId = `${Date.now()}-${ip}`;
     
     // Inicializar buffer de áudio para esta conexão
     audioBuffers.set(connectionId, []);
@@ -109,6 +137,15 @@ export function setupLiveTranscription(server: Server) {
           const messageString = typeof message === "string" ? message : message.toString();
           const data = JSON.parse(messageString);
           
+          // Lidar com mensagens de ping do cliente
+          if (data.type === "ping") {
+            // Responder com um pong para manter a conexão viva
+            if (ws.readyState === WebSocket.OPEN) {
+              ws.send(JSON.stringify({ type: "pong" }));
+            }
+            return; // Sair da função após processar o ping
+          }
+          
           // Se recebemos um comando para gerar notas
           if (data.type === "generate_notes" && data.text) {
             try {
@@ -151,7 +188,7 @@ export function setupLiveTranscription(server: Server) {
     
     // Quando a conexão for fechada
     ws.on("close", () => {
-      console.log("Conexão WebSocket fechada");
+      console.log("Conexão WebSocket fechada para cliente", connectionId);
       
       // Limpar o intervalo de processamento
       if (processingInterval) {
@@ -167,13 +204,41 @@ export function setupLiveTranscription(server: Server) {
       console.error("Erro na conexão WebSocket:", error);
     });
     
+    // Configurar ping/pong para manter a conexão ativa
+    const pingInterval = setInterval(() => {
+      if (ws.readyState === WebSocket.OPEN) {
+        try {
+          // Enviar ping
+          ws.ping();
+        } catch (err) {
+          console.error("Erro ao enviar ping para cliente", connectionId, err);
+        }
+      }
+    }, 30000); // 30 segundos
+    
+    // Registrar manipulador para pong
+    ws.on("pong", () => {
+      console.log(`Pong recebido do cliente ${connectionId}`);
+    });
+    
+    // Limpar o intervalo de ping quando a conexão for fechada
+    ws.on("close", () => {
+      if (pingInterval) {
+        clearInterval(pingInterval);
+      }
+    });
+    
     // Informar ao cliente que estamos conectados e prontos
     if (ws.readyState === WebSocket.OPEN) {
-      ws.send(JSON.stringify({
-        type: "status",
-        status: "connected",
-        message: "Transcrição ao vivo com OpenAI ativada"
-      }));
+      try {
+        ws.send(JSON.stringify({
+          type: "status",
+          status: "connected",
+          message: "Transcrição ao vivo com OpenAI ativada"
+        }));
+      } catch (err) {
+        console.error("Erro ao enviar mensagem de confirmação:", err);
+      }
     }
   });
   

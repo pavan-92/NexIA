@@ -91,10 +91,30 @@ export function useRecording(): RecordingHookResult {
               description: "O prontuário médico foi criado com sucesso.",
             });
           }
+          else if (data.type === 'status') {
+            console.log('Status do WebSocket:', data.status, data.message);
+            // Se recebemos um status connected, significa que o websocket está funcionando
+            if (data.status === 'connected') {
+              setUseFallbackMode(false);
+              toast({
+                title: "Conexão estabelecida",
+                description: "Transcrição em tempo real ativada.",
+                variant: "default"
+              });
+            }
+          }
         } catch (err) {
           console.error('Error parsing WebSocket message:', err);
         }
       };
+      
+      // Configuração de Ping/Pong para manter a conexão ativa
+      const pingInterval = setInterval(() => {
+        if (socket && socket.readyState === WebSocket.OPEN) {
+          // Enviamos uma mensagem de ping personalizada porque o browser não suporta ws.ping() diretamente
+          socket.send(JSON.stringify({ type: "ping" }));
+        }
+      }, 25000); // A cada 25 segundos
       
       socket.onerror = () => {
         console.error('WebSocket error, using fallback mode');
