@@ -1,0 +1,452 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --background: 0 0% 100%;
+  --foreground: 222.2 84% 4.9%;
+  --muted: 210 40% 96.1%;
+  --muted-foreground: 215.4 16.3% 46.9%;
+  --popover: 0 0% 100%;
+  --popover-foreground: 222.2 84% 4.9%;
+  --card: 0 0% 100%;
+  --card-foreground: 222.2 84% 4.9%;
+  --border: 214.3 31.8% 91.4%;
+  --input: 214.3 31.8% 91.4%;
+  --primary: 201 98% 28%; /* #006494 Sapphire Blue */
+  --primary-foreground: 210 40% 98%;
+  --secondary: 188 55% 42%; /* #247BA0 Celadon Blue */
+  --secondary-foreground: 222.2 84% 4.9%;
+  --accent: 198 100% 50%; /* #1B98E0 Carolina Blue */
+  --accent-foreground: 222.2 84% 4.9%;
+  --accent-blue-dark: 203 60% 27%; /* #13293D Prussian Blue */
+  --accent-blue-light: 180 12% 92%; /* #E8F1F2 Azure X 11 Web Color */
+  --highlight: 198 100% 50%; /* #1B98E0 Carolina Blue */
+  --highlight-light: 198 100% 95%; /* Versão clara do Carolina Blue */
+  --destructive: 0 84.2% 60.2%;
+  --destructive-foreground: 210 40% 98%;
+  --ring: 201 98% 28%; /* Sapphire Blue */
+  --radius: 0.75rem; /* Bordas arredondadas */
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground font-sans antialiased;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-display;
+  }
+}
+
+.hero-gradient {
+  background: radial-gradient(circle at top right, rgba(27, 152, 224, 0.3), transparent 70%),
+               radial-gradient(circle at bottom left, rgba(0, 100, 148, 0.4), transparent 70%);
+}
+
+.gradient-text {
+  @apply bg-clip-text text-transparent bg-gradient-to-r from-primary to-accent;
+}
+
+.btn-shine {
+  position: relative;
+  overflow: hidden;
+}
+
+.btn-shine::after {
+  content: '';
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: linear-gradient(
+    to right,
+    rgba(255, 255, 255, 0) 0%,
+    rgba(255, 255, 255, 0.3) 50%,
+    rgba(255, 255, 255, 0) 100%
+  );
+  transform: rotate(30deg);
+  transition: transform 0.5s;
+  opacity: 0;
+}
+
+.btn-shine:hover::after {
+  transform: rotate(30deg) translate(100%, 0);
+  opacity: 1;
+  transition: transform 0.7s, opacity 0.3s;
+}
+
+.feature-card {
+  @apply transition-all duration-300;
+}
+
+.feature-card:hover {
+  transform: translateY(-10px);
+  @apply shadow-lg shadow-primary/20;
+}
+
+.animate-float {
+  animation: float 6s ease-in-out infinite;
+}
+
+@keyframes float {
+  0%, 100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-20px);
+  }
+}
+
+@keyframes pulse-slow {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.7;
+  }
+}
+
+.animate-pulse-slow {
+  animation: pulse-slow 4s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+.font-sans {
+  font-family: 'Inter', sans-serif;
+}
+
+.font-display {
+  font-family: 'Space Grotesk', sans-serif;
+}
+
+/* Dashboard specific styles */
+.dashboard-card {
+  @apply shadow-sm hover:shadow-md transition-all duration-300 border border-border/60;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.04);
+}
+
+.dashboard-card:hover {
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+  border-color: rgba(27, 152, 224, 0.3); /* #1B98E0 Carolina Blue */
+}
+
+.dashboard-icon {
+  @apply rounded-full p-2 flex items-center justify-center transition-all;
+}
+
+.dashboard-icon-blue {
+  @apply bg-[#1B98E0]/10 text-[#1B98E0];
+}
+
+.dashboard-icon-green {
+  @apply bg-green-100 text-green-600;
+}
+
+.dashboard-icon-dark-blue {
+  @apply bg-[#13293D]/10 text-[#13293D];
+}
+
+.dashboard-icon-celadon {
+  @apply bg-[#247BA0]/10 text-[#247BA0];
+}
+
+/* Estilos para consulta médica */
+.medical-bg {
+  @apply bg-gray-50;
+}
+
+.consultation-layout {
+  @apply w-full max-w-7xl mx-auto p-4 pt-16 md:pt-24;
+}
+
+.patient-header {
+  @apply bg-white rounded-xl shadow-sm mb-6 p-6;
+}
+
+.patient-name {
+  @apply text-2xl font-bold text-gray-900;
+}
+
+.patient-info {
+  @apply grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-4 mt-4;
+}
+
+.patient-info-item {
+  @apply px-4 py-2 border-r border-gray-100 last:border-r-0;
+}
+
+.patient-info-label {
+  @apply text-sm text-gray-500;
+}
+
+.patient-info-value {
+  @apply font-medium text-gray-900;
+}
+
+.patient-tags {
+  @apply flex flex-wrap gap-2 mt-4;
+}
+
+.patient-tag {
+  @apply px-3 py-1 rounded-full text-sm bg-[#1B98E0]/10 text-[#006494];
+}
+
+.consultation-section {
+  @apply space-y-6;
+}
+
+.consultation-main {
+  @apply w-full mb-6;
+}
+
+.consultation-grid {
+  @apply grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6;
+}
+
+.consultation-card {
+  @apply bg-white rounded-xl shadow-sm hover:shadow-md transition-all duration-300 overflow-hidden;
+}
+
+.consultation-card-full {
+  @apply col-span-1 md:col-span-2 lg:col-span-3 bg-white rounded-xl shadow-sm hover:shadow-md transition-all duration-300 overflow-hidden border-2 border-blue-100;
+}
+
+.consultation-card-header {
+  @apply flex items-center justify-between p-4 border-b border-gray-100;
+}
+
+.consultation-card-header-highlight {
+  @apply flex items-center justify-between p-4 border-b border-blue-100 bg-blue-50/50;
+}
+
+.consultation-card-title {
+  @apply text-base font-semibold text-gray-800 flex items-center;
+}
+
+.consultation-card-content {
+  @apply p-4;
+}
+
+.recording-interface {
+  @apply flex items-center justify-between bg-gray-50 p-3 rounded-lg;
+}
+
+.recording-button {
+  @apply w-10 h-10 rounded-full flex items-center justify-center text-white;
+}
+
+.recording-button-primary {
+  @apply bg-[#006494] hover:bg-[#13293D] transition-colors;
+}
+
+.recording-button-stop {
+  @apply bg-red-500 hover:bg-red-600 transition-colors;
+}
+
+.recording-waveform {
+  @apply h-6 mx-4 flex-1;
+}
+
+.tag-pill {
+  @apply inline-flex items-center px-3 py-1 rounded-full text-sm font-medium;
+}
+
+.tag-blue {
+  @apply bg-[#1B98E0]/10 text-[#006494];
+}
+
+.tag-celadon {
+  @apply bg-[#247BA0]/10 text-[#247BA0];
+}
+
+.tag-dark {
+  @apply bg-[#13293D]/10 text-[#13293D];
+}
+
+.card-hover-effect:hover {
+  transform: translateY(-3px);
+  border-color: hsl(var(--highlight) / 0.3);
+}
+
+/* Transition effects */
+.fade-in-up {
+  animation: fadeInUp 0.4s ease-out;
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.hover-scale {
+  transition: transform 0.2s ease-in-out;
+}
+
+.hover-scale:hover {
+  transform: scale(1.02);
+}
+
+/* Layout da consulta */
+.consultation-layout {
+  padding: 1.5rem;
+  max-width: 1600px;
+  margin: 0 auto;
+}
+
+.patient-header {
+  background: white;
+  border-radius: 0.5rem;
+  padding: 1.5rem;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  margin-bottom: 1.5rem;
+}
+
+.patient-name {
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: #1e293b;
+  margin-bottom: 1rem;
+}
+
+.patient-info {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1.5rem;
+  margin-bottom: 1rem;
+}
+
+.patient-info-item {
+  min-width: 100px;
+}
+
+.patient-info-label {
+  font-size: 0.75rem;
+  color: #64748b;
+  margin-bottom: 0.25rem;
+}
+
+.patient-info-value {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: #334155;
+}
+
+.patient-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.patient-tag {
+  font-size: 0.75rem;
+  background: #e2e8f0;
+  color: #475569;
+  padding: 0.25rem 0.75rem;
+  border-radius: 0.25rem;
+}
+
+.consultation-section {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.consultation-main {
+  width: 100%;
+}
+
+.consultation-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 450px), 1fr));
+  gap: 1.5rem;
+}
+
+.consultation-card-full {
+  background: white;
+  border-radius: 0.5rem;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+}
+
+.consultation-card {
+  background: white;
+  border-radius: 0.5rem;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.consultation-card-header-highlight {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem 1.5rem;
+  background: linear-gradient(90deg, rgba(18, 94, 166, 0.08) 0%, rgba(74, 153, 211, 0.04) 100%);
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.consultation-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem 1.5rem;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.consultation-card-title {
+  display: flex;
+  align-items: center;
+  font-size: 0.9375rem;
+  font-weight: 600;
+  color: #1e293b;
+}
+
+.consultation-card-content {
+  padding: 1.5rem;
+  flex: 1;
+}
+
+.tag-pill {
+  display: inline-flex;
+  align-items: center;
+  font-size: 0.75rem;
+  font-weight: 500;
+  padding: 0.25rem 0.75rem;
+  border-radius: 1rem;
+}
+
+.tag-blue {
+  background-color: #eff6ff;
+  color: #1d4ed8;
+}
+
+.tag-green {
+  background-color: #ecfdf5;
+  color: #047857;
+}
+
+.tag-yellow {
+  background-color: #fef3c7;
+  color: #b45309;
+}
+
+.tag-red {
+  background-color: #fee2e2;
+  color: #b91c1c;
+}
+
+.medical-bg {
+  background-color: #f8fafc;
+}
