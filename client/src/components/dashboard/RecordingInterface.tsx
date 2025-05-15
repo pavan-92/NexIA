@@ -598,10 +598,6 @@ export default function RecordingInterface({
                     : (
                       <>
                         <p>A transcrição aparecerá aqui após parar a gravação</p>
-                        <div className="w-full max-w-xs p-3 bg-blue-50 rounded-md text-xs text-blue-700">
-                          <AlertCircle className="inline-block h-3 w-3 mr-1 mb-0.5" />
-                          <span className="font-medium">Dica:</span> Para melhores resultados, fale por pelo menos 3-4 segundos e mantenha uma distância adequada do microfone.
-                        </div>
                       </>
                     )}
               </div>
@@ -641,14 +637,7 @@ export default function RecordingInterface({
           )}
           
           {/* Informação sobre gravação */}
-          <div className="text-center my-6">
-            <div className="p-4 bg-blue-50 rounded-lg border border-blue-100">
-              <p className="text-blue-700 text-sm">
-                <AlertCircle className="inline-block h-4 w-4 mr-1 mb-1" />
-                Para melhores resultados, fale claramente por pelo menos 3-4 segundos durante a gravação.
-              </p>
-            </div>
-          </div>
+
           
           {/* Botões de ação */}
           <div className="flex gap-4 justify-center">
