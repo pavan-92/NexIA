@@ -528,12 +528,20 @@ export default function RecordingInterface({
                 {liveTranscript}
               </div>
             ) : (
-              <div className="text-gray-500 text-sm italic flex items-center justify-center h-64">
+              <div className="text-gray-500 text-sm italic flex flex-col items-center justify-center h-64 space-y-3">
                 {isRecording 
                   ? "Gravando áudio... A transcrição acontecerá automaticamente após parar a gravação." 
                   : isTranscribing
                     ? "Processando o áudio. Aguarde um momento..."
-                    : "A transcrição aparecerá aqui após parar a gravação"}
+                    : (
+                      <>
+                        <p>A transcrição aparecerá aqui após parar a gravação</p>
+                        <div className="w-full max-w-xs p-3 bg-blue-50 rounded-md text-xs text-blue-700">
+                          <AlertCircle className="inline-block h-3 w-3 mr-1 mb-0.5" />
+                          <span className="font-medium">Dica:</span> Para melhores resultados, fale por pelo menos 3-4 segundos e mantenha uma distância adequada do microfone.
+                        </div>
+                      </>
+                    )}
               </div>
             )}
           </div>

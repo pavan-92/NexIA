@@ -25,8 +25,9 @@ export async function transcribeAudio(buffer: Buffer): Promise<{ text: string, d
       throw new Error("Buffer de áudio vazio ou inválido");
     }
     
-    if (buffer.length < 1024) { // Menos de 1KB é provavelmente inválido
-      throw new Error("Arquivo de áudio muito pequeno ou corrompido");
+    // Verificação de tamanho mínimo, mas permitimos arquivos menores (apenas logamos aviso)
+    if (buffer.length < 1024) { // Menos de 1KB
+      console.warn(`Arquivo de áudio muito pequeno (${buffer.length} bytes). Pode não conter fala suficiente para transcrição.`);
     }
     
     // Cria um arquivo temporário para o áudio
