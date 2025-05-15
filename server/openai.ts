@@ -47,148 +47,125 @@ export async function transcribeAudio(buffer: Buffer): Promise<{ text: string, d
     const fileStats = fs.statSync(tempFilePath);
     console.log(`Arquivo temporário criado: ${fileStats.size} bytes`);
     
-    // Transcrição com Deepgram
-    console.log('Iniciando transcrição com Deepgram...');
+    // Primeiro tentamos com OpenAI Whisper (modelo mais confiável)
+    console.log('Iniciando transcrição com OpenAI Whisper...');
     
-    // Set transcription options with improved parameters
-    const transcriptionOptions = {
-      punctuate: true,        // Adiciona pontuação
-      language: "pt-BR",      // Português do Brasil
-      model: "nova-2",        // Modelo mais recente e preciso
-      smart_format: true,     // Formata números, datas, etc.
-      diarize: true,          // Identifica mudanças de falantes
-      utterances: true,       // Separa por frases
-      tier: 'enhanced',       // Melhor qualidade de transcrição
-      detect_language: true,  // Detecção automática de idioma como fallback
-    };
-
-    // Read file as buffer for Deepgram
-    const audioData = fs.readFileSync(tempFilePath);
-    
-    // Detectar o mimetype apropriado para o Deepgram
-    // Independente da extensão, o Deepgram aceita vários formatos de áudio
-    let mimetype = 'audio/webm';
-    
-    // Verificar o conteúdo do arquivo para uma decisão mais precisa
-    // Isto verifica apenas alguns bytes iniciais para tentar identificar o formato
     try {
-      const headerBytes = fs.readFileSync(tempFilePath, { start: 0, end: 16 });
+      // Criar transcrição usando OpenAI
+      const transcription = await openai.audio.transcriptions.create({
+        file: fs.createReadStream(tempFilePath),
+        model: "whisper-1",
+        language: "pt",
+        response_format: "text"
+      });
       
-      // Identificação básica de formatos comuns de áudio
-      // WebM começa com 0x1A 0x45 0xDF 0xA3
-      if (headerBytes[0] === 0x1A && headerBytes[1] === 0x45 && headerBytes[2] === 0xDF && headerBytes[3] === 0xA3) {
-        mimetype = 'audio/webm';
-        console.log("Formato identificado como WebM pela assinatura de bytes");
-      }
-      // WAV começa com "RIFF" seguido de "WAVE"
-      else if (headerBytes[0] === 0x52 && headerBytes[1] === 0x49 && headerBytes[2] === 0x46 && headerBytes[3] === 0x46 &&
-               headerBytes[8] === 0x57 && headerBytes[9] === 0x41 && headerBytes[10] === 0x56 && headerBytes[11] === 0x45) {
-        mimetype = 'audio/wav';
-        console.log("Formato identificado como WAV pela assinatura de bytes");
-      }
-      // MP3 geralmente começa com ID3 ou 0xFF 0xFB
-      else if ((headerBytes[0] === 0x49 && headerBytes[1] === 0x44 && headerBytes[2] === 0x33) ||
-               (headerBytes[0] === 0xFF && (headerBytes[1] & 0xFB) === 0xFB)) {
-        mimetype = 'audio/mpeg';
-        console.log("Formato identificado como MP3 pela assinatura de bytes");
-      }
-      // OGG começa com "OggS"
-      else if (headerBytes[0] === 0x4F && headerBytes[1] === 0x67 && headerBytes[2] === 0x67 && headerBytes[3] === 0x53) {
-        mimetype = 'audio/ogg';
-        console.log("Formato identificado como OGG pela assinatura de bytes");
-      }
-      else {
-        // Se não conseguiu identificar, usa a extensão como fallback
-        const fileExtension = path.extname(tempFilePath).toLowerCase();
-        const mimeTypeMap: Record<string, string> = {
-          '.webm': 'audio/webm',
-          '.mp3': 'audio/mpeg',
-          '.mp4': 'audio/mp4',
-          '.wav': 'audio/wav',
-          '.ogg': 'audio/ogg',
-          '.flac': 'audio/flac'
-        };
-        
-        if (fileExtension && fileExtension in mimeTypeMap) {
-          mimetype = mimeTypeMap[fileExtension as keyof typeof mimeTypeMap];
-          console.log(`Formato identificado pela extensão: ${fileExtension} -> ${mimetype}`);
-        } else {
-          console.log(`Não foi possível identificar o formato. Usando padrão: ${mimetype}`);
-        }
-      }
-    } catch (err) {
-      console.warn("Erro ao tentar identificar o tipo de arquivo:", err);
-      console.log("Usando mimetype padrão:", mimetype);
-    }
-    
-    console.log(`Usando MIME type ${mimetype} para transcrição`);
-    
-    // Make request to Deepgram with multiple retries if needed
-    let response;
-    const maxRetries = 2;
-    let attempt = 0;
-    
-    while (attempt <= maxRetries) {
+      console.log("Transcrição com OpenAI bem-sucedida!");
+      
+      // Limpa o arquivo temporário
       try {
-        console.log(`Tentativa de transcrição ${attempt + 1}/${maxRetries + 1}...`);
-        
-        response = await deepgram.transcription.preRecorded(
-          { buffer: audioData, mimetype },
-          transcriptionOptions
-        );
-        
-        // Se tivemos uma resposta válida, saímos do loop
-        if (response?.results?.channels?.[0]?.alternatives?.[0]?.transcript) {
-          console.log("Transcrição bem-sucedida!");
-          break;
-        } else {
-          console.warn("Resposta vazia da API de transcrição");
-          // Tentaremos novamente, a menos que estejamos na última tentativa
-        }
-      } catch (error) {
-        console.error(`Erro na tentativa ${attempt + 1}:`, error);
-        // Se for a última tentativa, relançamos o erro
-        if (attempt === maxRetries) {
-          throw error;
-        }
+        fs.unlinkSync(tempFilePath);
+      } catch (cleanupError) {
+        console.warn("Erro ao remover arquivo temporário:", cleanupError);
       }
       
-      attempt++;
-    }
+      // Whisper não retorna duração, então estimamos
+      const estimatedDuration = buffer.length / 16000; // ~16KB por segundo para áudio 16kHz mono
+      
+      return {
+        text: transcription,
+        duration: estimatedDuration
+      };
+    } catch (openaiError) {
+      console.error("Erro ao transcrever com OpenAI:", openaiError);
+      console.log("Tentando fallback com Deepgram...");
+      
+      // Se falhar com OpenAI, tentamos com Deepgram como fallback
+      try {
+        // Set transcription options com modelo básico (sem restrições de permissão)
+        const transcriptionOptions = {
+          punctuate: true,        // Adiciona pontuação
+          language: "pt-BR",      // Português do Brasil
+          model: "general",       // Modelo básico sem restrição de permissão
+          detect_language: true,  // Detecção automática de idioma como fallback
+        };
     
-    // Limpa o arquivo temporário
-    try {
-      fs.unlinkSync(tempFilePath);
-    } catch (cleanupError) {
-      console.warn("Erro ao remover arquivo temporário:", cleanupError);
-      // Não interrompe o fluxo se não conseguir limpar
-    }
+        // Read file as buffer for Deepgram
+        const audioData = fs.readFileSync(tempFilePath);
+        
+        // MIME type simples para minimizar erros
+        const mimetype = 'audio/webm';
+        console.log(`Usando MIME type ${mimetype} para transcrição com Deepgram`);
+        
+        // Make request to Deepgram with multiple retries if needed
+        let response;
+        const maxRetries = 2;
+        let attempt = 0;
+        
+        while (attempt <= maxRetries) {
+          try {
+            console.log(`Tentativa de transcrição com Deepgram ${attempt + 1}/${maxRetries + 1}...`);
+            
+            response = await deepgram.transcription.preRecorded(
+              { buffer: audioData, mimetype },
+              transcriptionOptions
+            );
+            
+            // Se tivemos uma resposta válida, saímos do loop
+            if (response?.results?.channels?.[0]?.alternatives?.[0]?.transcript) {
+              console.log("Transcrição com Deepgram bem-sucedida!");
+              break;
+            } else {
+              console.warn("Resposta vazia da API de transcrição");
+              // Tentaremos novamente, a menos que estejamos na última tentativa
+            }
+          } catch (error) {
+            console.error(`Erro na tentativa ${attempt + 1}:`, error);
+            // Se for a última tentativa, relançamos o erro
+            if (attempt === maxRetries) {
+              throw error;
+            }
+          }
+          
+          attempt++;
+        }
     
-    // Extract transcript text
-    const transcript = response?.results?.channels?.[0]?.alternatives?.[0]?.transcript;
-    
-    if (!transcript) {
-      throw new Error("Resposta de transcrição inválida do Deepgram");
-    }
-    
-    console.log('Transcrição concluída com sucesso:', transcript.substring(0, 100) + '...');
-    
-    // Estima duração com base no número de palavras
-    const wordCount = transcript.split(' ').length;
-    const estimatedDuration = wordCount * 3; // ~3s por palavra (aproximação)
-    
-    return {
-      text: transcript,
-      duration: estimatedDuration,
-    };
-  } catch (error) {
-    console.error("Erro ao transcrever áudio com Deepgram:", error);
-    
-    // Mensagem de erro mais descritiva
-    let errorMessage = "Falha ao transcrever áudio";
-    if (error instanceof Error) {
-      errorMessage += `: ${error.message}`;
-    }
+          // Limpa o arquivo temporário
+          try {
+            fs.unlinkSync(tempFilePath);
+          } catch (cleanupError) {
+            console.warn("Erro ao remover arquivo temporário:", cleanupError);
+          }
+          
+          // Extract transcript text
+          const transcript = response?.results?.channels?.[0]?.alternatives?.[0]?.transcript;
+          
+          if (!transcript) {
+            throw new Error("Resposta de transcrição inválida do Deepgram");
+          }
+          
+          console.log('Transcrição com Deepgram concluída com sucesso:', transcript.substring(0, 100) + '...');
+          
+          // Estima duração com base no número de palavras
+          const wordCount = transcript.split(' ').length;
+          const estimatedDuration = wordCount * 0.5; // ~0.5s por palavra (aproximação)
+          
+          return {
+            text: transcript,
+            duration: estimatedDuration,
+          };
+        } catch (deepgramError) {
+          console.error("Erro ao transcrever com Deepgram:", deepgramError);
+          throw new Error("Falha ao transcrever áudio com ambos os serviços (OpenAI e Deepgram)");
+        }
+      }
+    } catch (error) {
+      console.error("Erro geral no processo de transcrição:", error);
+      
+      // Mensagem de erro mais descritiva
+      let errorMessage = "Falha ao transcrever áudio";
+      if (error instanceof Error) {
+        errorMessage += `: ${error.message}`;
+      }
     
     throw new Error(errorMessage);
   }
