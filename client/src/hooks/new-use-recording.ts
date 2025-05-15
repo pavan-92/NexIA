@@ -196,53 +196,115 @@ export function useRecording(): RecordingHookResult {
       audioChunksRef.current = [];
       audioBufferRef.current = [];
       setError(null);
-      setIsRecording(true);
-      setIsLiveTranscribing(true);
-      setCurrentSegmentStart(recordingTime); // Marcar início do novo segmento
       
-      // Inicializamos com null para que a transcrição do ChatGPT apareça diretamente
-      // quando começar a ser recebida via WebSocket
-      setLiveTranscript(null);
+      // Mensagem informativa inicial
+      setLiveTranscript("Solicitando acesso ao microfone...");
       
-      // Request microphone access
-      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-      streamRef.current = stream;
-      
-      // Create media recorder
-      const mediaRecorder = new MediaRecorder(stream);
-      mediaRecorderRef.current = mediaRecorder;
-      
-      // Start timer
-      setRecordingTime(0);
-      timerIntervalRef.current = window.setInterval(() => {
-        setRecordingTime((prevTime) => prevTime + 1);
-      }, 1000);
-      
-      // Não vamos usar WebSocket para a transcrição tempo real (problemas de conexão)
-      // Em vez disso, mostramos informações instrutivas para o usuário
-      setLiveTranscript("Gravando áudio. Após finalizar, clique em 'Gerar Prontuário'.");
-      
-      // Handle data available event
-      mediaRecorder.ondataavailable = (event) => {
-        if (event.data.size > 0) {
-          // Adicionar chunk apenas para processamento local
-          audioChunksRef.current.push(event.data);
+      try {
+        // Request microphone access with explicit constraints
+        const constraints = {
+          audio: {
+            echoCancellation: true,
+            noiseSuppression: true,
+            autoGainControl: true
+          }
+        };
+        
+        console.log("Solicitando acesso ao microfone com constraints:", constraints);
+        
+        // Atualizar estado antes de solicitar acesso (para feedback imediato ao usuário)
+        setIsRecording(true);
+        setIsLiveTranscribing(true);
+        setCurrentSegmentStart(recordingTime);
+        
+        // Tentar obter acesso ao microfone
+        const stream = await navigator.mediaDevices.getUserMedia(constraints);
+        
+        // Verificar se temos tracks de áudio
+        if (!stream || stream.getAudioTracks().length === 0) {
+          throw new Error("Microfone conectado mas não está enviando áudio");
         }
-      };
-      
-      // Configurar para coletar chunks a cada 250ms
-      mediaRecorder.start(250);
-      
-      // Mensagens para o usuário
-      toast({
-        title: "Gravação iniciada",
-        description: "Fale normalmente durante a consulta. A gravação está em andamento.",
-      });
+        
+        console.log("Acesso ao microfone concedido, tracks:", stream.getAudioTracks().length);
+        
+        // Armazenar referência
+        streamRef.current = stream;
+        
+        // Criar MediaRecorder com opções explícitas para compatibilidade
+        let options = {};
+        if (MediaRecorder.isTypeSupported('audio/webm')) {
+          options = { mimeType: 'audio/webm' };
+        }
+        
+        console.log("Criando MediaRecorder com opções:", options);
+        const mediaRecorder = new MediaRecorder(stream, options);
+        mediaRecorderRef.current = mediaRecorder;
+        
+        // Start timer
+        setRecordingTime(0);
+        timerIntervalRef.current = window.setInterval(() => {
+          setRecordingTime((prevTime) => prevTime + 1);
+        }, 1000);
+        
+        // Atualizar mensagem para o usuário
+        setLiveTranscript("Gravando áudio. Após finalizar, clique em 'Gerar Prontuário'.");
+        
+        // Handle data available event
+        mediaRecorder.ondataavailable = (event) => {
+          if (event.data.size > 0) {
+            console.log(`Chunk de áudio recebido: ${event.data.size} bytes`);
+            audioChunksRef.current.push(event.data);
+          } else {
+            console.warn("Recebido chunk de áudio vazio");
+          }
+        };
+        
+        // Registrar eventos para debug
+        mediaRecorder.onstart = () => console.log("MediaRecorder iniciado com sucesso");
+        mediaRecorder.onerror = (e) => console.error("Erro no MediaRecorder:", e);
+        
+        // Configurar para coletar chunks a cada 250ms
+        mediaRecorder.start(250);
+        
+        // Mensagens para o usuário
+        toast({
+          title: "Gravação iniciada",
+          description: "Microfone conectado. Fale normalmente durante a consulta.",
+        });
+      } catch (micError: any) {
+        console.error("Erro específico ao acessar microfone:", micError);
+        
+        let errorMsg = "Não foi possível acessar o microfone.";
+        
+        // Mensagens de erro mais específicas
+        if (micError.name === "NotAllowedError" || micError.name === "PermissionDeniedError") {
+          errorMsg = "Permissão para usar o microfone foi negada. Verifique as permissões do navegador.";
+        } else if (micError.name === "NotFoundError" || micError.name === "DevicesNotFoundError") {
+          errorMsg = "Nenhum microfone encontrado. Conecte um microfone e tente novamente.";
+        } else if (micError.name === "NotReadableError" || micError.name === "TrackStartError") {
+          errorMsg = "Não foi possível acessar o microfone. Ele pode estar sendo usado por outro aplicativo.";
+        }
+        
+        setError(errorMsg);
+        throw micError; // Repassar para o catch externo
+      }
     } catch (err) {
-      setError("Não foi possível acessar o microfone. Verifique as permissões do navegador.");
-      console.error("Error starting recording:", err);
+      console.error("Erro geral ao iniciar gravação:", err);
+      
+      // Restaurar estados
       setIsLiveTranscribing(false);
       setIsRecording(false);
+      setLiveTranscript(null);
+      
+      // Mostrar toast de erro
+      toast({
+        variant: "destructive",
+        title: "Erro ao iniciar gravação",
+        description: "Verifique as permissões de microfone nas configurações do navegador",
+      });
+      
+      // Definir mensagem de erro para exibição na interface
+      setError("Não foi possível acessar o microfone. Verifique as permissões do navegador.");
     }
   };
 
