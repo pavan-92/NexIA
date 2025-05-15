@@ -442,11 +442,28 @@ export default function RecordingInterface({
   };
 
   const handleTranscribe = async () => {
-    if (!audioBlob) return;
+    if (audioSegments.length === 0) {
+      toast({
+        title: "Nenhum áudio disponível",
+        description: "Por favor, grave um áudio antes de transcrever.",
+        variant: "destructive",
+      });
+      return;
+    }
     
     setIsTranscribing(true);
     try {
       const text = await transcribeAudio();
+      
+      if (!text || text.trim().length === 0) {
+        throw new Error("A transcrição resultou em texto vazio. Tente gravar novamente falando mais próximo ao microfone.");
+      }
+      
+      toast({
+        title: "Transcrição concluída",
+        description: "Áudios transcritos com sucesso.",
+      });
+      
       onTranscriptionComplete(text);
       
       // Save transcription if we have a consultation ID
@@ -455,6 +472,51 @@ export default function RecordingInterface({
       }
     } catch (err) {
       console.error("Transcription error:", err);
+      toast({
+        title: "Erro na transcrição", 
+        description: err instanceof Error ? err.message : "Não foi possível transcrever o áudio.",
+        variant: "destructive"
+      });
+    } finally {
+      setIsTranscribing(false);
+    }
+  };
+  
+  const handleGenerateNotes = async () => {
+    if (!liveTranscript || liveTranscript.trim().length === 0) {
+      toast({
+        title: "Sem transcrição disponível",
+        description: "É necessário transcrever o áudio primeiro.",
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    setIsTranscribing(true);
+    
+    try {
+      // Gera notas a partir da transcrição usando o modelo GPT-4o
+      const notes = await generateNotes(liveTranscript);
+      
+      toast({
+        title: "Prontuário gerado",
+        description: "O prontuário foi gerado com sucesso no formato SOAP.",
+      });
+      
+      // Passa as notas completas para o callback
+      onTranscriptionComplete(JSON.stringify(notes));
+      
+      // Save if we have a consultation ID
+      if (consultationId && !isNew) {
+        saveAudio(liveTranscript, notes);
+      }
+    } catch (err) {
+      console.error("Error generating notes:", err);
+      toast({
+        title: "Erro ao gerar prontuário",
+        description: "Não foi possível gerar o prontuário. Tente novamente.",
+        variant: "destructive",
+      });
     } finally {
       setIsTranscribing(false);
     }
@@ -578,67 +640,14 @@ export default function RecordingInterface({
             </div>
           )}
           
-          {/* Botão de teste de microfone */}
+          {/* Informação sobre gravação */}
           <div className="text-center my-6">
-            {isMicrophoneTesting ? (
-              <div className="space-y-4">
-                <div className="flex flex-col items-center">
-                  <div className="mb-2 relative">
-                    <div className={`bg-teal-500 text-white p-3 rounded-full relative overflow-hidden ${microphoneVolume > 50 ? 'animate-pulse' : ''}`}>
-                      <Volume2 className="h-8 w-8 relative z-10" />
-                      {/* Ondas sonoras animadas */}
-                      <div className="absolute inset-0 flex justify-center items-center z-0">
-                        <div className={`h-12 w-12 rounded-full border-2 border-white border-opacity-20 absolute animate-ping ${microphoneVolume > 20 ? 'opacity-100' : 'opacity-0'}`} style={{animationDuration: '1.5s'}}></div>
-                        <div className={`h-16 w-16 rounded-full border-2 border-white border-opacity-20 absolute animate-ping ${microphoneVolume > 40 ? 'opacity-100' : 'opacity-0'}`} style={{animationDuration: '2s'}}></div>
-                        <div className={`h-20 w-20 rounded-full border-2 border-white border-opacity-20 absolute animate-ping ${microphoneVolume > 60 ? 'opacity-100' : 'opacity-0'}`} style={{animationDuration: '2.5s'}}></div>
-                      </div>
-                    </div>
-                    {/* Indicador visual de volume */}
-                    <div className="w-64 h-4 bg-gray-200 rounded-full mt-3 overflow-hidden">
-                      <div 
-                        className="h-full bg-teal-500 rounded-full transition-all duration-100 relative"
-                        style={{width: `${microphoneVolume}%`}}
-                      >
-                        {/* Animação de pulso dentro da barra */}
-                        {microphoneVolume > 0 && (
-                          <div className="absolute inset-0 flex">
-                            <div className="animate-pulse w-1 h-full bg-white bg-opacity-30" style={{animationDuration: '0.8s'}} />
-                            <div className="animate-pulse w-1 h-full bg-white bg-opacity-30" style={{animationDuration: '1.2s', animationDelay: '0.2s'}} />
-                            <div className="animate-pulse w-1 h-full bg-white bg-opacity-30" style={{animationDuration: '0.9s', animationDelay: '0.4s'}} />
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-                  <p className="text-sm font-medium">
-                    {microphoneVolume < 10 ? 'Fale algo...' : 'Microfone funcionando!'}
-                  </p>
-                </div>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={handleStopMicrophoneTest}
-                >
-                  Finalizar teste
-                </Button>
-              </div>
-            ) : (
-              <>
-                <div className="flex justify-center mb-2">
-                  <Button
-                    variant="outline"
-                    className="bg-white border border-teal-200 text-teal-700 hover:bg-teal-50 gap-2"
-                    onClick={handleTestMicrophone}
-                  >
-                    <Volume2 className="h-5 w-5" />
-                    Testar microfone
-                  </Button>
-                </div>
-                <p className="text-sm text-gray-500 mt-2">
-                  Verifique se o microfone está funcionando corretamente antes de iniciar a gravação
-                </p>
-              </>
-            )}
+            <div className="p-4 bg-blue-50 rounded-lg border border-blue-100">
+              <p className="text-blue-700 text-sm">
+                <AlertCircle className="inline-block h-4 w-4 mr-1 mb-1" />
+                Para melhores resultados, fale claramente por pelo menos 3-4 segundos durante a gravação.
+              </p>
+            </div>
           </div>
           
           {/* Botões de ação */}
@@ -664,24 +673,37 @@ export default function RecordingInterface({
               </Button>
             )}
             
-            <Button 
-              onClick={handleTranscribe} 
-              className="bg-pink-400 hover:bg-pink-500 text-white rounded-full py-6 px-8"
-              size="lg"
-              disabled={isRecording || isTranscribing || audioSegments.length === 0}
-            >
-              {isTranscribing ? (
-                <>
-                  <RefreshCw className="mr-2 h-5 w-5 animate-spin" />
-                  Processando...
-                </>
-              ) : (
-                <>
+            {isTranscribing ? (
+              <Button 
+                className="bg-gray-400 hover:bg-gray-500 text-white rounded-full py-6 px-8"
+                size="lg"
+                disabled={true}
+              >
+                <RefreshCw className="mr-2 h-5 w-5 animate-spin" />
+                Processando...
+              </Button>
+            ) : (
+              <>
+                <Button 
+                  onClick={handleTranscribe} 
+                  className="bg-blue-500 hover:bg-blue-600 text-white rounded-full py-6 px-8"
+                  size="lg"
+                  disabled={isRecording || audioSegments.length === 0}
+                >
+                  <Volume2 className="mr-2 h-5 w-5" />
+                  Transcrever Áudios
+                </Button>
+                <Button 
+                  onClick={() => handleGenerateNotes()} 
+                  className="bg-pink-500 hover:bg-pink-600 text-white rounded-full py-6 px-8"
+                  size="lg"
+                  disabled={isRecording || !liveTranscript || liveTranscript.length === 0}
+                >
                   <CheckCircle2 className="mr-2 h-5 w-5" />
-                  Gerar prontuário
-                </>
-              )}
-            </Button>
+                  Gerar Prontuário
+                </Button>
+              </>
+            )}
           </div>
           
           {/* Botão para descartar tudo */}
