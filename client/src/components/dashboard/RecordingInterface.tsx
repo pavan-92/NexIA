@@ -412,7 +412,7 @@ export default function RecordingInterface({
             
             // Save transcription if we have a consultation ID
             if (consultationId && !isNew) {
-              saveAudio(text);
+              saveAudio({ text });
             }
             
             toast({
@@ -476,7 +476,7 @@ export default function RecordingInterface({
       
       // Save transcription if we have a consultation ID
       if (consultationId && !isNew) {
-        saveAudio(text);
+        saveAudio({ text });
       }
     } catch (err) {
       console.error("Transcription error:", err);
@@ -503,8 +503,11 @@ export default function RecordingInterface({
     setIsTranscribing(true);
     
     try {
+      // Adiciona contexto à transcrição para melhorar a qualidade do prontuário
+      const transcriptionWithContext = `Transcrição da consulta médica:\n${liveTranscript}`;
+      
       // Gera notas a partir da transcrição usando o modelo GPT-4o
-      const notes = await generateNotes(liveTranscript);
+      const notes = await generateNotes(transcriptionWithContext);
       
       toast({
         title: "Prontuário gerado",
@@ -571,8 +574,8 @@ export default function RecordingInterface({
       // Atualiza o estado com os dados formatados para o prontuário
       if (consultationId && !isNew) {
         // Para consultas existentes, salva no servidor
-        // Passamos o segundo parâmetro corretamente
-        saveAudio(liveTranscript, formattedNotes as any);
+        // Passamos os parâmetros no formato correto esperado pela função mutate
+        saveAudio({ text: liveTranscript, notes: formattedNotes });
       } else {
         // Para novas consultas, passa de volta para o componente pai
         // através do callback de transcrição completa
