@@ -483,6 +483,9 @@ export function useRecording(): RecordingHookResult {
         audioSegmentsRef.current = updatedSegments; 
         setAudioSegments(updatedSegments);
         
+        console.log(`Segmento adicionado com sucesso. Total de segmentos: ${updatedSegments.length}`);
+        console.log(`Dados do segmento adicionado: ID ${newSegment.id}, tamanho ${audioBlob.size} bytes`);
+        
         toast({
           title: "Gravação finalizada",
           description: `Segmento de áudio de ${segmentDuration} segundos gravado.`,
@@ -551,20 +554,27 @@ export function useRecording(): RecordingHookResult {
       }
       
       // Verificação dos segmentos (fallback)
-      console.log(`Verificando disponibilidade de áudio nos segmentos...`);
-      console.log(`Número de segmentos disponíveis: ${audioSegments.length}`);
+      // Usar a referência atual para garantir acesso aos dados mais recentes
+      const currentSegments = audioSegmentsRef.current || [];
       
-      if (audioSegments.length === 0) {
+      console.log(`Verificando disponibilidade de áudio nos segmentos...`);
+      console.log(`Número de segmentos disponíveis (ref): ${currentSegments.length}`);
+      console.log(`Número de segmentos disponíveis (state): ${audioSegments.length}`);
+      
+      // Usar a referência que contém os dados mais atualizados
+      const segmentsToUse = currentSegments.length >= audioSegments.length ? currentSegments : audioSegments;
+      
+      if (segmentsToUse.length === 0) {
         console.error("Não há segmentos de áudio para transcrever");
         throw new Error("Não há áudio para transcrever. Por favor, grave uma consulta primeiro.");
       }
       
       // Verificações detalhadas para cada segmento
-      const validSegments = audioSegments.filter(segment => 
+      const validSegments = segmentsToUse.filter(segment => 
         segment.blob && segment.blob.size > 0 && segment.duration > 0
       );
       
-      console.log(`Segmentos válidos: ${validSegments.length}/${audioSegments.length}`);
+      console.log(`Segmentos válidos: ${validSegments.length}/${segmentsToUse.length}`);
       
       if (validSegments.length === 0) {
         console.error("Nenhum segmento de áudio válido encontrado!");
