@@ -232,12 +232,31 @@ export function useRecording(): RecordingHookResult {
         
         // Criar MediaRecorder com opções explícitas para compatibilidade
         let options = {};
-        if (MediaRecorder.isTypeSupported('audio/webm')) {
+        // Tentar diferentes formatos de áudio compatíveis com o navegador
+        if (MediaRecorder.isTypeSupported('audio/webm;codecs=opus')) {
+          options = { mimeType: 'audio/webm;codecs=opus' };
+          console.log("Usando formato audio/webm;codecs=opus");
+        } else if (MediaRecorder.isTypeSupported('audio/webm')) {
           options = { mimeType: 'audio/webm' };
+          console.log("Usando formato audio/webm");
+        } else if (MediaRecorder.isTypeSupported('audio/mp4')) {
+          options = { mimeType: 'audio/mp4' };
+          console.log("Usando formato audio/mp4");
+        } else if (MediaRecorder.isTypeSupported('audio/ogg;codecs=opus')) {
+          options = { mimeType: 'audio/ogg;codecs=opus' };
+          console.log("Usando formato audio/ogg;codecs=opus");
+        } else {
+          console.log("Nenhum formato específico suportado, usando padrão do navegador");
         }
         
-        console.log("Criando MediaRecorder com opções:", options);
-        const mediaRecorder = new MediaRecorder(stream, options);
+        // Adicionar configurações de bitrate para melhor qualidade
+        const enhancedOptions = {
+          ...options,
+          audioBitsPerSecond: 128000  // 128 kbps para melhor qualidade
+        };
+        
+        console.log("Criando MediaRecorder com opções:", enhancedOptions);
+        const mediaRecorder = new MediaRecorder(stream, enhancedOptions);
         mediaRecorderRef.current = mediaRecorder;
         
         // Start timer
@@ -249,14 +268,28 @@ export function useRecording(): RecordingHookResult {
         // Atualizar mensagem para o usuário
         setLiveTranscript("Gravando áudio. Após finalizar, clique em 'Gerar Prontuário'.");
         
-        // Handle data available event
+        // Handle data available event - melhorado com mais logs e verificações
         mediaRecorder.ondataavailable = (event) => {
+          // Verificação mais detalhada dos chunks
+          console.log(`Chunk recebido - Tamanho: ${event.data.size} bytes, Tipo: ${event.data.type}`);
+          
           if (event.data.size > 0) {
-            console.log(`Chunk de áudio recebido: ${event.data.size} bytes`);
-            audioChunksRef.current.push(event.data);
+            // Verificar se o tipo de dados é válido
+            if (event.data.type && event.data.type.startsWith('audio/')) {
+              console.log(`Chunk de áudio válido: ${event.data.size} bytes`);
+              audioChunksRef.current.push(event.data);
+            } else {
+              console.warn(`Chunk com tipo inesperado: ${event.data.type}`);
+              // Mesmo com tipo inesperado, vamos armazenar se tiver tamanho
+              audioChunksRef.current.push(event.data);
+            }
           } else {
-            console.warn("Recebido chunk de áudio vazio");
+            console.warn("⚠️ Chunk de áudio VAZIO recebido!");
           }
+          
+          // Verificar quantidade de dados coletados 
+          const totalBytes = audioChunksRef.current.reduce((total, chunk) => total + chunk.size, 0);
+          console.log(`Total de áudio coletado até agora: ${totalBytes} bytes em ${audioChunksRef.current.length} chunks`);
         };
         
         // Registrar eventos para debug
