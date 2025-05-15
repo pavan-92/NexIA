@@ -299,7 +299,15 @@ export function useRecording(): RecordingHookResult {
         };
         
         // Registrar eventos para debug
-        mediaRecorder.onstart = () => console.log("MediaRecorder iniciado com sucesso");
+        mediaRecorder.onstart = () => {
+          console.log("MediaRecorder iniciado com sucesso");
+          // Mostrar uma dica ao iniciar a gravação
+          toast({
+            title: "Dica de gravação",
+            description: "Para melhores resultados, fale por pelo menos 3-4 segundos.",
+            duration: 3000
+          });
+        };
         mediaRecorder.onerror = (e) => console.error("Erro no MediaRecorder:", e);
         
         // Configurar para coletar chunks mais frequentemente para melhor qualidade
@@ -443,7 +451,7 @@ export function useRecording(): RecordingHookResult {
           toast({
             title: "Áudio muito curto",
             description: "A gravação foi muito curta. Para melhores resultados, tente falar por pelo menos 3-4 segundos.",
-            variant: "warning"
+            variant: "destructive"
           });
         }
         
