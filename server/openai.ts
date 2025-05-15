@@ -65,27 +65,60 @@ export async function transcribeAudio(buffer: Buffer): Promise<{ text: string, d
     // Read file as buffer for Deepgram
     const audioData = fs.readFileSync(tempFilePath);
     
-    // Detectar o mimetype apropriado com base na extensão do arquivo
-    const fileExtension = path.extname(tempFilePath).toLowerCase();
+    // Detectar o mimetype apropriado para o Deepgram
+    // Independente da extensão, o Deepgram aceita vários formatos de áudio
     let mimetype = 'audio/webm';
     
-    // Mapeamento de extensões para MIME types
-    const mimeTypeMap: Record<string, string> = {
-      '.webm': 'audio/webm',
-      '.mp3': 'audio/mpeg',
-      '.mp4': 'audio/mp4',
-      '.wav': 'audio/wav',
-      '.ogg': 'audio/ogg',
-      '.flac': 'audio/flac'
-    };
-    
-    // Correção para evitar o erro de index signature
-    if (fileExtension) {
-      // Usa uma abordagem segura para acessar o valor
-      const mimeValue = Object.entries(mimeTypeMap).find(([key]) => key === fileExtension)?.[1];
-      if (mimeValue) {
-        mimetype = mimeValue;
+    // Verificar o conteúdo do arquivo para uma decisão mais precisa
+    // Isto verifica apenas alguns bytes iniciais para tentar identificar o formato
+    try {
+      const headerBytes = fs.readFileSync(tempFilePath, { start: 0, end: 16 });
+      
+      // Identificação básica de formatos comuns de áudio
+      // WebM começa com 0x1A 0x45 0xDF 0xA3
+      if (headerBytes[0] === 0x1A && headerBytes[1] === 0x45 && headerBytes[2] === 0xDF && headerBytes[3] === 0xA3) {
+        mimetype = 'audio/webm';
+        console.log("Formato identificado como WebM pela assinatura de bytes");
       }
+      // WAV começa com "RIFF" seguido de "WAVE"
+      else if (headerBytes[0] === 0x52 && headerBytes[1] === 0x49 && headerBytes[2] === 0x46 && headerBytes[3] === 0x46 &&
+               headerBytes[8] === 0x57 && headerBytes[9] === 0x41 && headerBytes[10] === 0x56 && headerBytes[11] === 0x45) {
+        mimetype = 'audio/wav';
+        console.log("Formato identificado como WAV pela assinatura de bytes");
+      }
+      // MP3 geralmente começa com ID3 ou 0xFF 0xFB
+      else if ((headerBytes[0] === 0x49 && headerBytes[1] === 0x44 && headerBytes[2] === 0x33) ||
+               (headerBytes[0] === 0xFF && (headerBytes[1] & 0xFB) === 0xFB)) {
+        mimetype = 'audio/mpeg';
+        console.log("Formato identificado como MP3 pela assinatura de bytes");
+      }
+      // OGG começa com "OggS"
+      else if (headerBytes[0] === 0x4F && headerBytes[1] === 0x67 && headerBytes[2] === 0x67 && headerBytes[3] === 0x53) {
+        mimetype = 'audio/ogg';
+        console.log("Formato identificado como OGG pela assinatura de bytes");
+      }
+      else {
+        // Se não conseguiu identificar, usa a extensão como fallback
+        const fileExtension = path.extname(tempFilePath).toLowerCase();
+        const mimeTypeMap: Record<string, string> = {
+          '.webm': 'audio/webm',
+          '.mp3': 'audio/mpeg',
+          '.mp4': 'audio/mp4',
+          '.wav': 'audio/wav',
+          '.ogg': 'audio/ogg',
+          '.flac': 'audio/flac'
+        };
+        
+        if (fileExtension && fileExtension in mimeTypeMap) {
+          mimetype = mimeTypeMap[fileExtension as keyof typeof mimeTypeMap];
+          console.log(`Formato identificado pela extensão: ${fileExtension} -> ${mimetype}`);
+        } else {
+          console.log(`Não foi possível identificar o formato. Usando padrão: ${mimetype}`);
+        }
+      }
+    } catch (err) {
+      console.warn("Erro ao tentar identificar o tipo de arquivo:", err);
+      console.log("Usando mimetype padrão:", mimetype);
     }
     
     console.log(`Usando MIME type ${mimetype} para transcrição`);

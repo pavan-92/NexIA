@@ -365,29 +365,77 @@ export default function RecordingInterface({
       
       // Inicia automaticamente a transcrição após parar a gravação
       setIsTranscribing(true);
-      try {
-        const text = await transcribeAudio();
-        onTranscriptionComplete(text);
-        
-        // Save transcription if we have a consultation ID
-        if (consultationId && !isNew) {
-          saveAudio(text);
+      
+      // Adiciona um pequeno delay para garantir que o audioBlob esteja pronto
+      setTimeout(async () => {
+        try {
+          // Tentativa com retry
+          let text = "";
+          let attempts = 0;
+          const maxAttempts = 2;
+          let lastError = null;
+          
+          while (attempts <= maxAttempts) {
+            try {
+              console.log(`Tentativa de transcrição ${attempts + 1}/${maxAttempts + 1}`);
+              text = await transcribeAudio();
+              
+              if (text && text.trim().length > 0) {
+                // Sucesso! Sai do loop
+                break;
+              } else {
+                console.warn("Transcrição retornou texto vazio, tentando novamente...");
+                // Espera um pouco antes da próxima tentativa
+                await new Promise(r => setTimeout(r, 1000));
+              }
+            } catch (error) {
+              console.error(`Erro na tentativa ${attempts + 1}:`, error);
+              lastError = error;
+              // Espera um pouco antes da próxima tentativa
+              await new Promise(r => setTimeout(r, 1000));
+            }
+            
+            attempts++;
+          }
+          
+          // Verifica se alguma tentativa teve sucesso
+          if (text && text.trim().length > 0) {
+            onTranscriptionComplete(text);
+            
+            // Save transcription if we have a consultation ID
+            if (consultationId && !isNew) {
+              saveAudio(text);
+            }
+            
+            toast({
+              title: "Áudio transcrito",
+              description: "O áudio foi transcrito com sucesso.",
+            });
+          } else {
+            throw lastError || new Error("Não foi possível obter uma transcrição válida");
+          }
+        } catch (err) {
+          console.error("Transcription final error:", err);
+          
+          // Mensagem de erro mais detalhada
+          let errorMsg = "Não foi possível transcrever o áudio automaticamente.";
+          if (err instanceof Error) {
+            if (err.message.includes("áudio para transcrever")) {
+              errorMsg = "Não foi possível acessar o áudio gravado. Tente gravar novamente, falando mais perto do microfone.";
+            } else if (err.message.includes("vazio") || err.message.includes("pequeno")) {
+              errorMsg = "O áudio gravado estava muito baixo ou vazio. Tente gravar novamente, falando mais perto do microfone.";
+            }
+          }
+          
+          toast({
+            variant: "destructive",
+            title: "Erro na transcrição",
+            description: errorMsg,
+          });
+        } finally {
+          setIsTranscribing(false);
         }
-        
-        toast({
-          title: "Áudio transcrito",
-          description: "O áudio foi transcrito automaticamente.",
-        });
-      } catch (err) {
-        console.error("Transcription error:", err);
-        toast({
-          variant: "destructive",
-          title: "Erro na transcrição",
-          description: "Não foi possível transcrever o áudio automaticamente. Tente usar o botão 'Gerar prontuário'.",
-        });
-      } finally {
-        setIsTranscribing(false);
-      }
+      }, 500); // Pequeno delay para garantir que o estado seja atualizado
     } catch (err) {
       console.error("Error stopping recording:", err);
     }
