@@ -3,6 +3,7 @@ import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { blobToBase64 } from "@/lib/utils";
 import { generateId } from "@/lib/utils";
+import { transcribeAudio as processTranscription } from "./fixed-transcribe";
 
 interface AudioSegment {
   id: string;
@@ -502,121 +503,21 @@ export function useRecording(): RecordingHookResult {
 
   const transcribeAudio = async (): Promise<string> => {
     try {
-      setIsLiveTranscribing(true);
-      
-      // Usar os segmentos atuais
-      const segmentsToUse = audioSegmentsRef.current || audioSegments;
-      
-      if (!segmentsToUse || segmentsToUse.length === 0) {
-        throw new Error("Não há áudio para transcrever. Por favor, grave uma consulta primeiro.");
-      }
-      
-      console.log(`Iniciando transcrição de ${segmentsToUse.length} segmentos de áudio`);
-      
-      // Array para armazenar as transcrições de cada segmento
-      const allTranscriptions: string[] = [];
-        
-      // Processa cada segmento individualmente
-      for (let i = 0; i < segmentsToUse.length; i++) {
-        const segment = segmentsToUse[i];
-        
-        if (!segment.blob || segment.blob.size === 0) {
-          console.warn(`Segmento ${i+1} inválido, pulando...`);
-          continue;
-        }
-        
-        console.log(`Processando segmento ${i+1}/${segmentsToUse.length}: ${segment.id} (tamanho: ${segment.blob.size} bytes)`);
-        
-        try {
-          // Prepara formData para enviar o áudio
-          const formData = new FormData();
-          formData.append('audio', segment.blob, `recording-${segment.id}.webm`);
-          
-          // Envia o segmento para transcrição
-          const response = await apiRequest("POST", "/api/transcribe", formData) as any;
-          
-          if (response && response.text && response.text.trim()) {
-            console.log(`Segmento ${i+1} transcrito com sucesso: ${response.text.substring(0, 50)}...`);
-            allTranscriptions.push(response.text);
-          } else {
-            console.warn(`Segmento ${i+1} retornou transcrição vazia`);
-          }
-        } catch (segmentError) {
-          console.error(`Erro ao transcrever segmento ${i+1}:`, segmentError);
-          // Continue com os próximos segmentos mesmo se houver erro
-        }
-      }
-      
-      // Verifica se conseguimos alguma transcrição
-      if (allTranscriptions.length === 0) {
-        throw new Error("Não foi possível obter nenhuma transcrição válida. Tente gravar novamente.");
-      }
-      
-      // Combina todas as transcrições em um único texto
-      const combinedTranscription = allTranscriptions.join('\n\n');
-      
-      console.log(`Transcrição completa obtida (${allTranscriptions.length}/${segmentsToUse.length} segmentos): ${combinedTranscription.substring(0, 100)}...`);
-      
-      // Atualiza o estado com a transcrição combinada
-      setLiveTranscript(combinedTranscription);
-      
-      return combinedTranscription;
-      
-      // Verificações detalhadas para cada segmento
-      const validSegments = segmentsToUse.filter(segment => 
-        segment.blob && segment.blob.size > 0 && segment.duration > 0
+      // Usar nossa função de transcrição melhorada
+      const segments = audioSegmentsRef.current || audioSegments;
+      return await processTranscription(
+        segments,
+        apiRequest,
+        setLiveTranscript,
+        setIsLiveTranscribing
       );
-      
-      console.log(`Segmentos válidos: ${validSegments.length}/${segmentsToUse.length}`);
-      
-      if (validSegments.length === 0) {
-        console.error("Nenhum segmento de áudio válido encontrado!");
-        throw new Error("Nenhum segmento de áudio válido. Verifique o microfone e tente novamente.");
-      }
-      
-      // Combine all audio segments into one blob for transcription
-      const allChunks: Blob[] = [];
-      let totalSize = 0;
-      let totalDuration = 0;
-      
-      validSegments.forEach(segment => {
-        console.log(`Processando segmento: ${segment.id}, tamanho: ${segment.blob.size}, tipo: ${segment.blob.type}`);
-        allChunks.push(segment.blob);
-        totalSize += segment.blob.size;
-        totalDuration += segment.duration;
-      });
-      
-      // Log para depuração
-      console.log(`Combinando ${validSegments.length} segmentos válidos de áudio para transcrição`);
-      console.log(`Tamanho total: ${totalSize} bytes, duração total: ${totalDuration}s`);
-      
-      // Determinar o tipo de mídia mais adequado
-      const detectedTypes = validSegments
-        .map(segment => segment.blob.type)
-        .filter(type => type && type.startsWith('audio/'));
-      
-      // Usar o tipo mais comum ou padrão para webm
-      let mimeType = 'audio/webm';
-      
-      if (detectedTypes.length > 0) {
-        const typeCount: Record<string, number> = {};
-        for (const type of detectedTypes) {
-          typeCount[type] = (typeCount[type] || 0) + 1;
-        }
-        
-        let maxCount = 0;
-        for (const [type, count] of Object.entries(typeCount)) {
-          if (count > maxCount) {
-            maxCount = count;
-            mimeType = type;
-          }
-        }
-      }
-      
-      console.log(`Usando MIME type: ${mimeType} para o blob combinado`);
-      
-      // Criar o blob combinado com o tipo detectado
-      const combinedBlob = new Blob(allChunks, { type: mimeType });
+    } catch (error) {
+      console.error("Erro na transcrição:", error);
+      setIsLiveTranscribing(false);
+      throw error;
+    } finally {
+      setIsLiveTranscribing(false);
+    }
       console.log(`Tamanho do blob combinado: ${combinedBlob.size} bytes`);
       
       if (combinedBlob.size < 1024) {
