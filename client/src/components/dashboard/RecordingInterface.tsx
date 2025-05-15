@@ -369,127 +369,28 @@ export default function RecordingInterface({
 
   const handleStopRecording = async () => {
     try {
+      // Agora o hook useRecording já inicia a transcrição automaticamente após parar a gravação
       await stopRecording();
       
-      // Inicia automaticamente a transcrição após parar a gravação
-      setIsTranscribing(true);
-      
-      // Adiciona um pequeno delay para garantir que o audioBlob esteja pronto
-      setTimeout(async () => {
-        try {
-          // Tentativa com retry
-          let text = "";
-          let attempts = 0;
-          const maxAttempts = 2;
-          let lastError = null;
-          
-          while (attempts <= maxAttempts) {
-            try {
-              console.log(`Tentativa de transcrição ${attempts + 1}/${maxAttempts + 1}`);
-              text = await transcribeAudio();
-              
-              if (text && text.trim().length > 0) {
-                // Sucesso! Sai do loop
-                break;
-              } else {
-                console.warn("Transcrição retornou texto vazio, tentando novamente...");
-                // Espera um pouco antes da próxima tentativa
-                await new Promise(r => setTimeout(r, 1000));
-              }
-            } catch (error) {
-              console.error(`Erro na tentativa ${attempts + 1}:`, error);
-              lastError = error;
-              // Espera um pouco antes da próxima tentativa
-              await new Promise(r => setTimeout(r, 1000));
-            }
-            
-            attempts++;
-          }
-          
-          // Verifica se alguma tentativa teve sucesso
-          if (text && text.trim().length > 0) {
-            // Apenas passa o texto, notas serão geradas depois pelo botão "Gerar Prontuário"
-            onTranscriptionComplete(text);
-            
-            // Save transcription if we have a consultation ID
-            if (consultationId && !isNew) {
-              saveAudio({ text });
-            }
-            
-            toast({
-              title: "Áudio transcrito",
-              description: "O áudio foi transcrito com sucesso.",
-            });
-          } else {
-            throw lastError || new Error("Não foi possível obter uma transcrição válida");
-          }
-        } catch (err) {
-          console.error("Transcription final error:", err);
-          
-          // Mensagem de erro mais detalhada
-          let errorMsg = "Não foi possível transcrever o áudio automaticamente.";
-          if (err instanceof Error) {
-            if (err.message.includes("áudio para transcrever")) {
-              errorMsg = "Não foi possível acessar o áudio gravado. Tente gravar novamente, falando mais perto do microfone.";
-            } else if (err.message.includes("vazio") || err.message.includes("pequeno")) {
-              errorMsg = "O áudio gravado estava muito baixo ou vazio. Tente gravar novamente, falando mais perto do microfone.";
-            }
-          }
-          
-          toast({
-            variant: "destructive",
-            title: "Erro na transcrição",
-            description: errorMsg,
-          });
-        } finally {
-          setIsTranscribing(false);
-        }
-      }, 500); // Pequeno delay para garantir que o estado seja atualizado
+      // Mostramos apenas feedback para indicar que a gravação foi finalizada
+      // A transcrição automática já está sendo tratada pelo hook
+      toast({
+        title: "Gravação finalizada",
+        description: "O áudio está sendo transcrito automaticamente...",
+      });
     } catch (err) {
       console.error("Error stopping recording:", err);
+      
+      toast({
+        variant: "destructive",
+        title: "Erro ao parar gravação",
+        description: err instanceof Error ? err.message : "Ocorreu um erro inesperado",
+      });
     }
   };
 
-  const handleTranscribe = async () => {
-    if (audioSegments.length === 0) {
-      toast({
-        title: "Nenhum áudio disponível",
-        description: "Por favor, grave um áudio antes de transcrever.",
-        variant: "destructive",
-      });
-      return;
-    }
-    
-    setIsTranscribing(true);
-    try {
-      const text = await transcribeAudio();
-      
-      if (!text || text.trim().length === 0) {
-        throw new Error("A transcrição resultou em texto vazio. Tente gravar novamente falando mais próximo ao microfone.");
-      }
-      
-      toast({
-        title: "Transcrição concluída",
-        description: "Áudios transcritos com sucesso.",
-      });
-      
-      onTranscriptionComplete(text);
-      
-      // Save transcription if we have a consultation ID
-      if (consultationId && !isNew) {
-        saveAudio({ text });
-      }
-    } catch (err) {
-      console.error("Transcription error:", err);
-      toast({
-        title: "Erro na transcrição", 
-        description: err instanceof Error ? err.message : "Não foi possível transcrever o áudio.",
-        variant: "destructive"
-      });
-    } finally {
-      setIsTranscribing(false);
-    }
-  };
+  // A função de transcrição manual foi removida, pois agora a transcrição
+  // é realizada automaticamente pelo hook após parar a gravação
   
   const handleGenerateNotes = async () => {
     if (!liveTranscript || liveTranscript.trim().length === 0) {

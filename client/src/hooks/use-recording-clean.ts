@@ -221,7 +221,7 @@ export function useRecording(): RecordingHookResult {
     }
   };
   
-  // Para a gravação
+  // Para a gravação e inicia transcrição automaticamente
   const stopRecording = async (): Promise<void> => {
     try {
       setIsRecording(false);
@@ -233,7 +233,43 @@ export function useRecording(): RecordingHookResult {
       
       if (mediaRecorderRef.current && mediaRecorderRef.current.state !== 'inactive') {
         console.log("Parando MediaRecorder...");
-        mediaRecorderRef.current.stop();
+        
+        // Espera o evento 'stop' ser disparado para garantir que temos todos os dados
+        const stopPromise = new Promise<void>((resolve) => {
+          const currentMediaRecorder = mediaRecorderRef.current;
+          
+          if (currentMediaRecorder) {
+            const originalStop = currentMediaRecorder.onstop;
+            
+            currentMediaRecorder.onstop = (event) => {
+              // Chama o handler original se existir
+              if (originalStop) {
+                originalStop.call(currentMediaRecorder, event);
+              }
+              
+              // Aguarda um pouco para garantir que o segmento foi adicionado
+              setTimeout(() => {
+                console.log("MediaRecorder parado, iniciando transcrição automática...");
+                // Inicia a transcrição automaticamente após parar a gravação
+                transcribeAudio()
+                  .then((text) => {
+                    console.log("Transcrição automática concluída:", text);
+                  })
+                  .catch((error) => {
+                    console.error("Erro na transcrição automática:", error);
+                  });
+                
+                resolve();
+              }, 500);
+            };
+          }
+          
+          // Para o MediaRecorder
+          mediaRecorderRef.current?.stop();
+        });
+        
+        // Espera a Promise ser resolvida
+        await stopPromise;
       } else {
         console.error("MediaRecorder não está ativo");
         setError("Ocorreu um erro ao parar a gravação.");
