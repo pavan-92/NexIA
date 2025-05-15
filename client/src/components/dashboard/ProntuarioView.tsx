@@ -40,6 +40,20 @@ export default function ProntuarioView({
     consultation: {
       dateTime: new Date().toLocaleString('pt-BR'),
       consultationType: "Consulta médica",
+      
+      // Formato SOAP
+      subjective: "",
+      objective: "",
+      assessment: "",
+      plan: {
+        procedures: "",
+        medications: "",
+        referrals: "",
+        conduct: "",
+        followUp: ""
+      },
+      
+      // Campos anteriores para compatibilidade
       chiefComplaint: "",
       anamnesis: "",
       diagnosis: "",
@@ -54,6 +68,7 @@ export default function ProntuarioView({
       professionalSignature: "",
       consultationProtocol: `PROT-${Date.now()}`,
       observations: "",
+      emotionalObservations: "",
       informedConsent: ""
     }
   });
