@@ -125,6 +125,20 @@ export async function generateMedicalNotes(transcription: string): Promise<{
   consultation: {
     dateTime: string;
     consultationType: string;
+    
+    // SOAP Format
+    subjective: string;
+    objective: string;
+    assessment: string;
+    plan: {
+      procedures: string;
+      medications: string;
+      referrals: string;
+      conduct: string;
+      followUp: string;
+    };
+    
+    // Campos anteriores para compatibilidade
     chiefComplaint: string;
     anamnesis: string;
     diagnosis: string;
@@ -139,6 +153,7 @@ export async function generateMedicalNotes(transcription: string): Promise<{
     professionalSignature: string;
     consultationProtocol: string;
     observations: string;
+    emotionalObservations: string;
     informedConsent: string;
   };
 }> {
@@ -148,7 +163,7 @@ export async function generateMedicalNotes(transcription: string): Promise<{
       messages: [
         {
           role: "system",
-          content: `Você é um assistente médico especializado em criar prontuários eletrônicos de pacientes completos, seguindo requisitos legais brasileiros.
+          content: `Você é um assistente clínico especializado em criar prontuários médicos completos, seguindo o padrão SOAP e incluindo códigos CID-10 para diagnósticos.
           
           Analise a transcrição da consulta médica e gere um prontuário eletrônico estruturado com TODOS os seguintes campos obrigatórios:
           
@@ -166,26 +181,33 @@ export async function generateMedicalNotes(transcription: string): Promise<{
             - CNS do profissional
             - CBO (Código Brasileiro de Ocupações) do profissional
           
-          3. DADOS DA CONSULTA/ATENDIMENTO:
+          3. DADOS DA CONSULTA NO PADRÃO SOAP:
             - Data e hora do atendimento (DD/MM/AAAA HH:MM)
             - Tipo de atendimento (ex: consulta médica, acolhimento, visita domiciliar)
-            - Queixa principal/motivo da consulta
-            - Anamnese detalhada
-            - Hipótese diagnóstica/CID-10
-            - Procedimentos realizados (com código SIGTAP quando aplicável)
-            - Medicamentos prescritos (com código HÓRUS/BNM quando aplicável)
-            - Encaminhamentos realizados
-            - Conduta adotada
-            - Evolução clínica
-            - Registro de exame físico (quando aplicável)
+            
+            - S (Subjetivo): Queixa principal/motivo da consulta e informações relatadas pelo paciente
+            
+            - O (Objetivo): Achados clínicos, sinais vitais, resultados de exames e registro de exame físico
+            
+            - A (Avaliação): Hipótese diagnóstica com código CID-10 específico (exemplo: "Cefaleia tensional (G44.2)")
+            
+            - P (Plano): 
+              * Procedimentos realizados (com código SIGTAP quando aplicável)
+              * Medicamentos prescritos (com dose, posologia e duração)
+              * Encaminhamentos realizados
+              * Conduta adotada
+              * Orientações ao paciente
+              * Retorno e acompanhamento
           
           4. DOCUMENTOS E REGISTRO LEGAL:
-            - Assinatura digital do profissional (obrigatória para validade legal)
+            - Assinatura digital do profissional
             - Número do atendimento ou protocolo interno
-            - Campo de observações (quando necessário)
-            - Consentimento informado (em atendimentos específicos)
+            - Observações adicionais (quando necessário)
+            - Observações sobre o estado emocional do paciente
           
           IMPORTANTE:
+          - Estruture o documento claramente com as seções SOAP bem definidas
+          - Inclua sempre o código CID-10 completo junto ao diagnóstico
           - Para campos com dados pessoais não especificados na transcrição, use informações fictícias IDENTIFICANDO que são ilustrativas
           - Mantenha o formato clínico e profissional
           - Seja detalhado e específico nos campos de anamnese, diagnóstico e conduta
@@ -222,6 +244,20 @@ export async function generateMedicalNotes(transcription: string): Promise<{
       consultation: {
         dateTime: result.consultation?.dateTime || new Date().toLocaleString('pt-BR'),
         consultationType: result.consultation?.consultationType || "Consulta médica",
+        
+        // SOAP Format
+        subjective: result.consultation?.subjective || result.consultation?.chiefComplaint || "Não informado",
+        objective: result.consultation?.objective || result.consultation?.physicalExam || "Não informado",
+        assessment: result.consultation?.assessment || result.consultation?.diagnosis || "Não informado",
+        plan: {
+          procedures: result.consultation?.plan?.procedures || result.consultation?.procedures || "Não informado",
+          medications: result.consultation?.plan?.medications || result.consultation?.medications || "Não informado",
+          referrals: result.consultation?.plan?.referrals || result.consultation?.referrals || "Não informado",
+          conduct: result.consultation?.plan?.conduct || result.consultation?.conduct || "Não informado",
+          followUp: result.consultation?.plan?.followUp || "Não informado"
+        },
+        
+        // Mantemos os campos antigos para compatibilidade
         chiefComplaint: result.consultation?.chiefComplaint || "Não informado",
         anamnesis: result.consultation?.anamnesis || "Não informado",
         diagnosis: result.consultation?.diagnosis || "Não informado",
@@ -236,6 +272,7 @@ export async function generateMedicalNotes(transcription: string): Promise<{
         professionalSignature: result.legalInfo?.professionalSignature || "Documento pendente de assinatura digital",
         consultationProtocol: result.legalInfo?.consultationProtocol || `PROT-${Date.now()}`,
         observations: result.legalInfo?.observations || "",
+        emotionalObservations: result.legalInfo?.emotionalObservations || "",
         informedConsent: result.legalInfo?.informedConsent || "Consentimento informado obtido verbalmente"
       }
     };
