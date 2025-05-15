@@ -80,8 +80,12 @@ export async function transcribeAudio(buffer: Buffer): Promise<{ text: string, d
     };
     
     // Correção para evitar o erro de index signature
-    if (fileExtension && Object.prototype.hasOwnProperty.call(mimeTypeMap, fileExtension)) {
-      mimetype = mimeTypeMap[fileExtension];
+    if (fileExtension) {
+      // Usa uma abordagem segura para acessar o valor
+      const mimeValue = Object.entries(mimeTypeMap).find(([key]) => key === fileExtension)?.[1];
+      if (mimeValue) {
+        mimetype = mimeValue;
+      }
     }
     
     console.log(`Usando MIME type ${mimetype} para transcrição`);

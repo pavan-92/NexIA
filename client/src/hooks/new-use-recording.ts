@@ -47,6 +47,7 @@ export function useRecording(): RecordingHookResult {
   const audioChunksRef = useRef<Blob[]>([]);
   const timerIntervalRef = useRef<number | null>(null);
   const websocketRef = useRef<WebSocket | null>(null);
+  const audioSegmentsRef = useRef<AudioSegment[]>([]);
   
   // Refs para acumular áudio e enviar periodicamente
   const audioBufferRef = useRef<Blob[]>([]);
@@ -189,6 +190,11 @@ export function useRecording(): RecordingHookResult {
       }
     };
   }, [setupWebSocketConnection]);
+
+  // Sincroniza o audioSegmentsRef com o estado audioSegments
+  useEffect(() => {
+    audioSegmentsRef.current = audioSegments;
+  }, [audioSegments]);
 
   const startRecording = async (): Promise<void> => {
     try {
@@ -453,7 +459,11 @@ export function useRecording(): RecordingHookResult {
         };
         
         console.log(`Novo segmento criado: ID ${newSegment.id}, duração ${segmentDuration}s, tamanho ${audioBlob.size} bytes`);
-        setAudioSegments(prevSegments => [...prevSegments, newSegment]);
+        
+        // Atualiza os segmentos de áudio e garante que esteja disponível imediatamente
+        const updatedSegments = [...audioSegments, newSegment];
+        audioSegmentsRef.current = updatedSegments; 
+        setAudioSegments(updatedSegments);
         
         toast({
           title: "Gravação finalizada",
