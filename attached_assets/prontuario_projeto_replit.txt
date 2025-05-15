@@ -1,0 +1,96 @@
+
+Prontuário para Organização do Projeto (Replit)
+
+Olá! Antes de eu baixar este projeto e rodá-lo localmente, preciso que ele esteja organizado com base nos pontos abaixo. Por favor, execute essas ações:
+
+1. Verificação e Ajuste do Banco de Dados
+- Confirme se o projeto está utilizando MySQL como banco de dados.
+- Caso não esteja, substitua a tecnologia atual por MySQL.
+- Configure a conexão no arquivo .env ou no local apropriado.
+
+2. Organização do Backend
+- Mova todos os arquivos do backend para uma pasta chamada backend/.
+- Adote a estrutura padrão com as seguintes subpastas:
+  backend/
+  ├── controllers/
+  ├── routes/
+  ├── models/
+  ├── config/
+  ├── .env
+  ├── .env-example
+  ├── package.json (ou requirements.txt)
+- Crie um arquivo .env com as variáveis de ambiente reais.
+- Crie também um .env-example com os nomes das variáveis e valores fictícios para referência.
+- Crie um README.md dentro da pasta backend/ com os seguintes tópicos:
+  1. Como instalar dependências
+  2. Como configurar o .env
+  3. Como rodar localmente
+  4. Como fazer o deploy
+
+Modelo .env-example (backend):
+DB_HOST=localhost
+DB_PORT=3306
+DB_USER=root
+DB_PASSWORD=senha
+DB_NAME=nome_do_banco
+JWT_SECRET=sua_chave_secreta
+PORT=3000
+
+Modelo README.md (backend):
+# Backend
+
+## Instalação
+npm install
+
+## Configuração do ambiente
+Copie o arquivo `.env-example` para `.env` e ajuste as variáveis.
+
+## Rodar localmente
+npm run dev
+
+## Deploy
+Utilize PM2, Docker ou o serviço da sua escolha. Certifique-se de configurar as variáveis de ambiente no ambiente de produção.
+
+3. Organização do Frontend
+- Mova os arquivos do frontend para uma pasta chamada frontend/.
+- Adote a estrutura padrão:
+  frontend/
+  ├── public/
+  ├── src/
+  │   ├── components/
+  │   ├── pages/
+  │   ├── assets/
+  ├── .env
+  ├── .env-example
+  ├── package.json
+- Crie um .env com as variáveis reais utilizadas.
+- Crie um .env-example correspondente para facilitar futuras instalações.
+- Crie um README.md dentro da pasta frontend/ com os tópicos:
+  1. Como instalar dependências
+  2. Como configurar o .env
+  3. Como rodar localmente
+  4. Como fazer o deploy
+
+Modelo .env-example (frontend):
+VITE_API_URL=http://localhost:3000/api
+VITE_API_KEY=sua_chave_api
+
+Modelo README.md (frontend):
+# Frontend
+
+## Instalação
+npm install
+
+## Configuração do ambiente
+Copie o arquivo `.env-example` para `.env` e ajuste as variáveis.
+
+## Rodar localmente
+npm run dev
+
+## Deploy
+Use serviços como Vercel ou Netlify, ou rode `npm run build` para gerar arquivos estáticos.
+
+4. Separação Clara
+- Certifique-se de que o frontend e o backend estejam totalmente separados, com .env próprios, sem dependência mútua de arquivos internos.
+
+Assim que tudo estiver organizado dessa forma, me avise para que eu possa baixar o projeto e rodá-lo corretamente em ambiente local. Obrigado!

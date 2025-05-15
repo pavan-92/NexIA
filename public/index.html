@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>NexIA - Sistema de Prontuários Médicos</title>
+  <meta name="description" content="NexIA - A solução inteligente para médicos gerarem prontuários médicos através de transcrição automática de voz, usando IA avançada.">
+  <style>
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      margin: 0;
+      padding: 0;
+      background-color: #f8f9fa;
+      color: #333;
+      line-height: 1.6;
+    }
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 20px;
+    }
+    header {
+      background: linear-gradient(135deg, #4a86e8 0%, #3a76d8 100%);
+      color: white;
+      padding: 40px 0;
+      text-align: center;
+    }
+    .header-content {
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 0 20px;
+    }
+    h1 {
+      font-size: 2.5rem;
+      margin-bottom: 16px;
+    }
+    .tagline {
+      font-size: 1.2rem;
+      margin-bottom: 24px;
+      font-weight: 300;
+    }
+    .card {
+      background-color: white;
+      border-radius: 8px;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+      padding: 24px;
+      margin-bottom: 24px;
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+    .card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
+    }
+    .card h2 {
+      color: #4a86e8;
+      margin-top: 0;
+      font-size: 1.5rem;
+    }
+    .card p {
+      margin-bottom: 20px;
+    }
+    .btn {
+      display: inline-block;
+      background-color: #4a86e8;
+      color: white;
+      text-decoration: none;
+      padding: 10px 20px;
+      border-radius: 4px;
+      font-weight: 500;
+      transition: background-color 0.3s ease;
+    }
+    .btn:hover {
+      background-color: #3a76d8;
+    }
+    .btn-outline {
+      background-color: transparent;
+      border: 1px solid #4a86e8;
+      color: #4a86e8;
+    }
+    .btn-outline:hover {
+      background-color: #f1f8ff;
+    }
+    .features {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+      gap: 24px;
+      margin: 40px 0;
+    }
+    .api-section {
+      background-color: #f1f8ff;
+      padding: 40px 0;
+      margin: 40px 0;
+    }
+    .demo-section {
+      margin: 40px 0;
+    }
+    footer {
+      background-color: #333;
+      color: white;
+      padding: 40px 0;
+      text-align: center;
+      margin-top: 40px;
+    }
+    .footer-content {
+      max-width: 800px;
+      margin: 0 auto;
+    }
+    .api-status {
+      display: inline-block;
+      padding: 6px 12px;
+      border-radius: 16px;
+      font-size: 0.9em;
+      margin-left: 10px;
+    }
+    .api-status.up {
+      background-color: #e6f4ea;
+      color: #137333;
+    }
+    .api-status.down {
+      background-color: #fce8e6;
+      color: #c5221f;
+    }
+    @media (max-width: 768px) {
+      h1 {
+        font-size: 2rem;
+      }
+      .features {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="header-content">
+      <h1>NexIA</h1>
+      <p class="tagline">Médico no comando do cuidado, IA no controle da burocracia</p>
+      <p>A NexIA transforma sua fala em prontuários completos sem digitação, eliminando a burocracia e devolvendo seu tempo para o que realmente importa: o paciente.</p>
+    </div>
+  </header>
+
+  <div class="container">
+    <div class="api-section">
+      <h2>API Status <span class="api-status up">Online</span></h2>
+      <p>O backend da NexIA está rodando na porta 5000 e está pronto para ser testado.</p>
+      <a href="/api/health" class="btn btn-outline">Verificar Status da API</a>
+    </div>
+
+    <div class="demo-section">
+      <h2>Demonstração das Funcionalidades</h2>
+      <p>Explore as principais funcionalidades da NexIA nestes ambientes de teste:</p>
+      
+      <div class="features">
+        <div class="card">
+          <h2>Geração de Prontuário</h2>
+          <p>Teste a geração de prontuários médicos no formato SOAP com códigos CID-10 a partir de uma transcrição.</p>
+          <a href="/teste-prontuario.html" class="btn">Testar Geração de Prontuário</a>
+        </div>
+        
+        <div class="card">
+          <h2>Transcrição de Áudio</h2>
+          <p>Teste a funcionalidade de gravar áudio e transcrevê-lo automaticamente usando IA avançada.</p>
+          <a href="/teste-transcricao.html" class="btn">Testar Transcrição de Áudio</a>
+        </div>
+      </div>
+    </div>
+    
+    <div class="api-section">
+      <h2>Sobre o Projeto NexIA</h2>
+      <p>NexIA é uma plataforma inovadora que utiliza inteligência artificial para auxiliar médicos na documentação clínica. O sistema transcreve consultas médicas e gera prontuários completos no formato SOAP com códigos CID-10, seguindo as melhores práticas médicas.</p>
+      
+      <p>Este é um ambiente de desenvolvimento para testes. Algumas funcionalidades estão simuladas para fins de demonstração.</p>
+    </div>
+  </div>
+
+  <footer>
+    <div class="footer-content">
+      <p>© 2025 NexIA. Todos os direitos reservados.</p>
+      <p>Este é um ambiente de demonstração para fins de teste.</p>
+    </div>
+  </footer>
+
+  <script>
+    // Verificar o status da API e atualizar a interface
+    fetch('/api/health')
+      .then(response => {
+        if (response.ok) {
+          return response.json();
+        }
+        throw new Error('API indisponível');
+      })
+      .then(data => {
+        console.log('API Status:', data);
+      })
+      .catch(error => {
+        console.error('Erro ao verificar status da API:', error);
+        const apiStatus = document.querySelector('.api-status');
+        if (apiStatus) {
+          apiStatus.className = 'api-status down';
+          apiStatus.textContent = 'Offline';
+        }
+      });
+  </script>
+</body>
+</html>

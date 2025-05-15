@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 80">
+  <defs>
+    <linearGradient id="logoGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#0AB3B8" />
+      <stop offset="100%" stop-color="#FF6B6B" />
+    </linearGradient>
+  </defs>
+  <circle cx="40" cy="40" r="35" fill="#0AB3B8" />
+  <g fill="white" transform="translate(18, 20)">
+    <path d="M22,0C9.85,0,0,9.85,0,22s9.85,22,22,22s22-9.85,22-22S34.15,0,22,0z M22,4c9.93,0,18,8.07,18,18s-8.07,18-18,18 S4,31.93,4,22S12.07,4,22,4z M15,10v4c0,1.65-1.35,3-3,3H9v2h3c1.65,0,3,1.35,3,3v4h-3c-3.31,0-6-2.69-6-6v-4 c0-3.31,2.69-6,6-6H15z M29,10c3.31,0,6,2.69,6,6v4c0,3.31-2.69,6-6,6h-3v-4c0-1.65,1.35-3,3-3h3v-2h-3c-1.65,0-3-1.35-3-3v-4H29z M15,19v6h12v-6H15z"/>
+  </g>
+  <text x="85" y="50" font-family="Arial, sans-serif" font-weight="bold" font-size="40" fill="#0AB3B8">Prontu</text>
+  <text x="230" y="50" font-family="Arial, sans-serif" font-weight="bold" font-size="40" fill="#FF6B6B">.live</text>
+</svg>

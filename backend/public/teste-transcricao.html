@@ -1,0 +1,514 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>NexIA - Teste de Transcrição</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      margin: 0;
+      padding: 20px;
+      background-color: #f8f9fa;
+      color: #333;
+    }
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      background-color: white;
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    }
+    h1 {
+      color: #4a86e8;
+      margin-bottom: 20px;
+    }
+    .card {
+      background-color: white;
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      padding: 20px;
+      margin-bottom: 20px;
+    }
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+    }
+    .status {
+      padding: 8px 12px;
+      border-radius: 16px;
+      font-size: 0.9em;
+      font-weight: 500;
+    }
+    .status-inactive {
+      background-color: #f1f3f4;
+      color: #5f6368;
+    }
+    .status-ready {
+      background-color: #e6f4ea;
+      color: #137333;
+    }
+    .status-recording {
+      background-color: #fce8e6;
+      color: #c5221f;
+      animation: pulse 1.5s infinite;
+    }
+    @keyframes pulse {
+      0% { opacity: 1; }
+      50% { opacity: 0.7; }
+      100% { opacity: 1; }
+    }
+    .controls {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 16px;
+    }
+    button {
+      background-color: #4a86e8;
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 4px;
+      cursor: pointer;
+      font-weight: 500;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    button:hover {
+      background-color: #3a76d8;
+    }
+    button:disabled {
+      background-color: #c1d1f0;
+      cursor: not-allowed;
+    }
+    button.secondary {
+      background-color: white;
+      color: #4a86e8;
+      border: 1px solid #4a86e8;
+    }
+    button.secondary:hover {
+      background-color: #f1f8ff;
+    }
+    button.danger {
+      background-color: #d93025;
+    }
+    button.danger:hover {
+      background-color: #c5221f;
+    }
+    .result-box {
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      padding: 16px;
+      min-height: 120px;
+      margin-bottom: 16px;
+      background-color: #f8f9fa;
+      white-space: pre-wrap;
+    }
+    .visualization {
+      width: 100%;
+      height: 60px;
+      background-color: #f1f3f4;
+      margin-bottom: 16px;
+      border-radius: 4px;
+      overflow: hidden;
+      position: relative;
+    }
+    .visualization canvas {
+      width: 100%;
+      height: 100%;
+    }
+    .segments {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      margin-top: 20px;
+    }
+    .segment {
+      background-color: #f8f9fa;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      padding: 12px;
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+    }
+    .segment-text {
+      flex: 1;
+    }
+    .segment-actions {
+      display: flex;
+      gap: 8px;
+    }
+    .error {
+      color: #d93025;
+      padding: 8px;
+      margin-bottom: 16px;
+      border-radius: 4px;
+      background-color: #ffebee;
+    }
+    .info-message {
+      color: #1a73e8;
+      padding: 8px;
+      margin-bottom: 16px;
+      border-radius: 4px;
+      background-color: #e8f0fe;
+    }
+    .timer {
+      font-size: 1.2em;
+      margin-left: 10px;
+      font-weight: 500;
+      color: #4a86e8;
+    }
+    #recording-indicator {
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      background-color: #d93025;
+      display: inline-block;
+      margin-right: 8px;
+    }
+    .action-buttons {
+      display: flex;
+      gap: 10px;
+    }
+    @media (max-width: 768px) {
+      .header {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+      .controls {
+        flex-direction: column;
+      }
+      .action-buttons {
+        margin-top: 10px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>NexIA - Teste de Transcrição</h1>
+      <div class="action-buttons">
+        <button id="back-button" onclick="window.location.href='/'">Voltar para o Início</button>
+        <button id="prontuario-button" onclick="window.location.href='/teste-prontuario.html'">Teste de Prontuário</button>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>Gravação de Áudio</h2>
+      <p>Grave um áudio para testar a transcrição automática com IA:</p>
+      
+      <div class="controls">
+        <div>
+          <span id="mic-status" class="status status-inactive">Microfone Inativo</span>
+          <span id="timer" class="timer">00:00</span>
+        </div>
+        <button id="start-button"><span id="recording-indicator" style="display: none;"></span> Iniciar Gravação</button>
+        <button id="stop-button" disabled>Parar Gravação</button>
+        <button id="clear-button" class="secondary">Limpar Tudo</button>
+      </div>
+      
+      <div class="visualization">
+        <canvas id="visualizer"></canvas>
+      </div>
+      
+      <div id="error-message" class="error" style="display: none;"></div>
+      <div id="info-message" class="info-message" style="display: none;">Na aplicação real, a transcrição aconteceria automaticamente. Para este teste, estamos utilizando a simulação com a API do OpenAI.</div>
+    </div>
+
+    <div class="card">
+      <h2>Resultado da Transcrição</h2>
+      <div id="transcription-result" class="result-box">A transcrição aparecerá aqui após a gravação...</div>
+      
+      <div id="transcriptions-container" class="segments"></div>
+    </div>
+  </div>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      // Elementos DOM
+      const startButton = document.getElementById('start-button');
+      const stopButton = document.getElementById('stop-button');
+      const clearButton = document.getElementById('clear-button');
+      const micStatus = document.getElementById('mic-status');
+      const recordingIndicator = document.getElementById('recording-indicator');
+      const timer = document.getElementById('timer');
+      const errorMessage = document.getElementById('error-message');
+      const infoMessage = document.getElementById('info-message');
+      const transcriptionResult = document.getElementById('transcription-result');
+      const transcriptionsContainer = document.getElementById('transcriptions-container');
+      const visualizer = document.getElementById('visualizer');
+      
+      // Variáveis para gravação de áudio
+      let mediaRecorder;
+      let audioChunks = [];
+      let isRecording = false;
+      let startTime;
+      let timerInterval;
+      let recordingNumber = 1;
+      let audioContext;
+      let analyser;
+      let visualizerContext = visualizer.getContext('2d');
+      let visualizerRunning = false;
+      
+      // Verificar se o navegador suporta a API de gravação
+      if (!navigator.mediaDevices || !window.MediaRecorder) {
+        errorMessage.textContent = 'Seu navegador não suporta gravação de áudio. Por favor, use um navegador mais recente.';
+        errorMessage.style.display = 'block';
+        startButton.disabled = true;
+        infoMessage.style.display = 'none';
+        return;
+      }
+      
+      // Ajustar as dimensões do canvas do visualizador
+      function setupVisualizer() {
+        visualizer.width = visualizer.offsetWidth;
+        visualizer.height = visualizer.offsetHeight;
+      }
+      
+      // Desenhar o visualizador de áudio
+      function drawVisualizer() {
+        if (!visualizerRunning) return;
+        
+        requestAnimationFrame(drawVisualizer);
+        
+        const bufferLength = analyser.frequencyBinCount;
+        const dataArray = new Uint8Array(bufferLength);
+        analyser.getByteTimeDomainData(dataArray);
+        
+        visualizerContext.fillStyle = '#f1f3f4';
+        visualizerContext.fillRect(0, 0, visualizer.width, visualizer.height);
+        
+        visualizerContext.lineWidth = 2;
+        visualizerContext.strokeStyle = '#4a86e8';
+        visualizerContext.beginPath();
+        
+        const sliceWidth = visualizer.width / bufferLength;
+        let x = 0;
+        
+        for (let i = 0; i < bufferLength; i++) {
+          const v = dataArray[i] / 128.0;
+          const y = v * visualizer.height / 2;
+          
+          if (i === 0) {
+            visualizerContext.moveTo(x, y);
+          } else {
+            visualizerContext.lineTo(x, y);
+          }
+          
+          x += sliceWidth;
+        }
+        
+        visualizerContext.lineTo(visualizer.width, visualizer.height / 2);
+        visualizerContext.stroke();
+      }
+      
+      // Função para formatar o tempo
+      function formatTime(ms) {
+        const seconds = Math.floor(ms / 1000);
+        const minutes = Math.floor(seconds / 60);
+        const remainingSeconds = seconds % 60;
+        return `${minutes.toString().padStart(2, '0')}:${remainingSeconds.toString().padStart(2, '0')}`;
+      }
+      
+      // Iniciar o timer
+      function startTimer() {
+        startTime = Date.now();
+        timerInterval = setInterval(() => {
+          const elapsedTime = Date.now() - startTime;
+          timer.textContent = formatTime(elapsedTime);
+        }, 1000);
+      }
+      
+      // Parar o timer
+      function stopTimer() {
+        clearInterval(timerInterval);
+      }
+      
+      // Iniciar a gravação
+      async function startRecording() {
+        try {
+          const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+          
+          // Configurar o visualizador de áudio
+          audioContext = new (window.AudioContext || window.webkitAudioContext)();
+          analyser = audioContext.createAnalyser();
+          const source = audioContext.createMediaStreamSource(stream);
+          source.connect(analyser);
+          analyser.fftSize = 2048;
+          
+          // Iniciar o visualizador
+          setupVisualizer();
+          visualizerRunning = true;
+          drawVisualizer();
+          
+          mediaRecorder = new MediaRecorder(stream);
+          
+          mediaRecorder.ondataavailable = (event) => {
+            if (event.data.size > 0) {
+              audioChunks.push(event.data);
+            }
+          };
+          
+          mediaRecorder.onstop = () => {
+            // Parar o visualizador
+            visualizerRunning = false;
+            
+            // Tratar o áudio gravado
+            handleRecordedAudio();
+            
+            // Parar todas as tracks de áudio
+            stream.getTracks().forEach(track => track.stop());
+          };
+          
+          // Iniciar a gravação
+          audioChunks = [];
+          mediaRecorder.start();
+          isRecording = true;
+          
+          // Atualizar a interface
+          micStatus.className = 'status status-recording';
+          micStatus.textContent = 'Gravando...';
+          startButton.disabled = true;
+          stopButton.disabled = false;
+          recordingIndicator.style.display = 'inline-block';
+          errorMessage.style.display = 'none';
+          infoMessage.style.display = 'block';
+          
+          // Iniciar o timer
+          startTimer();
+          
+        } catch (error) {
+          console.error('Erro ao iniciar gravação:', error);
+          errorMessage.textContent = `Não foi possível acessar o microfone: ${error.message}`;
+          errorMessage.style.display = 'block';
+        }
+      }
+      
+      // Parar a gravação
+      function stopRecording() {
+        if (mediaRecorder && isRecording) {
+          mediaRecorder.stop();
+          isRecording = false;
+          
+          // Atualizar a interface
+          micStatus.className = 'status status-ready';
+          micStatus.textContent = 'Gravação Concluída';
+          startButton.disabled = false;
+          stopButton.disabled = true;
+          recordingIndicator.style.display = 'none';
+          
+          // Parar o timer
+          stopTimer();
+        }
+      }
+      
+      // Processar o áudio gravado
+      function handleRecordedAudio() {
+        const audioBlob = new Blob(audioChunks, { type: 'audio/mp3' });
+        
+        // Criar um elemento de áudio para reprodução
+        const audioUrl = URL.createObjectURL(audioBlob);
+        
+        // Criar um FormData para enviar o arquivo
+        const formData = new FormData();
+        formData.append('audio', audioBlob, 'recording.mp3');
+        
+        // Simular uma transcrição para este teste
+        // Na aplicação real, enviaríamos para a API
+        simulateTranscription(audioBlob);
+      }
+      
+      // Simular a transcrição (já que não temos um token para autenticação)
+      function simulateTranscription(audioBlob) {
+        transcriptionResult.textContent = 'Processando transcrição...';
+        
+        // Criar uma lista de possíveis transcrições para simulação
+        const possibleTranscriptions = [
+          "Paciente relata dor de cabeça intensa há três dias, localizada principalmente na região frontal.",
+          "O paciente apresentou febre de 38,5°C desde ontem à noite, acompanhada de dor de garganta e congestão nasal.",
+          "Paciente menciona dificuldade para dormir nas últimas semanas, acordando várias vezes durante a noite.",
+          "Exame físico demonstra pressão arterial de 140/90 mmHg, frequência cardíaca de 88 bpm e ausculta pulmonar normal.",
+          "Paciente do sexo feminino, 35 anos, comparece à consulta relatando forte dor abdominal há 2 dias."
+        ];
+        
+        // Selecionar uma transcrição aleatória
+        const randomIndex = Math.floor(Math.random() * possibleTranscriptions.length);
+        const simulatedTranscription = possibleTranscriptions[randomIndex];
+        
+        // Simular um tempo de processamento
+        setTimeout(() => {
+          // Atualizar o resultado da transcrição
+          transcriptionResult.textContent = simulatedTranscription;
+          
+          // Adicionar a transcrição à lista de segmentos
+          addTranscriptionSegment(simulatedTranscription);
+        }, 2000);
+      }
+      
+      // Adicionar um segmento de transcrição à lista
+      function addTranscriptionSegment(text) {
+        const segment = document.createElement('div');
+        segment.className = 'segment';
+        segment.innerHTML = `
+          <div class="segment-text">
+            <strong>Gravação ${recordingNumber}:</strong>
+            <p>${text}</p>
+          </div>
+          <div class="segment-actions">
+            <button class="secondary">Editar</button>
+            <button class="danger">Excluir</button>
+          </div>
+        `;
+        
+        // Incrementar o contador de gravações
+        recordingNumber++;
+        
+        // Adicionar o segmento ao container
+        transcriptionsContainer.appendChild(segment);
+        
+        // Configurar o botão de editar
+        const editButton = segment.querySelector('.secondary');
+        editButton.addEventListener('click', () => {
+          const newText = prompt('Editar transcrição:', text);
+          if (newText && newText.trim() !== '') {
+            segment.querySelector('p').textContent = newText;
+          }
+        });
+        
+        // Configurar o botão de excluir
+        const deleteButton = segment.querySelector('.danger');
+        deleteButton.addEventListener('click', () => {
+          if (confirm('Tem certeza que deseja excluir esta transcrição?')) {
+            segment.remove();
+          }
+        });
+      }
+      
+      // Limpar todas as transcrições
+      function clearAll() {
+        if (confirm('Tem certeza que deseja limpar todas as transcrições?')) {
+          transcriptionResult.textContent = 'A transcrição aparecerá aqui após a gravação...';
+          transcriptionsContainer.innerHTML = '';
+          recordingNumber = 1;
+          audioChunks = [];
+        }
+      }
+      
+      // Configurar os eventos dos botões
+      startButton.addEventListener('click', startRecording);
+      stopButton.addEventListener('click', stopRecording);
+      clearButton.addEventListener('click', clearAll);
+      
+      // Inicializar a interface
+      setupVisualizer();
+      infoMessage.style.display = 'block';
+    });
+  </script>
+</body>
+</html>

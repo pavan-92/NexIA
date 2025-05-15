@@ -1,0 +1,55 @@
+# Dependências
+node_modules/
+.pnp
+.pnp.js
+
+# Arquivos de build
+/dist
+/build
+/frontend/dist
+/backend/dist
+
+# Variáveis de ambiente e segredos
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+/backend/.env
+/frontend/.env
+*.env
+
+# Arquivos de log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+logs
+*.log
+
+# Diretório de uploads temporários
+uploads/
+tmp/
+
+# Arquivos gerados pelo sistema operacional
+.DS_Store
+Thumbs.db
+
+# Arquivos específicos do Replit
+.replit
+replit.nix
+.cache/
+.config/
+.local/
+.upm/
+.breakpoints
+
+# Outros
+.idea/
+.vscode/
+coverage/
+*.pid
+*.seed
+*.pid.lock
+.vercel
+.next
+.output

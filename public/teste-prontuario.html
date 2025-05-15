@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>NexIA - Teste de Prontuário</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      margin: 0;
+      padding: 20px;
+      background-color: #f8f9fa;
+      color: #333;
+    }
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      background-color: white;
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    }
+    h1 {
+      color: #4a86e8;
+      margin-bottom: 20px;
+    }
+    .card {
+      background-color: white;
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      padding: 20px;
+      margin-bottom: 20px;
+    }
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+    }
+    textarea {
+      width: 100%;
+      min-height: 150px;
+      padding: 12px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      font-family: inherit;
+      margin-bottom: 16px;
+      resize: vertical;
+    }
+    button {
+      background-color: #4a86e8;
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 4px;
+      cursor: pointer;
+      font-weight: 500;
+    }
+    button:hover {
+      background-color: #3a76d8;
+    }
+    .soap-section {
+      margin-bottom: 16px;
+    }
+    .soap-section h3 {
+      margin-bottom: 8px;
+      color: #4a86e8;
+    }
+    .soap-content {
+      background-color: #f8f9fa;
+      padding: 12px;
+      border-radius: 4px;
+      border-left: 4px solid #4a86e8;
+    }
+    .icd-codes {
+      margin-top: 20px;
+    }
+    .icd-code {
+      display: inline-block;
+      background-color: #e6f0ff;
+      padding: 6px 10px;
+      border-radius: 16px;
+      margin-right: 8px;
+      margin-bottom: 8px;
+      font-size: 0.9em;
+    }
+    .error {
+      color: #d93025;
+      padding: 8px;
+      margin-bottom: 16px;
+      border-radius: 4px;
+      background-color: #ffebee;
+    }
+    .loading {
+      display: inline-block;
+      width: 20px;
+      height: 20px;
+      border: 3px solid rgba(74, 134, 232, 0.3);
+      border-radius: 50%;
+      border-top-color: #4a86e8;
+      animation: spin 1s linear infinite;
+      margin-left: 10px;
+    }
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+    .action-buttons {
+      display: flex;
+      gap: 10px;
+    }
+    .result-container {
+      margin-top: 20px;
+    }
+    @media (max-width: 768px) {
+      .header {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+      .action-buttons {
+        margin-top: 10px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>NexIA - Teste de Prontuário</h1>
+      <div class="action-buttons">
+        <button id="back-button" onclick="window.location.href='/'">Voltar para o Início</button>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>Transcrição de Consulta</h2>
+      <p>Insira abaixo a transcrição da consulta médica para gerar o prontuário no formato SOAP com códigos CID-10:</p>
+      <textarea id="transcription-input" placeholder="Exemplo: Paciente do sexo feminino, 35 anos, comparece à consulta relatando forte dor de cabeça há 3 dias, com sensibilidade à luz e som..."></textarea>
+      <button id="generate-button">Gerar Prontuário</button>
+      <span id="loading-indicator" class="loading" style="display: none;"></span>
+      <div id="error-message" class="error" style="display: none;"></div>
+    </div>
+
+    <div id="result-container" class="result-container" style="display: none;">
+      <div class="card">
+        <h2>Prontuário Médico</h2>
+        
+        <div class="soap-section">
+          <h3>S - Subjetivo</h3>
+          <div id="subjective" class="soap-content"></div>
+        </div>
+        
+        <div class="soap-section">
+          <h3>O - Objetivo</h3>
+          <div id="objective" class="soap-content"></div>
+        </div>
+        
+        <div class="soap-section">
+          <h3>A - Avaliação</h3>
+          <div id="assessment" class="soap-content"></div>
+        </div>
+        
+        <div class="soap-section">
+          <h3>P - Plano</h3>
+          <div id="plan" class="soap-content"></div>
+        </div>
+        
+        <div class="icd-codes">
+          <h3>Códigos CID-10</h3>
+          <div id="icd-codes-container"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      const generateButton = document.getElementById('generate-button');
+      const transcriptionInput = document.getElementById('transcription-input');
+      const loadingIndicator = document.getElementById('loading-indicator');
+      const errorMessage = document.getElementById('error-message');
+      const resultContainer = document.getElementById('result-container');
+      
+      // Elementos do prontuário
+      const subjective = document.getElementById('subjective');
+      const objective = document.getElementById('objective');
+      const assessment = document.getElementById('assessment');
+      const plan = document.getElementById('plan');
+      const icdCodesContainer = document.getElementById('icd-codes-container');
+      
+      // Exemplo de transcrição para pré-preencher o campo
+      const exampleTranscription = `Paciente do sexo feminino, 35 anos, comparece à consulta relatando forte dor de cabeça há 3 dias, com sensibilidade à luz e som. Relata que a dor se concentra mais na região frontal e que é pulsátil. Nega febre. Tem histórico de enxaqueca na família. Durante o exame físico, a pressão arterial está normal (120/80 mmHg), temperatura 36.8°C. Sem sinais neurológicos focais. Pupilas isocóricas e fotorreagentes.`;
+      
+      transcriptionInput.value = exampleTranscription;
+      
+      generateButton.addEventListener('click', async function() {
+        const transcription = transcriptionInput.value.trim();
+        
+        if (!transcription) {
+          showError('Por favor, insira uma transcrição da consulta.');
+          return;
+        }
+        
+        try {
+          // Mostrar carregamento
+          loadingIndicator.style.display = 'inline-block';
+          generateButton.disabled = true;
+          errorMessage.style.display = 'none';
+          resultContainer.style.display = 'none';
+          
+          // Chamar a API para gerar o prontuário
+          const response = await fetch('/api/transcription/test/generate-notes', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ transcription })
+          });
+          
+          if (!response.ok) {
+            throw new Error(`Erro: ${response.status} - ${response.statusText}`);
+          }
+          
+          const data = await response.json();
+          
+          // Preencher os campos do prontuário
+          subjective.textContent = data.notes.subjective;
+          objective.textContent = data.notes.objective;
+          assessment.textContent = data.notes.assessment;
+          plan.textContent = data.notes.plan;
+          
+          // Preencher os códigos CID
+          icdCodesContainer.innerHTML = '';
+          data.notes.icdCodes.forEach(code => {
+            const codeElement = document.createElement('div');
+            codeElement.className = 'icd-code';
+            codeElement.textContent = `${code.code} - ${code.description}`;
+            icdCodesContainer.appendChild(codeElement);
+          });
+          
+          // Mostrar o resultado
+          resultContainer.style.display = 'block';
+          
+          // Rolar para o resultado
+          resultContainer.scrollIntoView({ behavior: 'smooth' });
+        } catch (error) {
+          showError(`Falha ao gerar o prontuário: ${error.message}`);
+        } finally {
+          // Esconder carregamento
+          loadingIndicator.style.display = 'none';
+          generateButton.disabled = false;
+        }
+      });
+      
+      function showError(message) {
+        errorMessage.textContent = message;
+        errorMessage.style.display = 'block';
+      }
+    });
+  </script>
+</body>
+</html>
