@@ -164,7 +164,7 @@ export async function generateMedicalNotes(transcription: string): Promise<{
           role: "system",
           content: `Você é um assistente médico especializado em criar prontuários médicos a partir de transcrições de consultas.
           
-Gere um prontuário médico bem estruturado seguindo o formato SOAP:
+Gere um prontuário médico bem estruturado seguindo o formato SOAP em formato JSON:
 - Subjetivo: sintomas relatados pelo paciente, queixas, histórico
 - Objetivo: achados do exame físico, sinais vitais, resultados de exames 
 - Avaliação: diagnósticos considerados (incluir códigos CID-10)
@@ -178,11 +178,24 @@ Organização:
 - Inclua apenas informações mencionadas na transcrição
 - Foque nos aspectos médicos relevantes
 - Omita informações redundantes ou conversas sociais
+
+Retorne sua resposta como um objeto JSON com a seguinte estrutura:
+{
+  "soap": {
+    "subjective": "Texto do subjetivo",
+    "objective": "Texto do objetivo",
+    "assessment": "Texto da avaliação",
+    "plan": "Texto do plano"
+  },
+  "cid10": [
+    {"code": "Código CID", "description": "Descrição do código"}
+  ]
+}
 `
         },
         {
           role: "user",
-          content: `Aqui está a transcrição da consulta médica. Crie um prontuário médico no formato SOAP com avaliação CID-10:\n\n${transcription}`
+          content: `Aqui está a transcrição da consulta médica. Crie um prontuário médico no formato SOAP com avaliação CID-10, formatado como JSON conforme instruções:\n\n${transcription}`
         }
       ],
       response_format: { type: "json_object" }
