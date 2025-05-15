@@ -528,15 +528,30 @@ export default function RecordingInterface({
               <div className="space-y-4">
                 <div className="flex flex-col items-center">
                   <div className="mb-2 relative">
-                    <div className={`bg-teal-500 text-white p-3 rounded-full ${microphoneVolume > 50 ? 'animate-pulse' : ''}`}>
-                      <Volume2 className="h-8 w-8" />
+                    <div className={`bg-teal-500 text-white p-3 rounded-full relative overflow-hidden ${microphoneVolume > 50 ? 'animate-pulse' : ''}`}>
+                      <Volume2 className="h-8 w-8 relative z-10" />
+                      {/* Ondas sonoras animadas */}
+                      <div className="absolute inset-0 flex justify-center items-center z-0">
+                        <div className={`h-12 w-12 rounded-full border-2 border-white border-opacity-20 absolute animate-ping ${microphoneVolume > 20 ? 'opacity-100' : 'opacity-0'}`} style={{animationDuration: '1.5s'}}></div>
+                        <div className={`h-16 w-16 rounded-full border-2 border-white border-opacity-20 absolute animate-ping ${microphoneVolume > 40 ? 'opacity-100' : 'opacity-0'}`} style={{animationDuration: '2s'}}></div>
+                        <div className={`h-20 w-20 rounded-full border-2 border-white border-opacity-20 absolute animate-ping ${microphoneVolume > 60 ? 'opacity-100' : 'opacity-0'}`} style={{animationDuration: '2.5s'}}></div>
+                      </div>
                     </div>
                     {/* Indicador visual de volume */}
-                    <div className="w-64 h-2 bg-gray-200 rounded-full mt-3">
+                    <div className="w-64 h-4 bg-gray-200 rounded-full mt-3 overflow-hidden">
                       <div 
-                        className="h-full bg-teal-500 rounded-full transition-all duration-100"
+                        className="h-full bg-teal-500 rounded-full transition-all duration-100 relative"
                         style={{width: `${microphoneVolume}%`}}
-                      ></div>
+                      >
+                        {/* Animação de pulso dentro da barra */}
+                        {microphoneVolume > 0 && (
+                          <div className="absolute inset-0 flex">
+                            <div className="animate-pulse w-1 h-full bg-white bg-opacity-30" style={{animationDuration: '0.8s'}} />
+                            <div className="animate-pulse w-1 h-full bg-white bg-opacity-30" style={{animationDuration: '1.2s', animationDelay: '0.2s'}} />
+                            <div className="animate-pulse w-1 h-full bg-white bg-opacity-30" style={{animationDuration: '0.9s', animationDelay: '0.4s'}} />
+                          </div>
+                        )}
+                      </div>
                     </div>
                   </div>
                   <p className="text-sm font-medium">
