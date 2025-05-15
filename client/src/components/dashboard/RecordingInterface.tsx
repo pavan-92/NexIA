@@ -748,15 +748,6 @@ export default function RecordingInterface({
             ) : (
               <>
                 <Button 
-                  onClick={handleTranscribe} 
-                  className="bg-blue-500 hover:bg-blue-600 text-white rounded-full py-6 px-8"
-                  size="lg"
-                  disabled={isRecording || audioSegments.length === 0}
-                >
-                  <Volume2 className="mr-2 h-5 w-5" />
-                  Transcrever Áudios
-                </Button>
-                <Button 
                   onClick={() => handleGenerateNotes()} 
                   className="bg-pink-500 hover:bg-pink-600 text-white rounded-full py-6 px-8"
                   size="lg"
