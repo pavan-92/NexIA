@@ -49,6 +49,8 @@ export default function RecordingInterface({
   
   const [audioUrl, setAudioUrl] = useState<string | null>(null);
   const [isTranscribing, setIsTranscribing] = useState(false);
+  const [isMicrophoneTesting, setIsMicrophoneTesting] = useState(false);
+  const [microphoneVolume, setMicrophoneVolume] = useState(0);
   const { user } = useAuthState(); // Obtém usuário autenticado
   const { toast } = useToast();
   const queryClient = useQueryClient();
@@ -89,6 +91,100 @@ export default function RecordingInterface({
     const mins = Math.floor(seconds / 60);
     const secs = Math.floor(seconds % 60);
     return `${mins}:${secs < 10 ? '0' : ''}${secs}`;
+  };
+  
+  // Função para testar o microfone sem iniciar a gravação completa
+  const testMicrophone = async () => {
+    try {
+      setIsMicrophoneTesting(true);
+      setMicrophoneVolume(0);
+      
+      // Solicita acesso ao microfone
+      const stream = await navigator.mediaDevices.getUserMedia({ 
+        audio: { 
+          echoCancellation: true,
+          noiseSuppression: true,
+          autoGainControl: true
+        } 
+      });
+      
+      // Cria um analisador de áudio para mostrar níveis de volume
+      const audioContext = new AudioContext();
+      const source = audioContext.createMediaStreamSource(stream);
+      const analyser = audioContext.createAnalyser();
+      analyser.fftSize = 256;
+      source.connect(analyser);
+      
+      const bufferLength = analyser.frequencyBinCount;
+      const dataArray = new Uint8Array(bufferLength);
+      
+      // Monitora e atualiza os níveis de volume
+      const updateVolume = () => {
+        if (!isMicrophoneTesting) return;
+        
+        analyser.getByteFrequencyData(dataArray);
+        // Calcula o volume médio
+        let sum = 0;
+        for (let i = 0; i < bufferLength; i++) {
+          sum += dataArray[i];
+        }
+        const averageVolume = sum / bufferLength;
+        // Normaliza para uma escala de 0-100
+        const normalizedVolume = Math.min(100, Math.max(0, averageVolume * 1.5));
+        setMicrophoneVolume(normalizedVolume);
+        
+        // Continua atualizando
+        requestAnimationFrame(updateVolume);
+      };
+      
+      updateVolume();
+      
+      // Mensagem de sucesso para o usuário
+      toast({
+        title: "Microfone conectado",
+        description: "Fale algo para testar o seu microfone",
+      });
+      
+      // Após 10 segundos, encerra automaticamente o teste
+      setTimeout(() => {
+        if (isMicrophoneTesting) {
+          stopMicrophoneTest();
+          toast({
+            title: "Teste concluído",
+            description: "O microfone está funcionando corretamente",
+          });
+        }
+      }, 10000);
+      
+      // Retorna função para limpar recursos
+      return () => {
+        stopMicrophoneTest();
+      };
+    } catch (err) {
+      setIsMicrophoneTesting(false);
+      console.error("Erro ao testar microfone:", err);
+      
+      let errorMessage = "Não foi possível acessar o microfone";
+      if (err instanceof Error) {
+        if (err.name === "NotAllowedError" || err.name === "PermissionDeniedError") {
+          errorMessage = "Permissão para usar o microfone foi negada. Verifique as configurações do navegador.";
+        } else if (err.name === "NotFoundError") {
+          errorMessage = "Nenhum microfone encontrado. Conecte um microfone e tente novamente.";
+        }
+      }
+      
+      toast({
+        variant: "destructive",
+        title: "Teste falhou",
+        description: errorMessage,
+      });
+    }
+  };
+  
+  // Desliga o teste de microfone
+  const stopMicrophoneTest = () => {
+    setIsMicrophoneTesting(false);
+    setMicrophoneVolume(0);
   };
   
   // Save audio to consultation
@@ -188,10 +284,32 @@ export default function RecordingInterface({
   return (
     <div className="recording-container">
       {error && (
-        <Alert variant="destructive">
+        <Alert variant="destructive" className="mb-4">
           <AlertCircle className="h-4 w-4" />
-          <AlertTitle>Erro</AlertTitle>
-          <AlertDescription>{error}</AlertDescription>
+          <AlertTitle>Problema com o Microfone</AlertTitle>
+          <AlertDescription className="flex flex-col gap-2">
+            <p>{error}</p>
+            <div className="text-sm mt-2 space-y-1">
+              <p className="font-medium">Como resolver:</p>
+              <ol className="list-decimal list-inside space-y-1 pl-1">
+                <li>Verifique se o microfone está conectado corretamente</li>
+                <li>Clique no ícone de cadeado ou microfone na barra de endereço do navegador</li>
+                <li>Escolha "Permitir" para o acesso ao microfone</li>
+                <li>Recarregue a página e tente novamente</li>
+              </ol>
+            </div>
+            {error.includes("microfone") && (
+              <Button 
+                variant="outline" 
+                size="sm" 
+                className="mt-2 w-full md:w-auto"
+                onClick={() => window.location.reload()}
+              >
+                <RefreshCw className="mr-2 h-4 w-4" />
+                Recarregar página
+              </Button>
+            )}
+          </AlertDescription>
         </Alert>
       )}
       
