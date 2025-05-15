@@ -1,12 +1,14 @@
 import React from 'react';
 import { Switch, Route, useLocation } from 'wouter';
 import Home from './pages/Home';
+import Test from './pages/Test';
 
 const App: React.FC = () => {
   return (
     <div className="app">
       <Switch>
         <Route path="/" component={Home} />
+        <Route path="/test" component={Test} />
         <Route path="/login" component={PlaceholderPage} />
         <Route path="/register" component={PlaceholderPage} />
         <Route path="/dashboard" component={PlaceholderPage} />

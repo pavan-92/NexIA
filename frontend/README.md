@@ -1,82 +1,98 @@
-# Frontend da NexIA
+# Frontend NexIA
 
-## Descrição
-Frontend da plataforma NexIA para automação de documentação médica através de inteligência artificial. Esta interface permite que médicos gravem consultas, visualizem transcrições e gerenciem prontuários médicos gerados por IA.
-
-## Tecnologias Utilizadas
-- React 18+
-- TypeScript
-- Vite
-- Tailwind CSS
-- Firebase Authentication
-- React Query
-
-## Instalação
-```bash
-npm install
-```
-
-## Configuração do ambiente
-Copie o arquivo `.env-example` para `.env` e ajuste as variáveis conforme necessário:
-
-```bash
-cp .env-example .env
-```
-
-Configure as variáveis de ambiente no arquivo `.env`:
-- `VITE_API_URL`: URL da API backend (ex: http://localhost:3000/api)
-- `VITE_FIREBASE_API_KEY`: Chave de API do Firebase
-- `VITE_FIREBASE_AUTH_DOMAIN`: Domínio de autenticação do Firebase
-- `VITE_FIREBASE_PROJECT_ID`: ID do projeto Firebase
-- `VITE_FIREBASE_STORAGE_BUCKET`: Bucket de armazenamento do Firebase
-- `VITE_FIREBASE_MESSAGING_SENDER_ID`: ID do remetente de mensagens do Firebase
-- `VITE_FIREBASE_APP_ID`: ID do aplicativo Firebase
-
-## Rodar localmente
-```bash
-npm run dev
-```
-
-O aplicativo será iniciado na porta 5173 por padrão e pode ser acessado em [http://localhost:5173](http://localhost:5173).
+Este diretório contém o código do frontend para a aplicação NexIA, um sistema avançado de documentação médica baseado em IA.
 
 ## Estrutura do Projeto
-- `src/components`: Componentes reutilizáveis da UI
-- `src/pages`: Páginas da aplicação
-- `src/hooks`: Custom hooks
-- `src/context`: Providers de contexto (autenticação, etc.)
-- `src/lib`: Funções utilitárias e configurações
-- `src/assets`: Imagens, ícones e outros recursos estáticos
 
-## Funcionalidades Principais
-- Autenticação de usuários (médicos)
-- Cadastro e gestão de pacientes
-- Gravação de áudio de consultas
-- Transcrição automática de áudio
-- Geração de prontuários no formato SOAP com códigos CID-10
-- Visualização e gerenciamento de histórico de consultas
-
-## Build para Produção
-```bash
-npm run build
+```
+frontend/
+├── public/                # Arquivos estáticos
+│   ├── favicon.svg       # Ícone da aplicação
+│   └── logo.png          # Logo da NexIA
+├── src/                   # Código fonte
+│   ├── assets/           # Arquivos de mídia (imagens, etc.)
+│   ├── components/       # Componentes React reutilizáveis
+│   ├── context/          # Contextos React
+│   ├── hooks/            # Hooks personalizados
+│   ├── lib/              # Utilitários e configurações
+│   ├── pages/            # Páginas da aplicação
+│   ├── services/         # Serviços para integração com APIs
+│   ├── styles/           # Estilos globais
+│   ├── types/            # Definições de tipos TypeScript
+│   ├── utils/            # Funções utilitárias
+│   ├── App.tsx           # Componente principal da aplicação
+│   ├── index.css         # Estilos CSS globais (Tailwind)
+│   └── main.tsx          # Ponto de entrada da aplicação
+├── .env                   # Variáveis de ambiente (local)
+├── .env.example           # Exemplo de variáveis de ambiente
+├── index.html             # HTML base
+├── package.json           # Dependências e scripts
+├── postcss.config.js      # Configuração do PostCSS
+├── tailwind.config.js     # Configuração do Tailwind CSS
+├── tsconfig.json          # Configuração do TypeScript
+└── vite.config.ts         # Configuração do Vite
 ```
 
-Os arquivos serão gerados na pasta `dist`.
+## Tecnologias Utilizadas
 
-## Deploy
+- React 18
+- TypeScript
+- Tailwind CSS para estilização
+- Vite como bundler e servidor de desenvolvimento
+- Wouter para roteamento
+- React Query para gerenciamento de estado remoto
+- React Hook Form para formulários
 
-### Deploy com Vercel
-```bash
-npm install -g vercel
-vercel
-```
+## Instalação e Execução
 
-### Deploy com Netlify
-```bash
-npm install -g netlify-cli
-netlify deploy
-```
+Para executar o frontend NexIA:
 
-## Testes
-```bash
-npm run test
-```
+1. Instale as dependências:
+   ```bash
+   cd frontend
+   npm install
+   ```
+
+2. Execute o servidor de desenvolvimento:
+   ```bash
+   npm run dev
+   ```
+
+O aplicativo estará disponível em `http://localhost:5173`
+
+## Conexão com o Backend
+
+O frontend está configurado para se comunicar com o backend por meio de requisições à API. A comunicação é gerenciada através de:
+
+- Axios para requisições HTTP
+- React Query para gerenciamento de cache e estado das requisições
+
+## Convenções de Código
+
+- Componentes são nomeados em PascalCase
+- Hooks personalizados começam com `use`
+- Páginas são definidas dentro do diretório `pages`
+- Estilos são gerenciados principalmente via Tailwind CSS
+- Tipos são definidos em arquivos separados na pasta `types`
+
+## Navegação
+
+A aplicação usa o Wouter para roteamento, permitindo uma navegação eficiente entre páginas. As principais rotas incluem:
+
+- `/` - Página inicial
+- `/login` - Página de login
+- `/register` - Página de registro
+- `/dashboard` - Dashboard principal
+- `/patients` - Lista de pacientes
+- `/patients/:id` - Detalhes de um paciente específico
+- `/consultation/:patientId` - Nova consulta para um paciente
+
+## Desenvolvimento
+
+Para desenvolver novas funcionalidades:
+
+1. Crie novos componentes na pasta `components`
+2. Adicione novas páginas na pasta `pages`
+3. Defina tipos relacionados na pasta `types`
+4. Conecte-se a novos endpoints da API através de serviços em `services`
+5. Atualize o arquivo `App.tsx` para adicionar novas rotas
