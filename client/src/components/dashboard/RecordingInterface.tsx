@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { motion } from "framer-motion";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
@@ -85,6 +85,142 @@ export default function RecordingInterface({
       };
     }
   }, [audioBlob]);
+  
+  // Referência para armazenar recursos do teste de microfone
+  const micTestResources = useRef<{
+    stream?: MediaStream;
+    audioContext?: AudioContext;
+    cleanup?: () => void;
+  }>({});
+  
+  // Atualiza função de teste de microfone para armazenar referências
+  const handleTestMicrophone = async () => {
+    try {
+      setIsMicrophoneTesting(true);
+      setMicrophoneVolume(0);
+      
+      // Solicita acesso ao microfone
+      const stream = await navigator.mediaDevices.getUserMedia({ 
+        audio: { 
+          echoCancellation: true,
+          noiseSuppression: true,
+          autoGainControl: true
+        } 
+      });
+      
+      // Armazena stream para limpeza posterior
+      micTestResources.current.stream = stream;
+      
+      // Cria um analisador de áudio para mostrar níveis de volume
+      const audioContext = new AudioContext();
+      micTestResources.current.audioContext = audioContext;
+      
+      const source = audioContext.createMediaStreamSource(stream);
+      const analyser = audioContext.createAnalyser();
+      analyser.fftSize = 256;
+      source.connect(analyser);
+      
+      const bufferLength = analyser.frequencyBinCount;
+      const dataArray = new Uint8Array(bufferLength);
+      
+      // Monitora e atualiza os níveis de volume
+      let animationFrame: number;
+      
+      const updateVolume = () => {
+        if (!isMicrophoneTesting) return;
+        
+        analyser.getByteFrequencyData(dataArray);
+        // Calcula o volume médio
+        let sum = 0;
+        for (let i = 0; i < bufferLength; i++) {
+          sum += dataArray[i];
+        }
+        const averageVolume = sum / bufferLength;
+        // Normaliza para uma escala de 0-100
+        const normalizedVolume = Math.min(100, Math.max(0, averageVolume * 1.5));
+        setMicrophoneVolume(normalizedVolume);
+        
+        // Continua atualizando
+        animationFrame = requestAnimationFrame(updateVolume);
+      };
+      
+      // Inicia o monitoramento de volume
+      updateVolume();
+      
+      // Armazena função de limpeza
+      micTestResources.current.cleanup = () => {
+        if (animationFrame) {
+          cancelAnimationFrame(animationFrame);
+        }
+      };
+      
+      // Mensagem de sucesso para o usuário
+      toast({
+        title: "Microfone conectado",
+        description: "Fale algo para testar o seu microfone",
+      });
+      
+      // Após 10 segundos, encerra automaticamente o teste
+      setTimeout(() => {
+        if (isMicrophoneTesting) {
+          handleStopMicrophoneTest();
+          toast({
+            title: "Teste concluído",
+            description: "O microfone está funcionando corretamente",
+          });
+        }
+      }, 10000);
+    } catch (err) {
+      handleStopMicrophoneTest();
+      console.error("Erro ao testar microfone:", err);
+      
+      let errorMessage = "Não foi possível acessar o microfone";
+      if (err instanceof Error) {
+        if (err.name === "NotAllowedError" || err.name === "PermissionDeniedError") {
+          errorMessage = "Permissão para usar o microfone foi negada. Verifique as configurações do navegador.";
+        } else if (err.name === "NotFoundError") {
+          errorMessage = "Nenhum microfone encontrado. Conecte um microfone e tente novamente.";
+        }
+      }
+      
+      toast({
+        variant: "destructive",
+        title: "Teste falhou",
+        description: errorMessage,
+      });
+    }
+  };
+  
+  // Desliga o teste de microfone e limpa recursos
+  const handleStopMicrophoneTest = () => {
+    setIsMicrophoneTesting(false);
+    setMicrophoneVolume(0);
+    
+    // Limpa recursos
+    if (micTestResources.current.cleanup) {
+      micTestResources.current.cleanup();
+    }
+    
+    if (micTestResources.current.stream) {
+      micTestResources.current.stream.getTracks().forEach((track: MediaStreamTrack) => track.stop());
+    }
+    
+    if (micTestResources.current.audioContext) {
+      micTestResources.current.audioContext.close().catch((err: Error) => {
+        console.error('Erro ao fechar AudioContext:', err);
+      });
+    }
+    
+    // Reset das referências
+    micTestResources.current = {};
+  };
+  
+  // Limpa os recursos quando o componente é desmontado
+  useEffect(() => {
+    return () => {
+      handleStopMicrophoneTest();
+    };
+  }, []);
   
   // Format recording time
   const formatTime = (seconds: number) => {
@@ -386,16 +522,52 @@ export default function RecordingInterface({
             </div>
           )}
           
-          {/* Ícone de aviso sobre permissão de microfone */}
+          {/* Botão de teste de microfone */}
           <div className="text-center my-6">
-            <div className="flex justify-center mb-2">
-              <div className="bg-teal-500 text-white p-3 rounded-full">
-                <Volume2 className="h-8 w-8" />
+            {isMicrophoneTesting ? (
+              <div className="space-y-4">
+                <div className="flex flex-col items-center">
+                  <div className="mb-2 relative">
+                    <div className={`bg-teal-500 text-white p-3 rounded-full ${microphoneVolume > 50 ? 'animate-pulse' : ''}`}>
+                      <Volume2 className="h-8 w-8" />
+                    </div>
+                    {/* Indicador visual de volume */}
+                    <div className="w-64 h-2 bg-gray-200 rounded-full mt-3">
+                      <div 
+                        className="h-full bg-teal-500 rounded-full transition-all duration-100"
+                        style={{width: `${microphoneVolume}%`}}
+                      ></div>
+                    </div>
+                  </div>
+                  <p className="text-sm font-medium">
+                    {microphoneVolume < 10 ? 'Fale algo...' : 'Microfone funcionando!'}
+                  </p>
+                </div>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={handleStopMicrophoneTest}
+                >
+                  Finalizar teste
+                </Button>
               </div>
-            </div>
-            <p className="text-sm text-gray-500">
-              Não se esqueça de permitir o acesso ao microfone nas configurações
-            </p>
+            ) : (
+              <>
+                <div className="flex justify-center mb-2">
+                  <Button
+                    variant="outline"
+                    className="bg-white border border-teal-200 text-teal-700 hover:bg-teal-50 gap-2"
+                    onClick={handleTestMicrophone}
+                  >
+                    <Volume2 className="h-5 w-5" />
+                    Testar microfone
+                  </Button>
+                </div>
+                <p className="text-sm text-gray-500 mt-2">
+                  Verifique se o microfone está funcionando corretamente antes de iniciar a gravação
+                </p>
+              </>
+            )}
           </div>
           
           {/* Botões de ação */}
