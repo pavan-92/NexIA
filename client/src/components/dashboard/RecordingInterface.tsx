@@ -503,12 +503,69 @@ export default function RecordingInterface({
         description: "O prontuário foi gerado com sucesso no formato SOAP.",
       });
       
-      // Passa as notas completas para o callback
-      onTranscriptionComplete(JSON.stringify(notes));
+      // Passa as notas completas para o callback como objeto (sem stringify)
+      onTranscriptionComplete(liveTranscript);
       
-      // Save if we have a consultation ID
+      // Converte o formato SOAP para o formato esperado pelo ProntuarioView
+      const formattedNotes = {
+        patientInfo: {
+          fullName: "",
+          birthDate: "",
+          sex: "",
+          cpf: "",
+          motherName: "",
+          address: ""
+        },
+        healthcareInfo: {
+          cnes: "",
+          professionalName: "",
+          professionalCNS: "",
+          professionalCBO: ""
+        },
+        consultation: {
+          dateTime: new Date().toLocaleString('pt-BR'),
+          consultationType: "Consulta médica",
+          
+          // Formato SOAP
+          subjective: notes.soap.subjective || "",
+          objective: notes.soap.objective || "",
+          assessment: notes.soap.assessment || "",
+          plan: {
+            procedures: "",
+            medications: "",
+            referrals: "",
+            conduct: notes.soap.plan || "",
+            followUp: ""
+          },
+          
+          // Campos anteriores para compatibilidade
+          chiefComplaint: notes.soap.subjective || "",
+          anamnesis: "",
+          diagnosis: notes.soap.assessment || "",
+          procedures: "",
+          medications: "",
+          referrals: "",
+          conduct: notes.soap.plan || "",
+          clinicalEvolution: "",
+          physicalExam: notes.soap.objective || ""
+        },
+        legalInfo: {
+          professionalSignature: "",
+          consultationProtocol: `PROT-${Date.now()}`,
+          observations: "",
+          emotionalObservations: "",
+          informedConsent: ""
+        },
+        // Incluir os códigos CID-10
+        cid10: notes.cid10 || []
+      };
+      
+      // Atualiza o estado global com os dados formatados para o prontuário
       if (consultationId && !isNew) {
-        saveAudio(liveTranscript, notes);
+        saveAudio(liveTranscript, formattedNotes);
+      } else {
+        // Se for nova consulta, atualiza o estado local
+        setGeneratedNotes(formattedNotes);
       }
     } catch (err) {
       console.error("Error generating notes:", err);
