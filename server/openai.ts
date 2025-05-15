@@ -50,23 +50,73 @@ export async function transcribeAudio(buffer: Buffer): Promise<{ text: string, d
     // Transcrição com Deepgram
     console.log('Iniciando transcrição com Deepgram...');
     
-    // Set transcription options
+    // Set transcription options with improved parameters
     const transcriptionOptions = {
-      punctuate: true,
-      language: "pt-BR",
-      model: "general",
-      smart_format: true,
-      diarize: true,
+      punctuate: true,        // Adiciona pontuação
+      language: "pt-BR",      // Português do Brasil
+      model: "nova-2",        // Modelo mais recente e preciso
+      smart_format: true,     // Formata números, datas, etc.
+      diarize: true,          // Identifica mudanças de falantes
+      utterances: true,       // Separa por frases
+      tier: 'enhanced',       // Melhor qualidade de transcrição
+      detect_language: true,  // Detecção automática de idioma como fallback
     };
 
     // Read file as buffer for Deepgram
     const audioData = fs.readFileSync(tempFilePath);
     
-    // Make request to Deepgram
-    const response = await deepgram.transcription.preRecorded(
-      { buffer: audioData, mimetype: 'audio/webm' },
-      transcriptionOptions
-    );
+    // Detectar o mimetype apropriado com base na extensão do arquivo
+    const fileExtension = path.extname(tempFilePath).toLowerCase();
+    let mimetype = 'audio/webm';
+    
+    // Mapeamento de extensões para MIME types
+    const mimeTypeMap = {
+      '.webm': 'audio/webm',
+      '.mp3': 'audio/mpeg',
+      '.mp4': 'audio/mp4',
+      '.wav': 'audio/wav',
+      '.ogg': 'audio/ogg',
+      '.flac': 'audio/flac'
+    };
+    
+    if (fileExtension && mimeTypeMap[fileExtension]) {
+      mimetype = mimeTypeMap[fileExtension];
+    }
+    
+    console.log(`Usando MIME type ${mimetype} para transcrição`);
+    
+    // Make request to Deepgram with multiple retries if needed
+    let response;
+    const maxRetries = 2;
+    let attempt = 0;
+    
+    while (attempt <= maxRetries) {
+      try {
+        console.log(`Tentativa de transcrição ${attempt + 1}/${maxRetries + 1}...`);
+        
+        response = await deepgram.transcription.preRecorded(
+          { buffer: audioData, mimetype },
+          transcriptionOptions
+        );
+        
+        // Se tivemos uma resposta válida, saímos do loop
+        if (response?.results?.channels?.[0]?.alternatives?.[0]?.transcript) {
+          console.log("Transcrição bem-sucedida!");
+          break;
+        } else {
+          console.warn("Resposta vazia da API de transcrição");
+          // Tentaremos novamente, a menos que estejamos na última tentativa
+        }
+      } catch (error) {
+        console.error(`Erro na tentativa ${attempt + 1}:`, error);
+        // Se for a última tentativa, relançamos o erro
+        if (attempt === maxRetries) {
+          throw error;
+        }
+      }
+      
+      attempt++;
+    }
     
     // Limpa o arquivo temporário
     try {
