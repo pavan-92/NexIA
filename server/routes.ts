@@ -262,17 +262,37 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ error: "No audio file provided" });
       }
       
-      // Log para depuração
-      console.log(`Recebido arquivo para transcrição: ${req.file.originalname || 'sem nome'}, tamanho: ${req.file.size} bytes`);
+      // Logs detalhados para depuração
+      console.log(`Recebido arquivo para transcrição:`);
+      console.log(`- Nome: ${req.file.originalname || 'sem nome'}`);
+      console.log(`- Tamanho: ${req.file.size} bytes`);
+      console.log(`- Tipo MIME: ${req.file.mimetype}`);
       
-      if (!req.file.buffer || req.file.buffer.length === 0) {
+      // Verificações de sanidade
+      if (!req.file.buffer) {
+        console.error("Buffer de áudio não encontrado na requisição");
+        return res.status(400).json({ error: "Audio file buffer is missing" });
+      }
+      
+      if (req.file.buffer.length === 0) {
+        console.error("Buffer de áudio está vazio (0 bytes)");
         return res.status(400).json({ error: "Audio file buffer is empty" });
       }
       
-      const result = await transcribeAudio(req.file.buffer);
+      if (req.file.size < 1000) {
+        console.warn(`Arquivo de áudio muito pequeno: ${req.file.size} bytes - pode não conter áudio válido`);
+      }
       
-      if (!result || !result.text) {
-        return res.status(500).json({ error: "Failed to generate transcription" });
+      console.log("Iniciando transcrição do áudio...");
+      const result = await transcribeAudio(req.file.buffer);
+      console.log(`Transcrição concluída. Tamanho do texto: ${result?.text?.length || 0} caracteres`);
+      
+      // Verificar se a transcrição está vazia
+      if (!result || !result.text || result.text.trim() === "") {
+        console.warn("Transcrição resultou em texto vazio");
+        return res.status(500).json({ 
+          error: "Não foi possível transcrever o áudio. Verifique se há fala audível na gravação."
+        });
       }
       
       res.json({

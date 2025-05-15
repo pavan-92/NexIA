@@ -296,8 +296,9 @@ export function useRecording(): RecordingHookResult {
         mediaRecorder.onstart = () => console.log("MediaRecorder iniciado com sucesso");
         mediaRecorder.onerror = (e) => console.error("Erro no MediaRecorder:", e);
         
-        // Configurar para coletar chunks a cada 250ms
-        mediaRecorder.start(250);
+        // Configurar para coletar chunks mais frequentemente para melhor qualidade
+        // e menos chances de problemas com o áudio
+        mediaRecorder.start(100);
         
         // Mensagens para o usuário
         toast({
@@ -374,8 +375,62 @@ export function useRecording(): RecordingHookResult {
       
       // Stop media recorder
       mediaRecorderRef.current.onstop = () => {
-        // Create audio blob
-        const audioBlob = new Blob(audioChunksRef.current, { type: 'audio/webm' });
+        console.log(`MediaRecorder parado, processando chunks de áudio...`);
+        console.log(`Chunks disponíveis: ${audioChunksRef.current.length}`);
+        
+        // Verificar se temos chunks válidos
+        if (audioChunksRef.current.length === 0) {
+          console.error("Nenhum chunk de áudio coletado durante a gravação!");
+          setError("Não foi possível capturar áudio. Verifique se o microfone está funcionando corretamente.");
+          return;
+        }
+        
+        // Filtrar chunks vazios
+        const validChunks = audioChunksRef.current.filter(chunk => chunk.size > 0);
+        console.log(`Chunks válidos: ${validChunks.length}/${audioChunksRef.current.length}`);
+        
+        if (validChunks.length === 0) {
+          console.error("Todos os chunks de áudio estão vazios!");
+          setError("Nenhum áudio captado. Verifique se o microfone está funcionando e se o volume não está mutado.");
+          return;
+        }
+        
+        // Determinar o tipo MIME mais adequado para o blob
+        const mimeTypes = validChunks
+          .map(chunk => chunk.type)
+          .filter(type => type && type.startsWith('audio/'));
+        
+        // Usar o tipo mais comum ou fallback para webm
+        let mimeType = 'audio/webm';
+        
+        if (mimeTypes.length > 0) {
+          const typeCount: Record<string, number> = {};
+          for (const type of mimeTypes) {
+            typeCount[type] = (typeCount[type] || 0) + 1;
+          }
+          
+          let maxCount = 0;
+          for (const [type, count] of Object.entries(typeCount)) {
+            if (count > maxCount) {
+              maxCount = count;
+              mimeType = type;
+            }
+          }
+        }
+        
+        console.log(`Tipo de mídia selecionado: ${mimeType}`);
+        
+        // Create audio blob com tipo adequado
+        const audioBlob = new Blob(validChunks, { type: mimeType });
+        console.log(`Blob criado com sucesso: ${audioBlob.size} bytes`);
+        
+        // Verificar tamanho mínimo (para evitar problemas de áudio vazio)
+        if (audioBlob.size < 100) {
+          console.error(`Blob de áudio muito pequeno: ${audioBlob.size} bytes`);
+          setError("Áudio gravado muito pequeno. Verifique o microfone e tente novamente.");
+          return;
+        }
+        
         setAudioBlob(audioBlob);
         
         // Stop tracks
@@ -397,6 +452,7 @@ export function useRecording(): RecordingHookResult {
           timestamp
         };
         
+        console.log(`Novo segmento criado: ID ${newSegment.id}, duração ${segmentDuration}s, tamanho ${audioBlob.size} bytes`);
         setAudioSegments(prevSegments => [...prevSegments, newSegment]);
         
         toast({
@@ -415,32 +471,94 @@ export function useRecording(): RecordingHookResult {
 
   const transcribeAudio = async (): Promise<string> => {
     try {
+      // Verificação inicial mais rigorosa
+      console.log(`Verificando disponibilidade de áudio para transcrição...`);
+      console.log(`Número de segmentos disponíveis: ${audioSegments.length}`);
+      
       if (audioSegments.length === 0) {
-        throw new Error("Não há áudio para transcrever");
+        console.error("Não há segmentos de áudio para transcrever");
+        throw new Error("Não há áudio para transcrever. Por favor, grave uma consulta primeiro.");
+      }
+      
+      // Verificações detalhadas para cada segmento
+      const validSegments = audioSegments.filter(segment => 
+        segment.blob && segment.blob.size > 0 && segment.duration > 0
+      );
+      
+      console.log(`Segmentos válidos: ${validSegments.length}/${audioSegments.length}`);
+      
+      if (validSegments.length === 0) {
+        console.error("Nenhum segmento de áudio válido encontrado!");
+        throw new Error("Nenhum segmento de áudio válido. Verifique o microfone e tente novamente.");
       }
       
       // Combine all audio segments into one blob for transcription
       const allChunks: Blob[] = [];
-      audioSegments.forEach(segment => {
+      let totalSize = 0;
+      let totalDuration = 0;
+      
+      validSegments.forEach(segment => {
+        console.log(`Processando segmento: ${segment.id}, tamanho: ${segment.blob.size}, tipo: ${segment.blob.type}`);
         allChunks.push(segment.blob);
+        totalSize += segment.blob.size;
+        totalDuration += segment.duration;
       });
       
       // Log para depuração
-      console.log(`Combinando ${audioSegments.length} segmentos de áudio para transcrição`);
-      audioSegments.forEach((segment, index) => {
-        console.log(`Segmento ${index+1}: ${segment.blob.size} bytes, duração: ${segment.duration}s`);
-      });
+      console.log(`Combinando ${validSegments.length} segmentos válidos de áudio para transcrição`);
+      console.log(`Tamanho total: ${totalSize} bytes, duração total: ${totalDuration}s`);
       
-      const combinedBlob = new Blob(allChunks, { type: 'audio/webm' });
+      // Determinar o tipo de mídia mais adequado
+      const detectedTypes = validSegments
+        .map(segment => segment.blob.type)
+        .filter(type => type && type.startsWith('audio/'));
+      
+      // Usar o tipo mais comum ou padrão para webm
+      let mimeType = 'audio/webm';
+      
+      if (detectedTypes.length > 0) {
+        const typeCount: Record<string, number> = {};
+        for (const type of detectedTypes) {
+          typeCount[type] = (typeCount[type] || 0) + 1;
+        }
+        
+        let maxCount = 0;
+        for (const [type, count] of Object.entries(typeCount)) {
+          if (count > maxCount) {
+            maxCount = count;
+            mimeType = type;
+          }
+        }
+      }
+      
+      console.log(`Usando MIME type: ${mimeType} para o blob combinado`);
+      
+      // Criar o blob combinado com o tipo detectado
+      const combinedBlob = new Blob(allChunks, { type: mimeType });
       console.log(`Tamanho do blob combinado: ${combinedBlob.size} bytes`);
       
       if (combinedBlob.size < 1024) {
-        throw new Error("Áudio muito curto ou vazio. Por favor, grave novamente.");
+        console.error(`Blob combinado muito pequeno: ${combinedBlob.size} bytes`);
+        throw new Error("Áudio muito curto ou vazio. Por favor, grave novamente e fale mais próximo ao microfone.");
       }
       
-      // Create FormData for API request
+      // Determinar a extensão de arquivo correta com base no MIME type
+      let fileExtension = 'webm';
+      if (mimeType === 'audio/mp4') {
+        fileExtension = 'mp4';
+      } else if (mimeType === 'audio/mp3') {
+        fileExtension = 'mp3';
+      } else if (mimeType === 'audio/ogg' || mimeType === 'audio/ogg;codecs=opus') {
+        fileExtension = 'ogg';
+      } else if (mimeType === 'audio/wav') {
+        fileExtension = 'wav';
+      }
+      
+      console.log(`Usando extensão de arquivo: ${fileExtension} para MIME type: ${mimeType}`);
+      
+      // Create FormData for API request com nome de arquivo adequado
       const formData = new FormData();
-      formData.append('audio', combinedBlob, 'recording.webm');
+      formData.append('audio', combinedBlob, `recording.${fileExtension}`);
       
       // Make API call to transcribe
       try {
