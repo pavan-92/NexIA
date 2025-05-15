@@ -333,15 +333,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/translate", async (req: Request, res: Response) => {
     try {
       const schema = z.object({
-        title: z.string().optional(),
-        abstract: z.string().optional(),
+        text: z.string(),
+        sourceLang: z.string().default("en"),
+        targetLang: z.string().default("pt"),
       });
       
       const content = schema.parse(req.body);
-      
-      if (!content.title && !content.abstract) {
-        return res.status(400).json({ error: "At least one of title or abstract must be provided" });
-      }
       
       const translatedContent = await translateText(content);
       

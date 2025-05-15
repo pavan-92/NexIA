@@ -430,11 +430,21 @@ export function useRecording(): RecordingHookResult {
         const audioBlob = new Blob(validChunks, { type: mimeType });
         console.log(`Blob criado com sucesso: ${audioBlob.size} bytes`);
         
-        // Verificar tamanho mínimo (para evitar problemas de áudio vazio)
+        // Verificar tamanho mínimo (para evitar problemas de áudio vazio ou muito curto)
         if (audioBlob.size < 100) {
           console.error(`Blob de áudio muito pequeno: ${audioBlob.size} bytes`);
           setError("Áudio gravado muito pequeno. Verifique o microfone e tente novamente.");
           return;
+        }
+        
+        // Alerta para áudios curtos mas processáveis
+        if (audioBlob.size < 1000) {
+          console.warn(`Áudio muito curto detectado: ${audioBlob.size} bytes`);
+          toast({
+            title: "Áudio muito curto",
+            description: "A gravação foi muito curta. Para melhores resultados, tente falar por pelo menos 3-4 segundos.",
+            variant: "warning"
+          });
         }
         
         setAudioBlob(audioBlob);
