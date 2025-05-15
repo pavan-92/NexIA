@@ -309,13 +309,15 @@ export const generatePDF = (consultation: Consultation, patient: Patient): void 
   }
   
   // Add footer
-  const totalPages = doc.internal.getNumberOfPages();
-  for (let i = 1; i <= totalPages; i++) {
+  // O doc.internal.pages é um array, então o número de páginas é o comprimento - 1
+  // (pois a biblioteca usa index 0 para informações internas)
+  const pageCount = doc.internal.pages.length - 1;
+  for (let i = 1; i <= pageCount; i++) {
     doc.setPage(i);
     doc.setFontSize(10);
     doc.setTextColor(100, 100, 100);
     doc.text(`Gerado por NexIA em ${formatDateTime(new Date())}`, 15, doc.internal.pageSize.getHeight() - 10);
-    doc.text(`Página ${i} de ${totalPages}`, pageWidth - 40, doc.internal.pageSize.getHeight() - 10);
+    doc.text(`Página ${i} de ${pageCount}`, pageWidth - 40, doc.internal.pageSize.getHeight() - 10);
   }
   
   // Save the document

@@ -54,15 +54,29 @@ export interface Consultation {
     consultation?: {
       dateTime: string;
       consultationType: string;
-      chiefComplaint: string;
-      anamnesis: string;
-      diagnosis: string;
-      procedures: string;
-      medications: string;
-      referrals: string;
-      conduct: string;
-      clinicalEvolution: string;
-      physicalExam: string;
+      
+      // Formato SOAP
+      subjective?: string;
+      objective?: string;
+      assessment?: string;
+      plan?: {
+        procedures?: string;
+        medications?: string;
+        referrals?: string;
+        conduct?: string;
+        followUp?: string;
+      };
+      
+      // Campos anteriores para compatibilidade
+      chiefComplaint?: string;
+      anamnesis?: string;
+      diagnosis?: string;
+      procedures?: string;
+      medications?: string;
+      referrals?: string;
+      conduct?: string;
+      clinicalEvolution?: string;
+      physicalExam?: string;
     };
     legalInfo?: {
       professionalSignature: string;
@@ -138,15 +152,29 @@ export interface NotesResponse {
   consultation: {
     dateTime: string;
     consultationType: string;
-    chiefComplaint: string;
-    anamnesis: string;
-    diagnosis: string;
-    procedures: string;
-    medications: string;
-    referrals: string;
-    conduct: string;
-    clinicalEvolution: string;
-    physicalExam: string;
+    
+    // Formato SOAP
+    subjective?: string;
+    objective?: string;
+    assessment?: string;
+    plan?: {
+      procedures?: string;
+      medications?: string;
+      referrals?: string;
+      conduct?: string;
+      followUp?: string;
+    };
+    
+    // Campos anteriores para compatibilidade
+    chiefComplaint?: string;
+    anamnesis?: string;
+    diagnosis?: string;
+    procedures?: string;
+    medications?: string;
+    referrals?: string;
+    conduct?: string;
+    clinicalEvolution?: string;
+    physicalExam?: string;
   };
   legalInfo: {
     professionalSignature: string;

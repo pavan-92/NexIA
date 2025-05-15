@@ -431,14 +431,34 @@ export function useRecording(): RecordingHookResult {
         setIsLiveTranscribing(false);
         
         return text;
-      } catch (apiError) {
+      } catch (error: unknown) {
         // Extrair a mensagem de erro da API se disponível
         let errorMessage = "Erro na comunicação com o servidor";
         
-        if (apiError.response && apiError.response.data && apiError.response.data.error) {
-          errorMessage = apiError.response.data.error;
-        } else if (apiError instanceof Error) {
-          errorMessage = apiError.message;
+        // Define a interface para erro de API
+        interface ApiErrorResponse {
+          response?: {
+            data?: {
+              error?: string;
+            };
+          };
+          message?: string;
+        }
+        
+        // Verificar se o erro tem a estrutura esperada
+        if (error && typeof error === 'object') {
+          const apiError = error as ApiErrorResponse;
+          
+          if (apiError.response?.data?.error) {
+            // Erro da API com resposta estruturada
+            errorMessage = apiError.response.data.error;
+          } else if ('message' in apiError) {
+            // Erro genérico com mensagem
+            errorMessage = apiError.message || errorMessage;
+          }
+        } else if (typeof error === 'string') {
+          // Se o erro for apenas string
+          errorMessage = error;
         }
         
         throw new Error(`Erro na transcrição: ${errorMessage}`);
