@@ -133,8 +133,6 @@ export default function ProntuarioView({
     }));
   };
 
-
-
   return (
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
@@ -287,17 +285,17 @@ export default function ProntuarioView({
           </CardContent>
         </Card>
 
-        {/* 3. DADOS DA CONSULTA / ATENDIMENTO */}
+        {/* 3. DADOS DA CONSULTA / ATENDIMENTO - FORMATO SOAP */}
         <Card>
           <CardHeader>
             <CardTitle className="text-xl flex items-center">
               <Badge variant="outline" className="mr-2">3</Badge>
-              Dados da Consulta
+              Dados da Consulta (SOAP)
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div className="flex flex-col gap-4">
+            <div className="space-y-4 mb-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                   <h4 className="text-sm font-medium mb-1">Data e hora</h4>
                   <Textarea 
@@ -316,89 +314,113 @@ export default function ProntuarioView({
                     disabled={isSaving}
                   />
                 </div>
-                <div>
-                  <h4 className="text-sm font-medium mb-1">Queixa principal</h4>
-                  <Textarea 
-                    value={editedNotes?.consultation?.chiefComplaint || ""}
-                    onChange={(e) => handleChange("consultation", "chiefComplaint", e.target.value)}
-                    className="min-h-[80px]"
-                    disabled={isSaving}
-                  />
-                </div>
-                <div>
-                  <h4 className="text-sm font-medium mb-1">Anamnese detalhada</h4>
-                  <Textarea 
-                    value={editedNotes?.consultation?.anamnesis || ""}
-                    onChange={(e) => handleChange("consultation", "anamnesis", e.target.value)}
-                    className="min-h-[120px]"
-                    disabled={isSaving}
-                  />
-                </div>
-                <div>
-                  <h4 className="text-sm font-medium mb-1">Hipótese diagnóstica / CID-10</h4>
-                  <Textarea 
-                    value={editedNotes?.consultation?.diagnosis || ""}
-                    onChange={(e) => handleChange("consultation", "diagnosis", e.target.value)}
-                    className="min-h-[80px]"
-                    disabled={isSaving}
-                  />
-                </div>
               </div>
+            </div>
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div className="flex flex-col gap-4">
+                {/* S - Subjetivo */}
                 <div>
-                  <h4 className="text-sm font-medium mb-1">Procedimentos realizados</h4>
+                  <h4 className="text-sm font-medium mb-1 flex items-center">
+                    <Badge className="mr-2 bg-blue-100 text-blue-800 hover:bg-blue-100">S</Badge>
+                    Subjetivo
+                  </h4>
                   <Textarea 
-                    value={editedNotes?.consultation?.procedures || ""}
-                    onChange={(e) => handleChange("consultation", "procedures", e.target.value)}
-                    className="min-h-[80px]"
+                    value={editedNotes?.consultation?.subjective || ""}
+                    onChange={(e) => handleChange("consultation", "subjective", e.target.value)}
+                    className="min-h-[150px]"
                     disabled={isSaving}
+                    placeholder="Queixa principal e relato do paciente"
                   />
                 </div>
+                
+                {/* O - Objetivo */}
                 <div>
-                  <h4 className="text-sm font-medium mb-1">Medicamentos prescritos</h4>
+                  <h4 className="text-sm font-medium mb-1 flex items-center">
+                    <Badge className="mr-2 bg-green-100 text-green-800 hover:bg-green-100">O</Badge>
+                    Objetivo
+                  </h4>
                   <Textarea 
-                    value={editedNotes?.consultation?.medications || ""}
-                    onChange={(e) => handleChange("consultation", "medications", e.target.value)}
-                    className="min-h-[80px]"
+                    value={editedNotes?.consultation?.objective || ""}
+                    onChange={(e) => handleChange("consultation", "objective", e.target.value)}
+                    className="min-h-[150px]"
                     disabled={isSaving}
+                    placeholder="Achados clínicos, sinais vitais e exame físico"
                   />
                 </div>
+                
+                {/* A - Avaliação */}
                 <div>
-                  <h4 className="text-sm font-medium mb-1">Encaminhamentos</h4>
+                  <h4 className="text-sm font-medium mb-1 flex items-center">
+                    <Badge className="mr-2 bg-amber-100 text-amber-800 hover:bg-amber-100">A</Badge>
+                    Avaliação
+                  </h4>
                   <Textarea 
-                    value={editedNotes?.consultation?.referrals || ""}
-                    onChange={(e) => handleChange("consultation", "referrals", e.target.value)}
-                    className="min-h-[80px]"
+                    value={editedNotes?.consultation?.assessment || ""}
+                    onChange={(e) => handleChange("consultation", "assessment", e.target.value)}
+                    className="min-h-[100px]"
                     disabled={isSaving}
-                  />
-                </div>
-                <div>
-                  <h4 className="text-sm font-medium mb-1">Conduta adotada</h4>
-                  <Textarea 
-                    value={editedNotes?.consultation?.conduct || ""}
-                    onChange={(e) => handleChange("consultation", "conduct", e.target.value)}
-                    className="min-h-[80px]"
-                    disabled={isSaving}
-                  />
-                </div>
-                <div>
-                  <h4 className="text-sm font-medium mb-1">Evolução clínica</h4>
-                  <Textarea 
-                    value={editedNotes?.consultation?.clinicalEvolution || ""}
-                    onChange={(e) => handleChange("consultation", "clinicalEvolution", e.target.value)}
-                    className="min-h-[80px]"
-                    disabled={isSaving}
+                    placeholder="Diagnóstico/hipótese com código CID-10"
                   />
                 </div>
               </div>
-              <div className="col-span-1 md:col-span-2">
-                <h4 className="text-sm font-medium mb-1">Exame físico</h4>
-                <Textarea 
-                  value={editedNotes?.consultation?.physicalExam || ""}
-                  onChange={(e) => handleChange("consultation", "physicalExam", e.target.value)}
-                  className="min-h-[100px]"
-                  disabled={isSaving}
-                />
+              
+              <div className="flex flex-col gap-4">
+                {/* P - Plano */}
+                <div>
+                  <h4 className="text-sm font-medium mb-1 flex items-center">
+                    <Badge className="mr-2 bg-red-100 text-red-800 hover:bg-red-100">P</Badge>
+                    Plano
+                  </h4>
+                  
+                  <div className="border rounded-md p-3 space-y-3">
+                    <div>
+                      <h5 className="text-xs font-medium mb-1">Procedimentos realizados</h5>
+                      <Textarea 
+                        value={editedNotes?.consultation?.plan?.procedures || ""}
+                        onChange={(e) => handlePlanChange("procedures", e.target.value)}
+                        className="min-h-[70px]"
+                        disabled={isSaving}
+                      />
+                    </div>
+                    <div>
+                      <h5 className="text-xs font-medium mb-1">Medicamentos prescritos</h5>
+                      <Textarea 
+                        value={editedNotes?.consultation?.plan?.medications || ""}
+                        onChange={(e) => handlePlanChange("medications", e.target.value)}
+                        className="min-h-[70px]"
+                        disabled={isSaving}
+                      />
+                    </div>
+                    <div>
+                      <h5 className="text-xs font-medium mb-1">Encaminhamentos</h5>
+                      <Textarea 
+                        value={editedNotes?.consultation?.plan?.referrals || ""}
+                        onChange={(e) => handlePlanChange("referrals", e.target.value)}
+                        className="min-h-[70px]"
+                        disabled={isSaving}
+                      />
+                    </div>
+                    <div>
+                      <h5 className="text-xs font-medium mb-1">Conduta</h5>
+                      <Textarea 
+                        value={editedNotes?.consultation?.plan?.conduct || ""}
+                        onChange={(e) => handlePlanChange("conduct", e.target.value)}
+                        className="min-h-[70px]"
+                        disabled={isSaving}
+                      />
+                    </div>
+                    <div>
+                      <h5 className="text-xs font-medium mb-1">Acompanhamento e retorno</h5>
+                      <Textarea 
+                        value={editedNotes?.consultation?.plan?.followUp || ""}
+                        onChange={(e) => handlePlanChange("followUp", e.target.value)}
+                        className="min-h-[70px]"
+                        disabled={isSaving}
+                      />
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
           </CardContent>
@@ -433,37 +455,54 @@ export default function ProntuarioView({
                 />
               </div>
               <div>
-                <h4 className="text-sm font-medium mb-1">Consentimento informado</h4>
+                <h4 className="text-sm font-medium mb-1">Observações adicionais</h4>
                 <Textarea 
-                  value={editedNotes?.legalInfo?.informedConsent || ""}
-                  onChange={(e) => handleChange("legalInfo", "informedConsent", e.target.value)}
-                  className="h-10 resize-none"
+                  value={editedNotes?.legalInfo?.observations || ""}
+                  onChange={(e) => handleChange("legalInfo", "observations", e.target.value)}
+                  className="min-h-[80px]"
                   disabled={isSaving}
                 />
               </div>
               <div>
-                <h4 className="text-sm font-medium mb-1">Observações</h4>
+                <h4 className="text-sm font-medium mb-1">Observações emocionais</h4>
                 <Textarea 
-                  value={editedNotes?.legalInfo?.observations || ""}
-                  onChange={(e) => handleChange("legalInfo", "observations", e.target.value)}
-                  className="h-10 resize-none"
+                  value={editedNotes?.legalInfo?.emotionalObservations || ""}
+                  onChange={(e) => handleChange("legalInfo", "emotionalObservations", e.target.value)}
+                  className="min-h-[80px]"
+                  disabled={isSaving}
+                />
+              </div>
+              <div className="col-span-1 md:col-span-2">
+                <h4 className="text-sm font-medium mb-1">Consentimento informado</h4>
+                <Textarea 
+                  value={editedNotes?.legalInfo?.informedConsent || ""}
+                  onChange={(e) => handleChange("legalInfo", "informedConsent", e.target.value)}
+                  className="min-h-[80px]"
                   disabled={isSaving}
                 />
               </div>
             </div>
           </CardContent>
         </Card>
-      </div>
-      
 
-      
-      <div className="flex items-center justify-between text-sm text-muted-foreground">
-        <div className="text-xs">* Este é um prontuário automatizado gerado pela IA</div>
-        
-        <div className="flex items-center">
-          <Brain className="h-4 w-4 mr-1" />
-          Powered by IA
-        </div>
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.2 }}
+          className="flex justify-center"
+        >
+          <div className="flex flex-col items-center">
+            <div className="flex gap-2 items-center text-muted-foreground">
+              <Brain className="h-4 w-4" />
+              <span className="text-sm">
+                Gerado pela inteligência artificial
+              </span>
+            </div>
+            <p className="text-xs text-muted-foreground mt-1">
+              Revise todas as informações antes de salvar
+            </p>
+          </div>
+        </motion.div>
       </div>
     </div>
   );

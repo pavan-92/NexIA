@@ -102,10 +102,10 @@ export const generatePDF = (consultation: Consultation, patient: Patient): void 
     currentY += 15;
   }
   
-  // Section 3: Consultation Data
+  // Section 3: Consultation Data (SOAP Format)
   doc.setFontSize(14);
   doc.setTextColor(30, 30, 30);
-  doc.text('3. DADOS DA CONSULTA', 15, currentY);
+  doc.text('3. DADOS DA CONSULTA (SOAP)', 15, currentY);
   currentY += 10;
   
   if (consultation.notes?.consultation) {
@@ -117,9 +117,9 @@ export const generatePDF = (consultation: Consultation, patient: Patient): void 
       currentY = 20;
     }
     
+    // Data básica da consulta
     currentY = addSection('Data e hora', consultData.dateTime || formatDateTime(consultation.date), currentY);
     currentY = addSection('Tipo de atendimento', consultData.consultationType || "Consulta médica", currentY + 5);
-    currentY = addSection('Queixa principal', consultData.chiefComplaint || "", currentY + 5);
     
     // Add a new page if needed
     if (currentY > doc.internal.pageSize.getHeight() - 50) {
@@ -127,38 +127,156 @@ export const generatePDF = (consultation: Consultation, patient: Patient): void 
       currentY = 20;
     }
     
-    currentY = addSection('Anamnese', consultData.anamnesis || "", currentY + 5);
+    // S - Subjetivo
+    doc.setFontSize(12);
+    doc.setTextColor(0, 102, 204); // Azul para Subjetivo
+    doc.text('S - SUBJETIVO', 15, currentY + 7);
+    currentY += 12;
+    
+    // Usar o campo subjective ou chiefComplaint+anamnesis para compatibilidade
+    const subjetivo = consultData.subjective || 
+      `${consultData.chiefComplaint ? `Queixa principal: ${consultData.chiefComplaint}\n` : ''}${consultData.anamnesis || ''}`;
+    
+    doc.setTextColor(30, 30, 30);
+    const subjLines = doc.splitTextToSize(subjetivo || "Não informado", pageWidth - 30);
+    doc.text(subjLines, 15, currentY);
+    currentY += (subjLines.length * 7) + 10;
     
     if (currentY > doc.internal.pageSize.getHeight() - 50) {
       doc.addPage();
       currentY = 20;
     }
     
-    currentY = addSection('Hipótese diagnóstica', consultData.diagnosis || "", currentY + 5);
-    currentY = addSection('Procedimentos realizados', consultData.procedures || "", currentY + 5);
+    // O - Objetivo
+    doc.setFontSize(12);
+    doc.setTextColor(0, 153, 51); // Verde para Objetivo
+    doc.text('O - OBJETIVO', 15, currentY);
+    currentY += 12;
+    
+    // Usar o campo objective ou physicalExam para compatibilidade
+    const objetivo = consultData.objective || consultData.physicalExam || "";
+    
+    doc.setTextColor(30, 30, 30);
+    const objLines = doc.splitTextToSize(objetivo || "Não informado", pageWidth - 30);
+    doc.text(objLines, 15, currentY);
+    currentY += (objLines.length * 7) + 10;
     
     if (currentY > doc.internal.pageSize.getHeight() - 50) {
       doc.addPage();
       currentY = 20;
     }
     
-    currentY = addSection('Medicamentos prescritos', consultData.medications || "", currentY + 5);
-    currentY = addSection('Encaminhamentos', consultData.referrals || "", currentY + 5);
+    // A - Avaliação
+    doc.setFontSize(12);
+    doc.setTextColor(204, 153, 0); // Âmbar para Avaliação
+    doc.text('A - AVALIAÇÃO', 15, currentY);
+    currentY += 12;
+    
+    // Usar o campo assessment ou diagnosis para compatibilidade
+    const avaliacao = consultData.assessment || consultData.diagnosis || "";
+    
+    doc.setTextColor(30, 30, 30);
+    const avalLines = doc.splitTextToSize(avaliacao || "Não informado", pageWidth - 30);
+    doc.text(avalLines, 15, currentY);
+    currentY += (avalLines.length * 7) + 10;
     
     if (currentY > doc.internal.pageSize.getHeight() - 50) {
       doc.addPage();
       currentY = 20;
     }
     
-    currentY = addSection('Conduta adotada', consultData.conduct || "", currentY + 5);
-    currentY = addSection('Evolução clínica', consultData.clinicalEvolution || "", currentY + 5);
+    // P - Plano
+    doc.setFontSize(12);
+    doc.setTextColor(204, 51, 0); // Vermelho para Plano
+    doc.text('P - PLANO', 15, currentY);
+    currentY += 12;
     
-    if (currentY > doc.internal.pageSize.getHeight() - 50) {
-      doc.addPage();
-      currentY = 20;
+    // Verificar se existe estrutura plan ou usar os campos antigos para compatibilidade
+    if (consultData.plan) {
+      // Novo formato com estrutura de plano
+      const plan = consultData.plan;
+      
+      if (plan.procedures) {
+        currentY = addSection('Procedimentos realizados', plan.procedures, currentY);
+      }
+      
+      if (currentY > doc.internal.pageSize.getHeight() - 30) {
+        doc.addPage();
+        currentY = 20;
+      }
+      
+      if (plan.medications) {
+        currentY = addSection('Medicamentos prescritos', plan.medications, currentY + 5);
+      }
+      
+      if (currentY > doc.internal.pageSize.getHeight() - 30) {
+        doc.addPage();
+        currentY = 20;
+      }
+      
+      if (plan.referrals) {
+        currentY = addSection('Encaminhamentos', plan.referrals, currentY + 5);
+      }
+      
+      if (currentY > doc.internal.pageSize.getHeight() - 30) {
+        doc.addPage();
+        currentY = 20;
+      }
+      
+      if (plan.conduct) {
+        currentY = addSection('Conduta', plan.conduct, currentY + 5);
+      }
+      
+      if (currentY > doc.internal.pageSize.getHeight() - 30) {
+        doc.addPage();
+        currentY = 20;
+      }
+      
+      if (plan.followUp) {
+        currentY = addSection('Acompanhamento e retorno', plan.followUp, currentY + 5);
+      }
+    } else {
+      // Formato antigo para compatibilidade
+      if (consultData.procedures) {
+        currentY = addSection('Procedimentos realizados', consultData.procedures, currentY);
+      }
+      
+      if (currentY > doc.internal.pageSize.getHeight() - 30) {
+        doc.addPage();
+        currentY = 20;
+      }
+      
+      if (consultData.medications) {
+        currentY = addSection('Medicamentos prescritos', consultData.medications, currentY + 5);
+      }
+      
+      if (currentY > doc.internal.pageSize.getHeight() - 30) {
+        doc.addPage();
+        currentY = 20;
+      }
+      
+      if (consultData.referrals) {
+        currentY = addSection('Encaminhamentos', consultData.referrals, currentY + 5);
+      }
+      
+      if (currentY > doc.internal.pageSize.getHeight() - 30) {
+        doc.addPage();
+        currentY = 20;
+      }
+      
+      if (consultData.conduct) {
+        currentY = addSection('Conduta adotada', consultData.conduct, currentY + 5);
+      }
+      
+      if (currentY > doc.internal.pageSize.getHeight() - 30) {
+        doc.addPage();
+        currentY = 20;
+      }
+      
+      if (consultData.clinicalEvolution) {
+        currentY = addSection('Evolução clínica', consultData.clinicalEvolution, currentY + 5);
+      }
     }
-    
-    currentY = addSection('Exame físico', consultData.physicalExam || "", currentY + 5);
   }
   
   // Section 4: Legal Documents
