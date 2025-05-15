@@ -22,7 +22,7 @@ import {
 interface RecordingInterfaceProps {
   consultationId?: string;
   isNew: boolean;
-  onTranscriptionComplete: (text: string) => void;
+  onTranscriptionComplete: (text: string, notes?: any) => void;
 }
 
 export default function RecordingInterface({
@@ -408,6 +408,7 @@ export default function RecordingInterface({
           
           // Verifica se alguma tentativa teve sucesso
           if (text && text.trim().length > 0) {
+            // Apenas passa o texto, notas serão geradas depois pelo botão "Gerar Prontuário"
             onTranscriptionComplete(text);
             
             // Save transcription if we have a consultation ID
@@ -580,8 +581,8 @@ export default function RecordingInterface({
         // Para novas consultas, passa de volta para o componente pai
         // através do callback de transcrição completa
         console.log("Prontuário formatado e pronto para exibição:", formattedNotes);
-        // Passa a transcrição para o callback e permite o próximo passo
-        onTranscriptionComplete(liveTranscript);
+        // Passa a transcrição E as notas formatadas para o callback
+        onTranscriptionComplete(liveTranscript, formattedNotes);
       }
     } catch (err) {
       console.error("Error generating notes:", err);
