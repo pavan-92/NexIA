@@ -324,15 +324,23 @@ export default function RecordingInterface({
   };
   
   // Save audio to consultation
-  const { mutate: saveAudio } = useMutation({
-    mutationFn: async (text: string) => {
+  const { mutate: saveAudio } = useMutation<any, Error, { text: string, notes?: any }>({
+    mutationFn: async ({ text, notes }: { text: string, notes?: any }) => {
+      const updateData: any = {
+        transcription: text,
+        status: "in-progress"
+      };
+      
+      // Se tiver notas (prontuário), inclui no objeto de atualização
+      if (notes) {
+        updateData.notes = notes;
+        updateData.status = "completed";
+      }
+      
       return apiRequest(
         "PUT",
         `/api/consultations/${consultationId}`,
-        {
-          transcription: text,
-          status: "in-progress"
-        }
+        updateData
       );
     },
     onSuccess: () => {
@@ -560,12 +568,17 @@ export default function RecordingInterface({
         cid10: notes.cid10 || []
       };
       
-      // Atualiza o estado global com os dados formatados para o prontuário
+      // Atualiza o estado com os dados formatados para o prontuário
       if (consultationId && !isNew) {
-        saveAudio(liveTranscript, formattedNotes);
+        // Para consultas existentes, salva no servidor
+        // Passamos o segundo parâmetro corretamente
+        saveAudio(liveTranscript, formattedNotes as any);
       } else {
-        // Se for nova consulta, atualiza o estado local
-        setGeneratedNotes(formattedNotes);
+        // Para novas consultas, passa de volta para o componente pai
+        // através do callback de transcrição completa
+        console.log("Prontuário formatado e pronto para exibição:", formattedNotes);
+        // Passa a transcrição para o callback e permite o próximo passo
+        onTranscriptionComplete(liveTranscript);
       }
     } catch (err) {
       console.error("Error generating notes:", err);
