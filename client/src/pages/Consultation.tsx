@@ -237,12 +237,22 @@ export default function Consultation({ id }: { id?: string }) {
                     consultationId={consultationId}
                     isNew={isNew}
                     onTranscriptionComplete={(text, notes) => {
+                      console.log("Transcrição completa recebida:", text);
+                      console.log("Notas do prontuário recebidas:", notes);
+                      
                       setTranscript(text);
-                      // Se recebemos notas geradas, atualizamos o estado
+                      
+                      // Se recebemos notas geradas, atualizamos o estado imediatamente
                       if (notes) {
+                        console.log("Atualizando estado de generatedNotes:", notes);
                         setGeneratedNotes(notes);
+                        
+                        // Feedback visual para o usuário
+                        toast({
+                          title: "Prontuário gerado",
+                          description: "O prontuário foi gerado com sucesso e está disponível para visualização.",
+                        });
                       }
-                      // Não muda mais de tab automaticamente
                     }}
                   />
                 </div>
@@ -358,27 +368,121 @@ export default function Consultation({ id }: { id?: string }) {
                     </Button>
                   </div>
                   <div className="consultation-card-content">
-                    {generatedNotes || consultation?.notes ? (
-                      <ProntuarioView 
-                        consultationId={consultationId}
-                        notes={generatedNotes || consultation?.notes} 
-                        onSave={(notes) => {
-                          setGeneratedNotes(notes);
-                          saveConsultation({ notes });
-                        }}
-                        onExportPDF={handleExportPDF}
-                      />
+                    {generatedNotes || (consultation && consultation.notes) ? (
+                      <>
+                        <div className="mb-4">
+                          <p className="text-green-600 font-medium">✓ Prontuário gerado com sucesso</p>
+                        </div>
+                        <ProntuarioView 
+                          consultationId={consultationId}
+                          notes={generatedNotes || (consultation ? consultation.notes : null)} 
+                          onSave={(notes) => {
+                            console.log("Salvando notas atualizadas:", notes);
+                            setGeneratedNotes(notes);
+                            saveConsultation({ notes });
+                          }}
+                          onExportPDF={handleExportPDF}
+                        />
+                      </>
                     ) : (
                       <div className="text-center py-6">
                         <p className="text-gray-500 mb-4">Aqui será exibido o prontuário da consulta após a transcrição</p>
                         <Button 
                           className="bg-blue-600 text-white hover:bg-blue-700"
                           onClick={() => {
-                            // Se já tiver transcrição, tenta gerar notas
-                            if (transcript || consultation?.transcription) {
-                              setActiveTab("transcript");
+                            // Tenta gerar notas diretamente a partir da transcrição existente
+                            const transcriptionText = transcript || consultation?.transcription;
+                            if (transcriptionText) {
+                              // Mostra feedback visual para o usuário
+                              toast({
+                                title: "Gerando prontuário",
+                                description: "Aguarde enquanto o prontuário é gerado...",
+                              });
+                              
+                              // Chama a API para gerar as notas
+                              apiRequest("POST", "/api/generate-notes", { 
+                                text: transcriptionText 
+                              })
+                              .then(response => {
+                                if (response?.soap) {
+                                  console.log("Notas geradas pela API:", response);
+                                  
+                                  // Formata as notas para o formato esperado pelo componente ProntuarioView
+                                  const formattedNotes = {
+                                    patientInfo: {
+                                      fullName: "",
+                                      birthDate: "",
+                                      sex: "",
+                                      cpf: "",
+                                      motherName: "",
+                                      address: ""
+                                    },
+                                    healthcareInfo: {
+                                      cnes: "",
+                                      professionalName: "",
+                                      professionalCNS: "",
+                                      professionalCBO: ""
+                                    },
+                                    consultation: {
+                                      dateTime: new Date().toLocaleString('pt-BR'),
+                                      consultationType: "Consulta médica",
+                                      
+                                      // Formato SOAP
+                                      subjective: response.soap.subjective || "",
+                                      objective: response.soap.objective || "",
+                                      assessment: response.soap.assessment || "",
+                                      plan: {
+                                        procedures: "",
+                                        medications: "",
+                                        referrals: "",
+                                        conduct: response.soap.plan || "",
+                                        followUp: ""
+                                      },
+                                      
+                                      // Campos anteriores para compatibilidade
+                                      chiefComplaint: response.soap.subjective || "",
+                                      anamnesis: "",
+                                      diagnosis: response.soap.assessment || "",
+                                      procedures: "",
+                                      medications: "",
+                                      referrals: "",
+                                      conduct: response.soap.plan || "",
+                                      clinicalEvolution: "",
+                                      physicalExam: response.soap.objective || ""
+                                    },
+                                    legalInfo: {
+                                      professionalSignature: "",
+                                      consultationProtocol: `PROT-${Date.now()}`,
+                                      observations: "",
+                                      emotionalObservations: "",
+                                      informedConsent: ""
+                                    },
+                                    cid10: response.cid10 || []
+                                  };
+                                  
+                                  // Atualiza o estado com os dados formatados
+                                  setGeneratedNotes(formattedNotes);
+                                  
+                                  toast({
+                                    title: "Prontuário gerado",
+                                    description: "O prontuário foi gerado com sucesso.",
+                                  });
+                                }
+                              })
+                              .catch(error => {
+                                console.error("Erro ao gerar prontuário:", error);
+                                toast({
+                                  variant: "destructive",
+                                  title: "Erro ao gerar prontuário",
+                                  description: "Não foi possível gerar o prontuário. Tente novamente."
+                                });
+                              });
                             } else {
-                              setActiveTab("recording");
+                              toast({
+                                variant: "destructive",
+                                title: "Sem transcrição",
+                                description: "É necessário gravar e transcrever o áudio primeiro."
+                              });
                             }
                           }}
                         >
