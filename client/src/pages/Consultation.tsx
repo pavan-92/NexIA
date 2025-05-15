@@ -236,8 +236,12 @@ export default function Consultation({ id }: { id?: string }) {
                   <RecordingInterface 
                     consultationId={consultationId}
                     isNew={isNew}
-                    onTranscriptionComplete={(text) => {
+                    onTranscriptionComplete={(text, notes) => {
                       setTranscript(text);
+                      // Se recebemos notas geradas, atualizamos o estado
+                      if (notes) {
+                        setGeneratedNotes(notes);
+                      }
                       // Não muda mais de tab automaticamente
                     }}
                   />
