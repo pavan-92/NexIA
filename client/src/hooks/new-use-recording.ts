@@ -471,8 +471,59 @@ export function useRecording(): RecordingHookResult {
 
   const transcribeAudio = async (): Promise<string> => {
     try {
-      // Verificação inicial mais rigorosa
-      console.log(`Verificando disponibilidade de áudio para transcrição...`);
+      // Verificar se há audioBlob direto (último áudio gravado)
+      // Isso garante que mesmo se houver problema com o gerenciamento de segmentos, o último áudio gravado será usado
+      if (audioBlob && audioBlob.size > 100) {
+        console.log(`Usando audioBlob mais recente para transcrição (${audioBlob.size} bytes)`);
+        
+        // Determinar a extensão de arquivo correta com base no MIME type
+        let mimeType = audioBlob.type || 'audio/webm';
+        let fileExtension = 'webm';
+        
+        if (mimeType.includes('mp4')) {
+          fileExtension = 'mp4';
+        } else if (mimeType.includes('mp3')) {
+          fileExtension = 'mp3';
+        } else if (mimeType.includes('ogg')) {
+          fileExtension = 'ogg';
+        } else if (mimeType.includes('wav')) {
+          fileExtension = 'wav';
+        }
+        
+        // Create FormData for API request
+        const formData = new FormData();
+        formData.append('audio', audioBlob, `recording.${fileExtension}`);
+        
+        console.log(`Enviando áudio para transcrição: ${audioBlob.size} bytes, tipo: ${mimeType}, extensão: ${fileExtension}`);
+        
+        try {
+          const transcriptionResponse = await Promise.race([
+            apiRequest("POST", "/api/transcribe", formData),
+            new Promise((_, reject) => 
+              setTimeout(() => reject(new Error("Tempo esgotado. A transcrição está demorando muito.")), 30000)
+            )
+          ]) as any;
+          
+          // Extract transcription text
+          const { text } = transcriptionResponse;
+          
+          if (!text) {
+            throw new Error("A resposta da transcrição não contém texto");
+          }
+          
+          // Update live transcript
+          setLiveTranscript(text);
+          setIsLiveTranscribing(false);
+          
+          return text;
+        } catch (error: unknown) {
+          console.error("Erro na transcrição do audioBlob recente:", error);
+          // Continua para tentar usar os segmentos
+        }
+      }
+      
+      // Verificação dos segmentos (fallback)
+      console.log(`Verificando disponibilidade de áudio nos segmentos...`);
       console.log(`Número de segmentos disponíveis: ${audioSegments.length}`);
       
       if (audioSegments.length === 0) {
@@ -544,13 +595,13 @@ export function useRecording(): RecordingHookResult {
       
       // Determinar a extensão de arquivo correta com base no MIME type
       let fileExtension = 'webm';
-      if (mimeType === 'audio/mp4') {
+      if (mimeType.includes('mp4')) {
         fileExtension = 'mp4';
-      } else if (mimeType === 'audio/mp3') {
+      } else if (mimeType.includes('mp3')) {
         fileExtension = 'mp3';
-      } else if (mimeType === 'audio/ogg' || mimeType === 'audio/ogg;codecs=opus') {
+      } else if (mimeType.includes('ogg')) {
         fileExtension = 'ogg';
-      } else if (mimeType === 'audio/wav') {
+      } else if (mimeType.includes('wav')) {
         fileExtension = 'wav';
       }
       

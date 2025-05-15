@@ -70,7 +70,7 @@ export async function transcribeAudio(buffer: Buffer): Promise<{ text: string, d
     let mimetype = 'audio/webm';
     
     // Mapeamento de extensões para MIME types
-    const mimeTypeMap = {
+    const mimeTypeMap: Record<string, string> = {
       '.webm': 'audio/webm',
       '.mp3': 'audio/mpeg',
       '.mp4': 'audio/mp4',
@@ -79,7 +79,8 @@ export async function transcribeAudio(buffer: Buffer): Promise<{ text: string, d
       '.flac': 'audio/flac'
     };
     
-    if (fileExtension && mimeTypeMap[fileExtension]) {
+    // Correção para evitar o erro de index signature
+    if (fileExtension && Object.prototype.hasOwnProperty.call(mimeTypeMap, fileExtension)) {
       mimetype = mimeTypeMap[fileExtension];
     }
     
